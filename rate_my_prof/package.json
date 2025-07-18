@@ -1,0 +1,19 @@
+{
+  "name": "usc-rmp-wrapper",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "cross-fetch": "^4.0.0"
+  },
+  "devDependencies": {
+    "@tsconfig/node18": "^18.2.4",
+    "@types/node": "^24.0.8",
+    "ts-node": "^10.9.2",
+    "typescript": "^5"
+  },
+  "scripts": {
+    "start": "node --loader ts-node/esm src/cli.ts",
+    "build": "tsc",
+    "test": "node dist/test_cli.js"
+  }
+}
