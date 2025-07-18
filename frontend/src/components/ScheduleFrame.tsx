@@ -36,26 +36,6 @@ const ROWS_PER_HOUR = 4;  // 60 / 15
 /** map abbreviations → css grid column (header row uses cols 2‑6) */
 const COL_MAP: Record<string, number> = { M: 2, T: 3, W: 4, Th: 5, F: 6 };
 
-/* helper – normalise the server "days" string into a concise MTWThF token list */
-function canonicaliseDays(raw: string): string {
-  if (!raw) return '';
-  return raw
-    .replace(/[{}]/g, '')            // drop curly braces
-    .replace(/,/g, '')               // drop commas
-    .replace(/\s+/g, '')            // drop spaces
-    // convert full names → 3‑letter forms
-    .replace(/Monday/ig, 'Mon')
-    .replace(/Tuesday/ig, 'Tue')
-    .replace(/Wednesday/ig, 'Wed')
-    .replace(/Thursday/ig, 'Thu')
-    .replace(/Friday/ig, 'Fri')
-    // convert 3‑letter → 1‑letter (keep Th)
-    .replace(/Mon/ig, 'M')
-    .replace(/Tue/ig, 'T')
-    .replace(/Wed/ig, 'W')
-    .replace(/Thu/ig, 'Th')
-    .replace(/Fri/ig, 'F');
-}
 
 const ScheduleFrame: React.FC<ScheduleFrameProps> = ({ classes }) => {
   /* 6am, 7am, … 10pm sidebar labels */
@@ -71,22 +51,34 @@ const ScheduleFrame: React.FC<ScheduleFrameProps> = ({ classes }) => {
 
   /* ─────────────────── helpers ─────────────────── */
 
-  /** "MTWThF" → [2,3,4,5,6] (css grid columns) */
-  const getDayColumns = (daysRaw: string): number[] => {
-    const norm  = canonicaliseDays(daysRaw);
-    const cols: number[] = [];
+  function tokensFromDays(raw: string): string[] {
+  return raw
+    .replace(/[{}]/g, '')           // strip { }
+    .replace(/-/g, ',')             // just in case we get "Mon-Wed"
+    .split(/[, ]+/)                 // split on comma OR space(s)
+    .filter(Boolean);               // drop empties
+}
 
-    // handle the special two‑char token first ("Th") so we don't treat its T separately
-    if (norm.includes('Th')) cols.push(COL_MAP['Th']);
+  /** map a single token to a canonical one‑letter / two‑letter code */
+  function normaliseToken(tok: string): string {
+    const map: Record<string,string> = {
+      Monday:'M', Mon:'M',   M:'M',
+      Tuesday:'T', Tue:'T',  Tu:'T', T:'T',
+      Wednesday:'W', Wed:'W', W:'W',
+      Thursday:'Th', Thu:'Th', Th:'Th',
+      Friday:'F', Fri:'F',   F:'F',
+    };
+    return map[tok] ?? '';
+  }
 
-    // iterate over characters for M, T, W, F ("Th" already handled)
-    for (const ch of norm) {
-      if (ch === 'T' && norm.includes('Th')) continue; // skip the T part of Th
-      if (COL_MAP[ch]) cols.push(COL_MAP[ch]);
-    }
+  /** final helper used by the grid renderer */
+  const getDayColumns = (raw: string): number[] => {
+    const tokens = tokensFromDays(raw).map(normaliseToken).filter(Boolean);
 
-    // remove possible duplicates and sort (just in case)
-    return Array.from(new Set(cols)).sort();
+    const COL_MAP: Record<string, number> = { M:2, T:3, W:4, Th:5, F:6 };
+
+    // deduplicate & convert to grid‑column numbers
+    return [...new Set(tokens)].map(t => COL_MAP[t]).filter(Boolean).sort();
   };
 
   /** "8:00 am‑9:50 am" → { start, span } where rows are 15‑minute increments */
