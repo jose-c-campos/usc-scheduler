@@ -1,0 +1,7 @@
+fastapi
+sqlalchemy
+pydantic
+pytest
+aiosqlite
+selenium>=4.20          # browser automation
+webdriver-manager~=4.0  # auto-downloads the right ChromeDriver

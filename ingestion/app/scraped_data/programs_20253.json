@@ -1,0 +1,1460 @@
+[
+  {
+    "code": "ACMD",
+    "school": "MEDK",
+    "name": "Academic Medicine",
+    "href": "https://classes.usc.edu/term/20253/program/ACMD/school/MEDK"
+  },
+  {
+    "code": "ACCT",
+    "school": "ACTN",
+    "name": "Accounting",
+    "href": "https://classes.usc.edu/term/20253/program/ACCT/school/ACTN"
+  },
+  {
+    "code": "ADSC",
+    "school": "MEDK",
+    "name": "Addiction Science",
+    "href": "https://classes.usc.edu/term/20253/program/ADSC/school/MEDK"
+  },
+  {
+    "code": "ADNT",
+    "school": "DNTR",
+    "name": "Advanced Dental Education Conjoint Program",
+    "href": "https://classes.usc.edu/term/20253/program/ADNT/school/DNTR"
+  },
+  {
+    "code": "AME",
+    "school": "ENGV",
+    "name": "Aerospace and Mechanical Engineering",
+    "href": "https://classes.usc.edu/term/20253/program/AME/school/ENGV"
+  },
+  {
+    "code": "AEST",
+    "school": "PPDP",
+    "name": "Aerospace Studies",
+    "href": "https://classes.usc.edu/term/20253/program/AEST/school/PPDP"
+  },
+  {
+    "code": "ALI",
+    "school": "DRNS",
+    "name": "American Language Institute",
+    "href": "https://classes.usc.edu/term/20253/program/ALI/school/DRNS"
+  },
+  {
+    "code": "AMST",
+    "school": "DRNS",
+    "name": "American Studies and Ethnicity",
+    "href": "https://classes.usc.edu/term/20253/program/AMST/school/DRNS"
+  },
+  {
+    "code": "ANAT",
+    "school": "MEDK",
+    "name": "Anatomy (Keck School of Medicine)",
+    "href": "https://classes.usc.edu/term/20253/program/ANAT/school/MEDK"
+  },
+  {
+    "code": "ANAT",
+    "school": "DNTR",
+    "name": "Anatomy (Ostrow School of Dentistry)",
+    "href": "https://classes.usc.edu/term/20253/program/ANAT/school/DNTR"
+  },
+  {
+    "code": "ANST",
+    "school": "MEDK",
+    "name": "Anesthesiology",
+    "href": "https://classes.usc.edu/term/20253/program/ANST/school/MEDK"
+  },
+  {
+    "code": "CTAN",
+    "school": "CNMA",
+    "name": "Animation",
+    "href": "https://classes.usc.edu/term/20253/program/CTAN/school/CNMA"
+  },
+  {
+    "code": "ANTH",
+    "school": "DRNS",
+    "name": "Anthropology",
+    "href": "https://classes.usc.edu/term/20253/program/ANTH/school/DRNS"
+  },
+  {
+    "code": "ARAB",
+    "school": "DRNS",
+    "name": "Arabic",
+    "href": "https://classes.usc.edu/term/20253/program/ARAB/school/DRNS"
+  },
+  {
+    "code": "ARCG",
+    "school": "DRNS",
+    "name": "Archaeology",
+    "href": "https://classes.usc.edu/term/20253/program/ARCG/school/DRNS"
+  },
+  {
+    "code": "ARCH",
+    "school": "ARCH",
+    "name": "Architecture",
+    "href": "https://classes.usc.edu/term/20253/program/ARCH/school/ARCH"
+  },
+  {
+    "code": "ART",
+    "school": "FINE",
+    "name": "Art",
+    "href": "https://classes.usc.edu/term/20253/program/ART/school/FINE"
+  },
+  {
+    "code": "AHIS",
+    "school": "DRNS",
+    "name": "Art History",
+    "href": "https://classes.usc.edu/term/20253/program/AHIS/school/DRNS"
+  },
+  {
+    "code": "ARTL",
+    "school": "MUS",
+    "name": "Arts Leadership",
+    "href": "https://classes.usc.edu/term/20253/program/ARTL/school/MUS"
+  },
+  {
+    "code": "ACAD",
+    "school": "ACAD",
+    "name": "Arts, Technology and the Business of Innovation",
+    "href": "https://classes.usc.edu/term/20253/program/ACAD/school/ACAD"
+  },
+  {
+    "code": "ASTE",
+    "school": "ENGV",
+    "name": "Astronautical Engineering",
+    "href": "https://classes.usc.edu/term/20253/program/ASTE/school/ENGV"
+  },
+  {
+    "code": "ASTR",
+    "school": "DRNS",
+    "name": "Astronomy",
+    "href": "https://classes.usc.edu/term/20253/program/ASTR/school/DRNS"
+  },
+  {
+    "code": "BIOC",
+    "school": "MEDK",
+    "name": "Biochemistry",
+    "href": "https://classes.usc.edu/term/20253/program/BIOC/school/MEDK"
+  },
+  {
+    "code": "BKN",
+    "school": "BKPT",
+    "name": "Biokinesiology",
+    "href": "https://classes.usc.edu/term/20253/program/BKN/school/BKPT"
+  },
+  {
+    "code": "BISC",
+    "school": "DRNS",
+    "name": "Biological Sciences",
+    "href": "https://classes.usc.edu/term/20253/program/BISC/school/DRNS"
+  },
+  {
+    "code": "BME",
+    "school": "ENGV",
+    "name": "Biomedical Engineering",
+    "href": "https://classes.usc.edu/term/20253/program/BME/school/ENGV"
+  },
+  {
+    "code": "BPMK",
+    "school": "PHAR",
+    "name": "Biopharmaceutical Marketing",
+    "href": "https://classes.usc.edu/term/20253/program/BPMK/school/PHAR"
+  },
+  {
+    "code": "BPSI",
+    "school": "PHAR",
+    "name": "Biopharmaceutical Sciences",
+    "href": "https://classes.usc.edu/term/20253/program/BPSI/school/PHAR"
+  },
+  {
+    "code": "BUAD",
+    "school": "BUS",
+    "name": "Business Administration",
+    "href": "https://classes.usc.edu/term/20253/program/BUAD/school/BUS"
+  },
+  {
+    "code": "BUCO",
+    "school": "BUS",
+    "name": "Business Communication",
+    "href": "https://classes.usc.edu/term/20253/program/BUCO/school/BUS"
+  },
+  {
+    "code": "BAEP",
+    "school": "BUS",
+    "name": "Business Entrepreneurship",
+    "href": "https://classes.usc.edu/term/20253/program/BAEP/school/BUS"
+  },
+  {
+    "code": "CBG",
+    "school": "MEDK",
+    "name": "Cancer Biology & Genomics",
+    "href": "https://classes.usc.edu/term/20253/program/CBG/school/MEDK"
+  },
+  {
+    "code": "CNB",
+    "school": "MEDK",
+    "name": "Cell and Neurobiology",
+    "href": "https://classes.usc.edu/term/20253/program/CNB/school/MEDK"
+  },
+  {
+    "code": "CHE",
+    "school": "ENGV",
+    "name": "Chemical Engineering",
+    "href": "https://classes.usc.edu/term/20253/program/CHE/school/ENGV"
+  },
+  {
+    "code": "CHEM",
+    "school": "DRNS",
+    "name": "Chemistry",
+    "href": "https://classes.usc.edu/term/20253/program/CHEM/school/DRNS"
+  },
+  {
+    "code": "MUCM",
+    "school": "MUS",
+    "name": "Choral Music",
+    "href": "https://classes.usc.edu/term/20253/program/MUCM/school/MUS"
+  },
+  {
+    "code": "CTCS",
+    "school": "CNMA",
+    "name": "Cinema and Media Studies",
+    "href": "https://classes.usc.edu/term/20253/program/CTCS/school/CNMA"
+  },
+  {
+    "code": "CNTV",
+    "school": "CNMA",
+    "name": "Cinematic Arts",
+    "href": "https://classes.usc.edu/term/20253/program/CNTV/school/CNMA"
+  },
+  {
+    "code": "CE",
+    "school": "ENGV",
+    "name": "Civil Engineering",
+    "href": "https://classes.usc.edu/term/20253/program/CE/school/ENGV"
+  },
+  {
+    "code": "CLAS",
+    "school": "DRNS",
+    "name": "Classics",
+    "href": "https://classes.usc.edu/term/20253/program/CLAS/school/DRNS"
+  },
+  {
+    "code": "CXPT",
+    "school": "PHAR",
+    "name": "Clinical and Experimental Therapeutics",
+    "href": "https://classes.usc.edu/term/20253/program/CXPT/school/PHAR"
+  },
+  {
+    "code": "CGSC",
+    "school": "DRNS",
+    "name": "Cognitive Science",
+    "href": "https://classes.usc.edu/term/20253/program/CGSC/school/DRNS"
+  },
+  {
+    "code": "COMM",
+    "school": "ANSC",
+    "name": "Communication",
+    "href": "https://classes.usc.edu/term/20253/program/COMM/school/ANSC"
+  },
+  {
+    "code": "ASCJ",
+    "school": "ANSC",
+    "name": "Communication and Journalism",
+    "href": "https://classes.usc.edu/term/20253/program/ASCJ/school/ANSC"
+  },
+  {
+    "code": "CMGT",
+    "school": "ANSC",
+    "name": "Communication Management",
+    "href": "https://classes.usc.edu/term/20253/program/CMGT/school/ANSC"
+  },
+  {
+    "code": "COH",
+    "school": "DNTR",
+    "name": "Community Oral Health",
+    "href": "https://classes.usc.edu/term/20253/program/COH/school/DNTR"
+  },
+  {
+    "code": "COLT",
+    "school": "DRNS",
+    "name": "Comparative Literature",
+    "href": "https://classes.usc.edu/term/20253/program/COLT/school/DRNS"
+  },
+  {
+    "code": "CSLC",
+    "school": "DRNS",
+    "name": "Comparative Studies in Literature and Culture",
+    "href": "https://classes.usc.edu/term/20253/program/CSLC/school/DRNS"
+  },
+  {
+    "code": "MUCO",
+    "school": "MUS",
+    "name": "Composition",
+    "href": "https://classes.usc.edu/term/20253/program/MUCO/school/MUS"
+  },
+  {
+    "code": "CSCI",
+    "school": "ENGV",
+    "name": "Computer Science",
+    "href": "https://classes.usc.edu/term/20253/program/CSCI/school/ENGV"
+  },
+  {
+    "code": "MUCD",
+    "school": "MUS",
+    "name": "Conducting",
+    "href": "https://classes.usc.edu/term/20253/program/MUCD/school/MUS"
+  },
+  {
+    "code": "CBY",
+    "school": "DNTR",
+    "name": "Craniofacial Biology",
+    "href": "https://classes.usc.edu/term/20253/program/CBY/school/DNTR"
+  },
+  {
+    "code": "CJ",
+    "school": "BVC",
+    "name": "Criminal Justice",
+    "href": "https://classes.usc.edu/term/20253/program/CJ/school/BVC"
+  },
+  {
+    "code": "CRIT",
+    "school": "FINE",
+    "name": "Critical Studies",
+    "href": "https://classes.usc.edu/term/20253/program/CRIT/school/FINE"
+  },
+  {
+    "code": "CTSE",
+    "school": "EDCR",
+    "name": "Curriculum, Teaching, and Special Education",
+    "href": "https://classes.usc.edu/term/20253/program/CTSE/school/EDCR"
+  },
+  {
+    "code": "DANC",
+    "school": "DNCR",
+    "name": "Dance",
+    "href": "https://classes.usc.edu/term/20253/program/DANC/school/DNCR"
+  },
+  {
+    "code": "DSCI",
+    "school": "ENGV",
+    "name": "Data Science",
+    "href": "https://classes.usc.edu/term/20253/program/DSCI/school/ENGV"
+  },
+  {
+    "code": "DSO",
+    "school": "BUS",
+    "name": "Data Sciences and Operations",
+    "href": "https://classes.usc.edu/term/20253/program/DSO/school/BUS"
+  },
+  {
+    "code": "DBIO",
+    "school": "DNTR",
+    "name": "Dental Biochemistry",
+    "href": "https://classes.usc.edu/term/20253/program/DBIO/school/DNTR"
+  },
+  {
+    "code": "DHYG",
+    "school": "DNTR",
+    "name": "Dental Hygiene",
+    "href": "https://classes.usc.edu/term/20253/program/DHYG/school/DNTR"
+  },
+  {
+    "code": "DPBL",
+    "school": "DNTR",
+    "name": "Dental Problem Based Learning",
+    "href": "https://classes.usc.edu/term/20253/program/DPBL/school/DNTR"
+  },
+  {
+    "code": "DENT",
+    "school": "DNTR",
+    "name": "Dentistry",
+    "href": "https://classes.usc.edu/term/20253/program/DENT/school/DNTR"
+  },
+  {
+    "code": "DHIS",
+    "school": "DNTR",
+    "name": "Dentistry History",
+    "href": "https://classes.usc.edu/term/20253/program/DHIS/school/DNTR"
+  },
+  {
+    "code": "DES",
+    "school": "FINE",
+    "name": "Design",
+    "href": "https://classes.usc.edu/term/20253/program/DES/school/FINE"
+  },
+  {
+    "code": "DSR",
+    "school": "MEDK",
+    "name": "Development, Stem Cells and Regenerative Medicine",
+    "href": "https://classes.usc.edu/term/20253/program/DSR/school/MEDK"
+  },
+  {
+    "code": "DMM",
+    "school": "ANSC",
+    "name": "Digital Media Management",
+    "href": "https://classes.usc.edu/term/20253/program/DMM/school/ANSC"
+  },
+  {
+    "code": "DSM",
+    "school": "ANSC",
+    "name": "Digital Social Media",
+    "href": "https://classes.usc.edu/term/20253/program/DSM/school/ANSC"
+  },
+  {
+    "code": "SCDC",
+    "school": "DRNS",
+    "name": "Dornsife in DC Program",
+    "href": "https://classes.usc.edu/term/20253/program/SCDC/school/DRNS"
+  },
+  {
+    "code": "DPHR",
+    "school": "DNTR",
+    "name": "DPHR",
+    "href": "https://classes.usc.edu/term/20253/program/DPHR/school/DNTR"
+  },
+  {
+    "code": "DPHY",
+    "school": "DNTR",
+    "name": "DPHY",
+    "href": "https://classes.usc.edu/term/20253/program/DPHY/school/DNTR"
+  },
+  {
+    "code": "THTR",
+    "school": "THTR",
+    "name": "Dramatic Arts",
+    "href": "https://classes.usc.edu/term/20253/program/THTR/school/THTR"
+  },
+  {
+    "code": "THTE",
+    "school": "THTR",
+    "name": "Dramatic Arts Expanded",
+    "href": "https://classes.usc.edu/term/20253/program/THTE/school/THTR"
+  },
+  {
+    "code": "EALC",
+    "school": "DRNS",
+    "name": "East Asian Languages and Cultures",
+    "href": "https://classes.usc.edu/term/20253/program/EALC/school/DRNS"
+  },
+  {
+    "code": "EASC",
+    "school": "DRNS",
+    "name": "East Asian Studies",
+    "href": "https://classes.usc.edu/term/20253/program/EASC/school/DRNS"
+  },
+  {
+    "code": "ECON",
+    "school": "DRNS",
+    "name": "Economics",
+    "href": "https://classes.usc.edu/term/20253/program/ECON/school/DRNS"
+  },
+  {
+    "code": "EDUC",
+    "school": "EDCR",
+    "name": "Education",
+    "href": "https://classes.usc.edu/term/20253/program/EDUC/school/EDCR"
+  },
+  {
+    "code": "EDCO",
+    "school": "EDCR",
+    "name": "Education Counseling",
+    "href": "https://classes.usc.edu/term/20253/program/EDCO/school/EDCR"
+  },
+  {
+    "code": "EDUE",
+    "school": "EDCR",
+    "name": "Education Expanded",
+    "href": "https://classes.usc.edu/term/20253/program/EDUE/school/EDCR"
+  },
+  {
+    "code": "EDPA",
+    "school": "EDCR",
+    "name": "Educational Policy, Planning and Administration",
+    "href": "https://classes.usc.edu/term/20253/program/EDPA/school/EDCR"
+  },
+  {
+    "code": "EDPT",
+    "school": "EDCR",
+    "name": "Educational Psychology and Technology",
+    "href": "https://classes.usc.edu/term/20253/program/EDPT/school/EDCR"
+  },
+  {
+    "code": "EE",
+    "school": "ENGV",
+    "name": "Electrical and Computer Engineering",
+    "href": "https://classes.usc.edu/term/20253/program/EE/school/ENGV"
+  },
+  {
+    "code": "EM",
+    "school": "BVC",
+    "name": "Emergency Management",
+    "href": "https://classes.usc.edu/term/20253/program/EM/school/BVC"
+  },
+  {
+    "code": "ENGR",
+    "school": "ENGV",
+    "name": "Engineering",
+    "href": "https://classes.usc.edu/term/20253/program/ENGR/school/ENGV"
+  },
+  {
+    "code": "EIS",
+    "school": "ENGV",
+    "name": "Engineering in Society",
+    "href": "https://classes.usc.edu/term/20253/program/EIS/school/ENGV"
+  },
+  {
+    "code": "ENGL",
+    "school": "DRNS",
+    "name": "English",
+    "href": "https://classes.usc.edu/term/20253/program/ENGL/school/DRNS"
+  },
+  {
+    "code": "ENE",
+    "school": "ENGV",
+    "name": "Environmental Engineering",
+    "href": "https://classes.usc.edu/term/20253/program/ENE/school/ENGV"
+  },
+  {
+    "code": "ENST",
+    "school": "DRNS",
+    "name": "Environmental Studies Program",
+    "href": "https://classes.usc.edu/term/20253/program/ENST/school/DRNS"
+  },
+  {
+    "code": "CTXA",
+    "school": "CNMA",
+    "name": "Expanded Animation",
+    "href": "https://classes.usc.edu/term/20253/program/CTXA/school/CNMA"
+  },
+  {
+    "code": "FDN",
+    "school": "FINE",
+    "name": "Fashion Design",
+    "href": "https://classes.usc.edu/term/20253/program/FDN/school/FINE"
+  },
+  {
+    "code": "FBE",
+    "school": "BUS",
+    "name": "Finance and Business Economics",
+    "href": "https://classes.usc.edu/term/20253/program/FBE/school/BUS"
+  },
+  {
+    "code": "FIM",
+    "school": "BUS",
+    "name": "Food Industry Management",
+    "href": "https://classes.usc.edu/term/20253/program/FIM/school/BUS"
+  },
+  {
+    "code": "FREN",
+    "school": "DRNS",
+    "name": "French",
+    "href": "https://classes.usc.edu/term/20253/program/FREN/school/DRNS"
+  },
+  {
+    "code": "FSEM",
+    "school": "DRNS",
+    "name": "Freshman Seminars",
+    "href": "https://classes.usc.edu/term/20253/program/FSEM/school/DRNS"
+  },
+  {
+    "code": "SWMS",
+    "school": "DRNS",
+    "name": "Gender and Sexuality Studies",
+    "href": "https://classes.usc.edu/term/20253/program/SWMS/school/DRNS"
+  },
+  {
+    "code": "GPR",
+    "school": "DNTR",
+    "name": "General Practice Residency",
+    "href": "https://classes.usc.edu/term/20253/program/GPR/school/DNTR"
+  },
+  {
+    "code": "GEOG",
+    "school": "DRNS",
+    "name": "Geography",
+    "href": "https://classes.usc.edu/term/20253/program/GEOG/school/DRNS"
+  },
+  {
+    "code": "GEOL",
+    "school": "DRNS",
+    "name": "Geological Sciences",
+    "href": "https://classes.usc.edu/term/20253/program/GEOL/school/DRNS"
+  },
+  {
+    "code": "GDEN",
+    "school": "DNTR",
+    "name": "Geriatric Dentistry",
+    "href": "https://classes.usc.edu/term/20253/program/GDEN/school/DNTR"
+  },
+  {
+    "code": "GERM",
+    "school": "DRNS",
+    "name": "German Studies",
+    "href": "https://classes.usc.edu/term/20253/program/GERM/school/DRNS"
+  },
+  {
+    "code": "GERO",
+    "school": "GERD",
+    "name": "Gerontology",
+    "href": "https://classes.usc.edu/term/20253/program/GERO/school/GERD"
+  },
+  {
+    "code": "GM",
+    "school": "MEDK",
+    "name": "Global Medicine",
+    "href": "https://classes.usc.edu/term/20253/program/GM/school/MEDK"
+  },
+  {
+    "code": "GSEC",
+    "school": "DRNS",
+    "name": "Global Security Studies",
+    "href": "https://classes.usc.edu/term/20253/program/GSEC/school/DRNS"
+  },
+  {
+    "code": "GSBA",
+    "school": "BUS",
+    "name": "Graduate School of Business Administration",
+    "href": "https://classes.usc.edu/term/20253/program/GSBA/school/BUS"
+  },
+  {
+    "code": "GR",
+    "school": "DRNS",
+    "name": "Greek",
+    "href": "https://classes.usc.edu/term/20253/program/GR/school/DRNS"
+  },
+  {
+    "code": "HMGT",
+    "school": "PPDP",
+    "name": "Health Care Management",
+    "href": "https://classes.usc.edu/term/20253/program/HMGT/school/PPDP"
+  },
+  {
+    "code": "HP",
+    "school": "MEDK",
+    "name": "Health Promotion and Disease Prevention Studies",
+    "href": "https://classes.usc.edu/term/20253/program/HP/school/MEDK"
+  },
+  {
+    "code": "HCDA",
+    "school": "PHAR",
+    "name": "Healthcare Decision Analysis",
+    "href": "https://classes.usc.edu/term/20253/program/HCDA/school/PHAR"
+  },
+  {
+    "code": "HEBR",
+    "school": "DRNS",
+    "name": "Hebrew",
+    "href": "https://classes.usc.edu/term/20253/program/HEBR/school/DRNS"
+  },
+  {
+    "code": "EDHP",
+    "school": "EDCR",
+    "name": "Higher and Postsecondary Education",
+    "href": "https://classes.usc.edu/term/20253/program/EDHP/school/EDCR"
+  },
+  {
+    "code": "HIST",
+    "school": "DRNS",
+    "name": "History",
+    "href": "https://classes.usc.edu/term/20253/program/HIST/school/DRNS"
+  },
+  {
+    "code": "HT",
+    "school": "BVC",
+    "name": "Hospitality and Tourism",
+    "href": "https://classes.usc.edu/term/20253/program/HT/school/BVC"
+  },
+  {
+    "code": "HBIO",
+    "school": "DRNS",
+    "name": "Human Biology",
+    "href": "https://classes.usc.edu/term/20253/program/HBIO/school/DRNS"
+  },
+  {
+    "code": "HRM",
+    "school": "BVC",
+    "name": "Human Resource Management",
+    "href": "https://classes.usc.edu/term/20253/program/HRM/school/BVC"
+  },
+  {
+    "code": "ISE",
+    "school": "ENGV",
+    "name": "Industrial and Systems Engineering",
+    "href": "https://classes.usc.edu/term/20253/program/ISE/school/ENGV"
+  },
+  {
+    "code": "IOM",
+    "school": "BUS",
+    "name": "Information and Operations Management",
+    "href": "https://classes.usc.edu/term/20253/program/IOM/school/BUS"
+  },
+  {
+    "code": "IDSN",
+    "school": "ACAD",
+    "name": "Integrated Design, Business and Technology",
+    "href": "https://classes.usc.edu/term/20253/program/IDSN/school/ACAD"
+  },
+  {
+    "code": "IAS",
+    "school": "MEDK",
+    "name": "Integrative Anatomical Sciences",
+    "href": "https://classes.usc.edu/term/20253/program/IAS/school/MEDK"
+  },
+  {
+    "code": "CTIN",
+    "school": "CNMA",
+    "name": "Interactive Media",
+    "href": "https://classes.usc.edu/term/20253/program/CTIN/school/CNMA"
+  },
+  {
+    "code": "INTD",
+    "school": "MEDK",
+    "name": "Interdepartmental",
+    "href": "https://classes.usc.edu/term/20253/program/INTD/school/MEDK"
+  },
+  {
+    "code": "INDS",
+    "school": "DRNS",
+    "name": "Interdisciplinary Major Program",
+    "href": "https://classes.usc.edu/term/20253/program/INDS/school/DRNS"
+  },
+  {
+    "code": "IR",
+    "school": "DRNS",
+    "name": "International Relations",
+    "href": "https://classes.usc.edu/term/20253/program/IR/school/DRNS"
+  },
+  {
+    "code": "ITAL",
+    "school": "DRNS",
+    "name": "Italian",
+    "href": "https://classes.usc.edu/term/20253/program/ITAL/school/DRNS"
+  },
+  {
+    "code": "MUJZ",
+    "school": "MUS",
+    "name": "Jazz Studies",
+    "href": "https://classes.usc.edu/term/20253/program/MUJZ/school/MUS"
+  },
+  {
+    "code": "JOUR",
+    "school": "ANSC",
+    "name": "Journalism",
+    "href": "https://classes.usc.edu/term/20253/program/JOUR/school/ANSC"
+  },
+  {
+    "code": "JS",
+    "school": "DRNS",
+    "name": "Judaic Studies",
+    "href": "https://classes.usc.edu/term/20253/program/JS/school/DRNS"
+  },
+  {
+    "code": "EXSC",
+    "school": "DRNS",
+    "name": "Kinesiology",
+    "href": "https://classes.usc.edu/term/20253/program/EXSC/school/DRNS"
+  },
+  {
+    "code": "LAT",
+    "school": "DRNS",
+    "name": "Latin",
+    "href": "https://classes.usc.edu/term/20253/program/LAT/school/DRNS"
+  },
+  {
+    "code": "LAW",
+    "school": "LAW",
+    "name": "Law",
+    "href": "https://classes.usc.edu/term/20253/program/LAW/school/LAW"
+  },
+  {
+    "code": "LBST",
+    "school": "DRNS",
+    "name": "Liberal Studies",
+    "href": "https://classes.usc.edu/term/20253/program/LBST/school/DRNS"
+  },
+  {
+    "code": "LIM",
+    "school": "BVC",
+    "name": "Library and Information Management",
+    "href": "https://classes.usc.edu/term/20253/program/LIM/school/BVC"
+  },
+  {
+    "code": "LING",
+    "school": "DRNS",
+    "name": "Linguistics",
+    "href": "https://classes.usc.edu/term/20253/program/LING/school/DRNS"
+  },
+  {
+    "code": "MOR",
+    "school": "BUS",
+    "name": "Management and Organization",
+    "href": "https://classes.usc.edu/term/20253/program/MOR/school/BUS"
+  },
+  {
+    "code": "MCOM",
+    "school": "BUS",
+    "name": "Management Communication",
+    "href": "https://classes.usc.edu/term/20253/program/MCOM/school/BUS"
+  },
+  {
+    "code": "MKT",
+    "school": "BUS",
+    "name": "Marketing",
+    "href": "https://classes.usc.edu/term/20253/program/MKT/school/BUS"
+  },
+  {
+    "code": "MPW",
+    "school": "DRNS",
+    "name": "Master of Professional Writing",
+    "href": "https://classes.usc.edu/term/20253/program/MPW/school/DRNS"
+  },
+  {
+    "code": "MASC",
+    "school": "ENGV",
+    "name": "Materials Science",
+    "href": "https://classes.usc.edu/term/20253/program/MASC/school/ENGV"
+  },
+  {
+    "code": "MATH",
+    "school": "DRNS",
+    "name": "Mathematics",
+    "href": "https://classes.usc.edu/term/20253/program/MATH/school/DRNS"
+  },
+  {
+    "code": "IML",
+    "school": "CNMA",
+    "name": "Media Arts and Practice",
+    "href": "https://classes.usc.edu/term/20253/program/IML/school/CNMA"
+  },
+  {
+    "code": "MEDB",
+    "school": "MEDK",
+    "name": "Medical Biology",
+    "href": "https://classes.usc.edu/term/20253/program/MEDB/school/MEDK"
+  },
+  {
+    "code": "MBPH",
+    "school": "MEDK",
+    "name": "Medical Biophysics",
+    "href": "https://classes.usc.edu/term/20253/program/MBPH/school/MEDK"
+  },
+  {
+    "code": "MDED",
+    "school": "MEDK",
+    "name": "Medical Education",
+    "href": "https://classes.usc.edu/term/20253/program/MDED/school/MEDK"
+  },
+  {
+    "code": "MPHY",
+    "school": "MEDK",
+    "name": "Medical Physiology",
+    "href": "https://classes.usc.edu/term/20253/program/MPHY/school/MEDK"
+  },
+  {
+    "code": "MEDS",
+    "school": "MEDK",
+    "name": "Medical Sciences",
+    "href": "https://classes.usc.edu/term/20253/program/MEDS/school/MEDK"
+  },
+  {
+    "code": "MED",
+    "school": "MEDK",
+    "name": "Medicine",
+    "href": "https://classes.usc.edu/term/20253/program/MED/school/MEDK"
+  },
+  {
+    "code": "MDES",
+    "school": "DRNS",
+    "name": "Middle East Studies",
+    "href": "https://classes.usc.edu/term/20253/program/MDES/school/DRNS"
+  },
+  {
+    "code": "MS",
+    "school": "PPDP",
+    "name": "Military Science",
+    "href": "https://classes.usc.edu/term/20253/program/MS/school/PPDP"
+  },
+  {
+    "code": "MICB",
+    "school": "MEDK",
+    "name": "Molecular Microbiology and Immunology",
+    "href": "https://classes.usc.edu/term/20253/program/MICB/school/MEDK"
+  },
+  {
+    "code": "MPTX",
+    "school": "PHAR",
+    "name": "Molecular Pharmacology and Toxicology",
+    "href": "https://classes.usc.edu/term/20253/program/MPTX/school/PHAR"
+  },
+  {
+    "code": "MSS",
+    "school": "MEDK",
+    "name": "Molecular Structure & Signaling (MSS)",
+    "href": "https://classes.usc.edu/term/20253/program/MSS/school/MEDK"
+  },
+  {
+    "code": "CMPP",
+    "school": "CNMA",
+    "name": "Motion Picture Producing",
+    "href": "https://classes.usc.edu/term/20253/program/CMPP/school/CNMA"
+  },
+  {
+    "code": "MDA",
+    "school": "DRNS",
+    "name": "Multidisciplinary Activities",
+    "href": "https://classes.usc.edu/term/20253/program/MDA/school/DRNS"
+  },
+  {
+    "code": "MUSC",
+    "school": "MUS",
+    "name": "Music",
+    "href": "https://classes.usc.edu/term/20253/program/MUSC/school/MUS"
+  },
+  {
+    "code": "MUEN",
+    "school": "MUS",
+    "name": "Music Ensemble",
+    "href": "https://classes.usc.edu/term/20253/program/MUEN/school/MUS"
+  },
+  {
+    "code": "MUHL",
+    "school": "MUS",
+    "name": "Music History and Literature",
+    "href": "https://classes.usc.edu/term/20253/program/MUHL/school/MUS"
+  },
+  {
+    "code": "MUIN",
+    "school": "MUS",
+    "name": "Music Industry",
+    "href": "https://classes.usc.edu/term/20253/program/MUIN/school/MUS"
+  },
+  {
+    "code": "MTAL",
+    "school": "MUS",
+    "name": "Music Teaching and Learning",
+    "href": "https://classes.usc.edu/term/20253/program/MTAL/school/MUS"
+  },
+  {
+    "code": "MTEC",
+    "school": "MUS",
+    "name": "Music Technology",
+    "href": "https://classes.usc.edu/term/20253/program/MTEC/school/MUS"
+  },
+  {
+    "code": "NAUT",
+    "school": "PPDP",
+    "name": "Nautical Science",
+    "href": "https://classes.usc.edu/term/20253/program/NAUT/school/PPDP"
+  },
+  {
+    "code": "NSC",
+    "school": "PPDP",
+    "name": "Naval Science",
+    "href": "https://classes.usc.edu/term/20253/program/NSC/school/PPDP"
+  },
+  {
+    "code": "NIIN",
+    "school": "MEDK",
+    "name": "Neuroimaging and Informatics",
+    "href": "https://classes.usc.edu/term/20253/program/NIIN/school/MEDK"
+  },
+  {
+    "code": "NEUM",
+    "school": "MEDK",
+    "name": "Neuromedicine",
+    "href": "https://classes.usc.edu/term/20253/program/NEUM/school/MEDK"
+  },
+  {
+    "code": "NEUR",
+    "school": "DRNS",
+    "name": "Neuroscience",
+    "href": "https://classes.usc.edu/term/20253/program/NEUR/school/DRNS"
+  },
+  {
+    "code": "NSCI",
+    "school": "DRNS",
+    "name": "Neuroscience - Graduate",
+    "href": "https://classes.usc.edu/term/20253/program/NSCI/school/DRNS"
+  },
+  {
+    "code": "NURS",
+    "school": "NURS",
+    "name": "Nursing",
+    "href": "https://classes.usc.edu/term/20253/program/NURS/school/NURS"
+  },
+  {
+    "code": "OCCL",
+    "school": "DNTR",
+    "name": "Occlusion",
+    "href": "https://classes.usc.edu/term/20253/program/OCCL/school/DNTR"
+  },
+  {
+    "code": "OT",
+    "school": "OCST",
+    "name": "Occupational Science and Occupational Therapy",
+    "href": "https://classes.usc.edu/term/20253/program/OT/school/OCST"
+  },
+  {
+    "code": "OS",
+    "school": "DRNS",
+    "name": "Ocean Sciences",
+    "href": "https://classes.usc.edu/term/20253/program/OS/school/DRNS"
+  },
+  {
+    "code": "SWKC",
+    "school": "SWDP",
+    "name": "On Campus and Hybrid Courses",
+    "href": "https://classes.usc.edu/term/20253/program/SWKC/school/SWDP"
+  },
+  {
+    "code": "OPER",
+    "school": "DNTR",
+    "name": "Operative Dentistry",
+    "href": "https://classes.usc.edu/term/20253/program/OPER/school/DNTR"
+  },
+  {
+    "code": "OTEP",
+    "school": "MEDK",
+    "name": "Ophthalmic Technician Training",
+    "href": "https://classes.usc.edu/term/20253/program/OTEP/school/MEDK"
+  },
+  {
+    "code": "DIAG",
+    "school": "DNTR",
+    "name": "Oral Diagnosis And Radiology",
+    "href": "https://classes.usc.edu/term/20253/program/DIAG/school/DNTR"
+  },
+  {
+    "code": "OMOD",
+    "school": "DNTR",
+    "name": "Oral Medicine Oral Diagnosis",
+    "href": "https://classes.usc.edu/term/20253/program/OMOD/school/DNTR"
+  },
+  {
+    "code": "OPR",
+    "school": "DNTR",
+    "name": "Oral Pathology and Radiology",
+    "href": "https://classes.usc.edu/term/20253/program/OPR/school/DNTR"
+  },
+  {
+    "code": "OFP",
+    "school": "DNTR",
+    "name": "Orofacial Pain",
+    "href": "https://classes.usc.edu/term/20253/program/OFP/school/DNTR"
+  },
+  {
+    "code": "OFPM",
+    "school": "DNTR",
+    "name": "Orofacial Pain and Oral Medicine",
+    "href": "https://classes.usc.edu/term/20253/program/OFPM/school/DNTR"
+  },
+  {
+    "code": "OHNS",
+    "school": "MEDK",
+    "name": "Otolaryngology - Head and Neck Surgery",
+    "href": "https://classes.usc.edu/term/20253/program/OHNS/school/MEDK"
+  },
+  {
+    "code": "PAIN",
+    "school": "MEDK",
+    "name": "Pain Medicine",
+    "href": "https://classes.usc.edu/term/20253/program/PAIN/school/MEDK"
+  },
+  {
+    "code": "PATH",
+    "school": "MEDK",
+    "name": "Pathology",
+    "href": "https://classes.usc.edu/term/20253/program/PATH/school/MEDK"
+  },
+  {
+    "code": "PEDO",
+    "school": "DNTR",
+    "name": "Pediatric Dentistry",
+    "href": "https://classes.usc.edu/term/20253/program/PEDO/school/DNTR"
+  },
+  {
+    "code": "MPEM",
+    "school": "MUS",
+    "name": "Performance (Early Music)",
+    "href": "https://classes.usc.edu/term/20253/program/MPEM/school/MUS"
+  },
+  {
+    "code": "MPGU",
+    "school": "MUS",
+    "name": "Performance (Guitar)",
+    "href": "https://classes.usc.edu/term/20253/program/MPGU/school/MUS"
+  },
+  {
+    "code": "MPKS",
+    "school": "MUS",
+    "name": "Performance (Keyboard Studies)",
+    "href": "https://classes.usc.edu/term/20253/program/MPKS/school/MUS"
+  },
+  {
+    "code": "MPPM",
+    "school": "MUS",
+    "name": "Performance (Popular Music)",
+    "href": "https://classes.usc.edu/term/20253/program/MPPM/school/MUS"
+  },
+  {
+    "code": "MPST",
+    "school": "MUS",
+    "name": "Performance (Strings)",
+    "href": "https://classes.usc.edu/term/20253/program/MPST/school/MUS"
+  },
+  {
+    "code": "MPVA",
+    "school": "MUS",
+    "name": "Performance (Vocal Arts)",
+    "href": "https://classes.usc.edu/term/20253/program/MPVA/school/MUS"
+  },
+  {
+    "code": "MPWP",
+    "school": "MUS",
+    "name": "Performance (Winds and Percussion)",
+    "href": "https://classes.usc.edu/term/20253/program/MPWP/school/MUS"
+  },
+  {
+    "code": "PERI",
+    "school": "DNTR",
+    "name": "Periodontics",
+    "href": "https://classes.usc.edu/term/20253/program/PERI/school/DNTR"
+  },
+  {
+    "code": "IRAN",
+    "school": "DRNS",
+    "name": "Persian",
+    "href": "https://classes.usc.edu/term/20253/program/IRAN/school/DRNS"
+  },
+  {
+    "code": "PTE",
+    "school": "ENGV",
+    "name": "Petroleum Engineering",
+    "href": "https://classes.usc.edu/term/20253/program/PTE/school/ENGV"
+  },
+  {
+    "code": "RXRS",
+    "school": "PHAR",
+    "name": "Pharmaceutical and Regulatory Science",
+    "href": "https://classes.usc.edu/term/20253/program/RXRS/school/PHAR"
+  },
+  {
+    "code": "PMEP",
+    "school": "PHAR",
+    "name": "Pharmaceutical Economics and Policy",
+    "href": "https://classes.usc.edu/term/20253/program/PMEP/school/PHAR"
+  },
+  {
+    "code": "PSCI",
+    "school": "PHAR",
+    "name": "Pharmaceutical Sciences",
+    "href": "https://classes.usc.edu/term/20253/program/PSCI/school/PHAR"
+  },
+  {
+    "code": "PHRD",
+    "school": "PHAR",
+    "name": "Pharmacy",
+    "href": "https://classes.usc.edu/term/20253/program/PHRD/school/PHAR"
+  },
+  {
+    "code": "PHIL",
+    "school": "DRNS",
+    "name": "Philosophy",
+    "href": "https://classes.usc.edu/term/20253/program/PHIL/school/DRNS"
+  },
+  {
+    "code": "PHED",
+    "school": "DRNS",
+    "name": "Physical Education and Mind Body Health",
+    "href": "https://classes.usc.edu/term/20253/program/PHED/school/DRNS"
+  },
+  {
+    "code": "PT",
+    "school": "BKPT",
+    "name": "Physical Therapy",
+    "href": "https://classes.usc.edu/term/20253/program/PT/school/BKPT"
+  },
+  {
+    "code": "PHYS",
+    "school": "DRNS",
+    "name": "Physics",
+    "href": "https://classes.usc.edu/term/20253/program/PHYS/school/DRNS"
+  },
+  {
+    "code": "PHBI",
+    "school": "MEDK",
+    "name": "Physiology and Biophysics",
+    "href": "https://classes.usc.edu/term/20253/program/PHBI/school/MEDK"
+  },
+  {
+    "code": "PPD",
+    "school": "PPDP",
+    "name": "Policy, Planning and Development",
+    "href": "https://classes.usc.edu/term/20253/program/PPD/school/PPDP"
+  },
+  {
+    "code": "PPDE",
+    "school": "PPDP",
+    "name": "Policy, Planning and Development - Expanded",
+    "href": "https://classes.usc.edu/term/20253/program/PPDE/school/PPDP"
+  },
+  {
+    "code": "PEPP",
+    "school": "DRNS",
+    "name": "Political Economy and Public Policy",
+    "href": "https://classes.usc.edu/term/20253/program/PEPP/school/DRNS"
+  },
+  {
+    "code": "POSC",
+    "school": "DRNS",
+    "name": "Political Science",
+    "href": "https://classes.usc.edu/term/20253/program/POSC/school/DRNS"
+  },
+  {
+    "code": "POIR",
+    "school": "DRNS",
+    "name": "Political Science and International Relations",
+    "href": "https://classes.usc.edu/term/20253/program/POIR/school/DRNS"
+  },
+  {
+    "code": "PM",
+    "school": "MEDK",
+    "name": "Population and Public Health Sciences",
+    "href": "https://classes.usc.edu/term/20253/program/PM/school/MEDK"
+  },
+  {
+    "code": "PORT",
+    "school": "DRNS",
+    "name": "Portuguese",
+    "href": "https://classes.usc.edu/term/20253/program/PORT/school/DRNS"
+  },
+  {
+    "code": "PDF",
+    "school": "DRNS",
+    "name": "Postdoctoral Fellows",
+    "href": "https://classes.usc.edu/term/20253/program/PDF/school/DRNS"
+  },
+  {
+    "code": "PCPA",
+    "school": "MEDK",
+    "name": "Primary Care Physician Assistant",
+    "href": "https://classes.usc.edu/term/20253/program/PCPA/school/MEDK"
+  },
+  {
+    "code": "PRIN",
+    "school": "ACAD",
+    "name": "Product Innovation",
+    "href": "https://classes.usc.edu/term/20253/program/PRIN/school/ACAD"
+  },
+  {
+    "code": "CTPR",
+    "school": "CNMA",
+    "name": "Production",
+    "href": "https://classes.usc.edu/term/20253/program/CTPR/school/CNMA"
+  },
+  {
+    "code": "PJMT",
+    "school": "BVC",
+    "name": "Project Management",
+    "href": "https://classes.usc.edu/term/20253/program/PJMT/school/BVC"
+  },
+  {
+    "code": "PBHS",
+    "school": "MEDK",
+    "name": "Psychiatry and Behavioral Sciences",
+    "href": "https://classes.usc.edu/term/20253/program/PBHS/school/MEDK"
+  },
+  {
+    "code": "PSYC",
+    "school": "DRNS",
+    "name": "Psychology",
+    "href": "https://classes.usc.edu/term/20253/program/PSYC/school/DRNS"
+  },
+  {
+    "code": "PUBD",
+    "school": "ANSC",
+    "name": "Public Diplomacy",
+    "href": "https://classes.usc.edu/term/20253/program/PUBD/school/ANSC"
+  },
+  {
+    "code": "PR",
+    "school": "ANSC",
+    "name": "Public Relations",
+    "href": "https://classes.usc.edu/term/20253/program/PR/school/ANSC"
+  },
+  {
+    "code": "PRSM",
+    "school": "ANSC",
+    "name": "Public Relations Innovation, Strategy and Management",
+    "href": "https://classes.usc.edu/term/20253/program/PRSM/school/ANSC"
+  },
+  {
+    "code": "QBIO",
+    "school": "DRNS",
+    "name": "Quantitative and Computational Biology",
+    "href": "https://classes.usc.edu/term/20253/program/QBIO/school/DRNS"
+  },
+  {
+    "code": "RED",
+    "school": "PPDP",
+    "name": "Real Estate Development",
+    "href": "https://classes.usc.edu/term/20253/program/RED/school/PPDP"
+  },
+  {
+    "code": "RNR",
+    "school": "DRNS",
+    "name": "Registrar's Office",
+    "href": "https://classes.usc.edu/term/20253/program/RNR/school/DRNS"
+  },
+  {
+    "code": "RSCI",
+    "school": "PHAR",
+    "name": "Regulatory Science",
+    "href": "https://classes.usc.edu/term/20253/program/RSCI/school/PHAR"
+  },
+  {
+    "code": "REL",
+    "school": "DRNS",
+    "name": "Religion",
+    "href": "https://classes.usc.edu/term/20253/program/REL/school/DRNS"
+  },
+  {
+    "code": "RHET",
+    "school": "DRNS",
+    "name": "Rhetoric",
+    "href": "https://classes.usc.edu/term/20253/program/RHET/school/DRNS"
+  },
+  {
+    "code": "RISK",
+    "school": "BUS",
+    "name": "Risk Management",
+    "href": "https://classes.usc.edu/term/20253/program/RISK/school/BUS"
+  },
+  {
+    "code": "RUSS",
+    "school": "DRNS",
+    "name": "Russian",
+    "href": "https://classes.usc.edu/term/20253/program/RUSS/school/DRNS"
+  },
+  {
+    "code": "MSCR",
+    "school": "MUS",
+    "name": "Sacred Music",
+    "href": "https://classes.usc.edu/term/20253/program/MSCR/school/MUS"
+  },
+  {
+    "code": "SCOR",
+    "school": "MUS",
+    "name": "Screen Scoring",
+    "href": "https://classes.usc.edu/term/20253/program/SCOR/school/MUS"
+  },
+  {
+    "code": "SLL",
+    "school": "DRNS",
+    "name": "Slavic Languages and Literatures",
+    "href": "https://classes.usc.edu/term/20253/program/SLL/school/DRNS"
+  },
+  {
+    "code": "SOCI",
+    "school": "DRNS",
+    "name": "Sociology",
+    "href": "https://classes.usc.edu/term/20253/program/SOCI/school/DRNS"
+  },
+  {
+    "code": "SSEM",
+    "school": "DRNS",
+    "name": "Sophomore Seminar",
+    "href": "https://classes.usc.edu/term/20253/program/SSEM/school/DRNS"
+  },
+  {
+    "code": "SPAN",
+    "school": "DRNS",
+    "name": "Spanish",
+    "href": "https://classes.usc.edu/term/20253/program/SPAN/school/DRNS"
+  },
+  {
+    "code": "SSCI",
+    "school": "DRNS",
+    "name": "Spatial Sciences",
+    "href": "https://classes.usc.edu/term/20253/program/SSCI/school/DRNS"
+  },
+  {
+    "code": "SCRM",
+    "school": "MEDK",
+    "name": "Stem Cell Biology and Regenerative Medicine",
+    "href": "https://classes.usc.edu/term/20253/program/SCRM/school/MEDK"
+  },
+  {
+    "code": "SMGT",
+    "school": "DRNS",
+    "name": "Sustainability Management",
+    "href": "https://classes.usc.edu/term/20253/program/SMGT/school/DRNS"
+  },
+  {
+    "code": "SAE",
+    "school": "ENGV",
+    "name": "Systems Architecting and Engineering",
+    "href": "https://classes.usc.edu/term/20253/program/SAE/school/ENGV"
+  },
+  {
+    "code": "TAC",
+    "school": "ENGV",
+    "name": "Technology and Applied Computing",
+    "href": "https://classes.usc.edu/term/20253/program/TAC/school/ENGV"
+  },
+  {
+    "code": "GRSC",
+    "school": "GRSC",
+    "name": "The Graduate School",
+    "href": "https://classes.usc.edu/term/20253/program/GRSC/school/GRSC"
+  },
+  {
+    "code": "CORE",
+    "school": "DRNS",
+    "name": "Thematic Option",
+    "href": "https://classes.usc.edu/term/20253/program/CORE/school/DRNS"
+  },
+  {
+    "code": "TRGN",
+    "school": "MEDK",
+    "name": "Translational Genomics",
+    "href": "https://classes.usc.edu/term/20253/program/TRGN/school/MEDK"
+  },
+  {
+    "code": "USC",
+    "school": "DRNS",
+    "name": "University of Southern California",
+    "href": "https://classes.usc.edu/term/20253/program/USC/school/DRNS"
+  },
+  {
+    "code": "PLUS",
+    "school": "PPDP",
+    "name": "Urban and Regional Planning",
+    "href": "https://classes.usc.edu/term/20253/program/PLUS/school/PPDP"
+  },
+  {
+    "code": "SWKO",
+    "school": "SWDP",
+    "name": "Virtual Academic Center",
+    "href": "https://classes.usc.edu/term/20253/program/SWKO/school/SWDP"
+  },
+  {
+    "code": "VISS",
+    "school": "DRNS",
+    "name": "Visual Studies",
+    "href": "https://classes.usc.edu/term/20253/program/VISS/school/DRNS"
+  },
+  {
+    "code": "CTWR",
+    "school": "CNMA",
+    "name": "Writing",
+    "href": "https://classes.usc.edu/term/20253/program/CTWR/school/CNMA"
+  },
+  {
+    "code": "WRIT",
+    "school": "DRNS",
+    "name": "Writing",
+    "href": "https://classes.usc.edu/term/20253/program/WRIT/school/DRNS"
+  }
+]

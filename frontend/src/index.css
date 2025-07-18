@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* APP.TSX */
+.bg-usc-red {
+  background-color: #9f0000;
+}
+.bg-usc-yellow {
+  background-color: #FFC72C;
+}
+.bg-dark-bg {
+  background-color: #18181b;
+}
+.bg-dark-bg-2 {
+  background-color: #232326;
+}
+
+/* NAVBAR */
+.glow {
+  text-shadow: 0 0 8px #fff, 0 0 16px #fff;
+}

@@ -1,0 +1,72 @@
+########################
+#  General / OS files  #
+########################
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.swp
+
+########################
+#  Python venv         #
+########################
+.venv/
+
+########################
+#  Environment/Secrets #
+########################
+.env
+.env.*            # .env.local, .env.development, etc.
+docker-compose.override.yml
+
+########################
+#  Node / React build  #
+########################
+node_modules/
+dist/
+build/
+coverage/
+npm-debug.log*
+yarn-debug.log*
+.yarn/cache/
+.parcel-cache/
+.vite/
+
+########################
+#  C++ build artefacts #
+########################
+*.o
+*.a
+*.so
+*.exe
+*.dll
+build/            # your compiled scheduler binary
+cmake-build*/
+
+########################
+#  Docker stuff        #
+########################
+docker-data/
+*.pid
+*.sock
+
+########################
+#  IDE / Editor junk   #
+########################
+.vscode/
+.idea/
+.ipynb_checkpoints/
+
+########################
+#  Generated / large   #
+########################
+*.html            # remove this line if you NEED to keep certain HTML (e.g. public/index.html)
+*.pdf
+*.csv
+*.dat
+
+########################
+#  Git LFS examples    #
+########################
+# If you decide to track large binaries:
+# *.bin filter=lfs diff=lfs merge=lfs -text
