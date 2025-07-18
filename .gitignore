@@ -60,7 +60,8 @@ docker-data/
 ########################
 #  Generated / large   #
 ########################
-*.html            # remove this line if you NEED to keep certain HTML (e.g. public/index.html)
+*.html                # ignore all .html files everywhere
+!frontend/index.html  # ...except this one
 *.pdf
 *.csv
 *.dat
