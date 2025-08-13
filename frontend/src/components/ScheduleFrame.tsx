@@ -19,7 +19,7 @@ const CLASS_COLORS = [
   'bg-yellow-400',
   'bg-blue-400',
   'bg-green-400',
-  'bg-purple-400',
+  'bg-purple-400',  
   'bg-pink-400',
   'bg-cyan-400',
   'bg-orange-400',
