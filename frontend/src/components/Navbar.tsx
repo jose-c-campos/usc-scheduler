@@ -8,10 +8,8 @@ interface NavbarProps {
 
 const navLinks = [
   { label: "Home", section: "hero", path: "/" },
-  { label: "How to Use", section: "howto", path: "/howto" },
   { label: "Login/Signup", section: "login", path: "/login" },
   { label: "Contact", section: "contact", path: "/contact" },
-  { label: "Chatbot", section: "chatbot", path: "/chatbot" },
 ];
 
 const Navbar = ({ activeSection, setActiveSection }: NavbarProps) => {

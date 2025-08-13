@@ -43,8 +43,6 @@ const HowToUse = () => {
       id="howto"
       className="relative z-10 py-32 md:py-40 bg-black text-white overflow-hidden"
     >
-      {/* rotating helmet stays behind this section only */}
-      <HelmetCanvas />
 
       <div className="w-full max-w-4xl mx-auto px-6 md:px-0 space-y-32">
         {howToUseData.map((card, idx) => (
