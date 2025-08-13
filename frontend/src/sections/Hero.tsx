@@ -125,7 +125,7 @@ const Hero: React.FC = () => {
   }, []);
 
   return (
-    <section className="relative h-screen flex items-center justify-center bg-black text-white overflow-hidden select-none">
+    <section className="relative h-screen flex items-center justify-center bg-dark-bg text-white overflow-hidden select-none">
       {/* scroll prompt bottom‑left */}
       <div className="absolute left-6 bottom-8 flex items-center space-x-2 text-gray-400 text-sm">
         <svg width="12" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter">
