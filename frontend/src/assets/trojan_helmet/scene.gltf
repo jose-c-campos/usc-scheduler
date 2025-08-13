@@ -1,0 +1,430 @@
+{
+  "accessors": [
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 2189,
+      "max": [
+        0.48794829845428467,
+        0.7822800278663635,
+        0.8006294369697571
+      ],
+      "min": [
+        -0.48794829845428467,
+        -0.6342074871063232,
+        -0.5089384317398071
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 26268,
+      "componentType": 5126,
+      "count": 2189,
+      "max": [
+        0.9998160600662231,
+        0.9988964200019836,
+        0.9983718395233154
+      ],
+      "min": [
+        -0.9998160600662231,
+        -0.998375415802002,
+        -0.9972930550575256
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5126,
+      "count": 2189,
+      "max": [
+        1.0,
+        0.9992938041687012,
+        0.9963865280151367,
+        1.0
+      ],
+      "min": [
+        -0.992575466632843,
+        -0.9948037266731262,
+        -0.9988963603973389,
+        -1.0
+      ],
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 2189,
+      "max": [
+        0.996736466884613,
+        0.9485408067703247
+      ],
+      "min": [
+        0.004657295998185873,
+        0.0366588830947876
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 11934,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 52536,
+      "componentType": 5126,
+      "count": 1969,
+      "max": [
+        0.17623144388198853,
+        1.7004765272140503,
+        1.2634259462356567
+      ],
+      "min": [
+        -0.17623144388198853,
+        -0.9016706347465515,
+        -0.809425413608551
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 76164,
+      "componentType": 5126,
+      "count": 1969,
+      "max": [
+        0.9995330572128296,
+        0.999971866607666,
+        0.9986721873283386
+      ],
+      "min": [
+        -0.9995330572128296,
+        -0.9990203976631165,
+        -0.997329592704773
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 3,
+      "byteOffset": 35024,
+      "componentType": 5126,
+      "count": 1969,
+      "max": [
+        0.7596825361251831,
+        0.9997516870498657,
+        0.999971866607666,
+        1.0
+      ],
+      "min": [
+        -0.7596825957298279,
+        -0.9993740916252136,
+        -0.9990203976631165,
+        1.0
+      ],
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 17512,
+      "componentType": 5126,
+      "count": 1969,
+      "max": [
+        0.9937630891799927,
+        0.9893995523452759
+      ],
+      "min": [
+        0.0030915115494281054,
+        0.02407749369740486
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 47736,
+      "componentType": 5125,
+      "count": 7956,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "extras": {
+      "author": "Jeremy E. Grayson (https://sketchfab.com/JeremyGrayson)",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/trojan-helmet-78922e88c92a478f81e6b2434dd4b421",
+      "title": "Trojan Helmet"
+    },
+    "generator": "Sketchfab-13.87.0",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 79560,
+      "name": "floatBufferViews",
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 33264,
+      "byteOffset": 79560,
+      "byteStride": 8,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 99792,
+      "byteOffset": 112824,
+      "byteStride": 12,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 66528,
+      "byteOffset": 212616,
+      "byteStride": 16,
+      "name": "floatBufferViews",
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 279144,
+      "uri": "scene.bin"
+    }
+  ],
+  "images": [
+    {
+      "uri": "textures/Gold_baseColor.png"
+    },
+    {
+      "uri": "textures/Gold_metallicRoughness.png"
+    },
+    {
+      "uri": "textures/Gold_normal.png"
+    },
+    {
+      "uri": "textures/red_hair_normal.png"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "Gold",
+      "normalTexture": {
+        "index": 2
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0.693335446355646,
+        "metallicRoughnessTexture": {
+          "index": 1
+        },
+        "roughnessFactor": 0.6384781363143202
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "red_hair",
+      "normalTexture": {
+        "index": 3
+      },
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.318547,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.46514122709707306
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Helmet_Low_Gold_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TANGENT": 2,
+            "TEXCOORD_0": 3
+          },
+          "indices": 4,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Hair_Low_red hair_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 6,
+            "POSITION": 5,
+            "TANGENT": 7,
+            "TEXCOORD_0": 8
+          },
+          "indices": 9,
+          "material": 1,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.220446049250313e-16,
+        -1.0,
+        0.0,
+        0.0,
+        1.0,
+        2.220446049250313e-16,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Sketchfab_model"
+    },
+    {
+      "children": [
+        2
+      ],
+      "matrix": [
+        0.009999999776482582,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.009999999776482582,
+        0.0,
+        0.0,
+        -0.009999999776482582,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "3cd249a10b3f44b6bae2e35e4f354748.fbx"
+    },
+    {
+      "children": [
+        3,
+        5
+      ],
+      "name": "RootNode"
+    },
+    {
+      "children": [
+        4
+      ],
+      "matrix": [
+        1000.0,
+        3.3610604423150257e-15,
+        2.5433858669096585e-17,
+        0.0,
+        -2.54439946174256e-17,
+        15.136573811294962,
+        -999.8854355041158,
+        0.0,
+        -3.3610603655988663e-15,
+        999.8854355041158,
+        15.136573811294962,
+        0.0,
+        2.1375381004135926e-18,
+        -0.0023666303604841232,
+        -0.009626626968383789,
+        1.0
+      ],
+      "name": "Helmet_Low"
+    },
+    {
+      "mesh": 0,
+      "name": "Helmet_Low_Gold_0"
+    },
+    {
+      "children": [
+        6
+      ],
+      "matrix": [
+        996.2799072265625,
+        3.3485571916783385e-15,
+        2.5339243964837667e-17,
+        0.0,
+        -2.5349342106055405e-17,
+        15.08026435244496,
+        -996.1657689212316,
+        0.0,
+        -3.3485571152483305e-15,
+        996.1657689212316,
+        15.08026435244496,
+        0.0,
+        2.1375381004135926e-18,
+        -0.0023666303604841232,
+        -0.009626626968383789,
+        1.0
+      ],
+      "name": "Hair_Low"
+    },
+    {
+      "mesh": 1,
+      "name": "Hair_Low_red hair_0"
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Sketchfab_Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    },
+    {
+      "sampler": 0,
+      "source": 1
+    },
+    {
+      "sampler": 0,
+      "source": 2
+    },
+    {
+      "sampler": 0,
+      "source": 3
+    }
+  ]
+}

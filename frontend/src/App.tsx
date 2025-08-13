@@ -4,6 +4,8 @@ import Navbar from './components/Navbar'
 import Hero from './sections/Hero'
 import Scheduler from './sections/Scheduler'
 import HowToUse from "./sections/HowToUse";
+import HelmetCanvas from './components/HelmetCanvas';
+import Landing from './sections/Landing';
 import './index.css'
 
 function App() {
@@ -14,7 +16,7 @@ function App() {
       <Router>
         <Navbar activeSection={activeSection} setActiveSection={setActiveSection}/>
         <Routes>
-          <Route path="/" element={<Hero />} />
+          <Route path="/" element={<Landing />} />
           <Route path="/scheduler" element={<Scheduler />} />
           <Route path="/howto" element={<HowToUse />} />
           <Route path="*" element={<Navigate to="/" replace />} />
