@@ -3,8 +3,9 @@ import { FaPlus, FaTimes } from 'react-icons/fa';
 import axios from 'axios';
 
 /* fallback mocks – unchanged */
-const MOCK_SECTIONS = { /* … */ };
+const MOCK_SECTIONS: Record<string, any> = { /* … */ };
 
+// Make sure the export is explicitly declared
 export interface ClassSectionSelection {
   classCode: string;
   selectedSections: {
@@ -20,13 +21,14 @@ interface ClassSpotProps {
   classes:  ClassSectionSelection[];
   onUpdate: (classes: ClassSectionSelection[]) => void;
   onRemove: () => void;
+  onSectionsLoaded?: (sections: Record<string, any>) => void; // New prop for reporting sections
 }
 
 const sectionLabel: Record<string,string> = {
   lecture: 'Lecture', lab: 'Lab', discussion: 'Discussion', quiz: 'Quiz'
 };
 
-const ClassSpot = ({ index, classes, onUpdate, onRemove }: ClassSpotProps) => {
+const ClassSpot = ({ index, classes, onUpdate, onRemove, onSectionsLoaded }: ClassSpotProps) => {
   const [availableClasses, setAvailableClasses] = useState<string[]>([]);
   const [classSections,    setClassSections]    = useState<Record<string, any>>({});
   const [loading,          setLoading]          = useState<Record<string, boolean>>({});
@@ -52,16 +54,58 @@ const ClassSpot = ({ index, classes, onUpdate, onRemove }: ClassSpotProps) => {
 
       setLoading(prev => ({ ...prev, [cls.classCode]: true }));
       axios.get(`http://localhost:3001/api/class-sections/${encodeURIComponent(cls.classCode)}`)
-        .then(r => setClassSections(prev => ({ ...prev, [cls.classCode]: r.data })))
+        .then(r => {
+          console.log(`Sections received for ${cls.classCode}:`, r.data);
+          
+          // Process the data to ensure lecture sections are properly accessible
+          let processedData = r.data;
+          
+          // If lectures are stored in a 'sections' array, restructure for consistency
+          if (r.data.sections && Array.isArray(r.data.sections) && !r.data.lecture) {
+            console.log(`Restructuring ${cls.classCode} data to include lecture from sections`);
+            processedData = {
+              ...r.data,
+              lecture: r.data.sections // Add lecture sections under the key expected by the schedule preview
+            };
+          }
+          
+          const newSections = { [cls.classCode]: processedData };
+          setClassSections(prev => ({ ...prev, ...newSections }));
+          
+          // Report sections to parent component if callback exists
+          if (onSectionsLoaded) {
+            console.log(`Reporting sections for ${cls.classCode} to parent`, newSections);
+            onSectionsLoaded(newSections);
+          }
+        })
         .catch(err => {
           console.error(`Error fetching sections for ${cls.classCode}:`, err);
           if (MOCK_SECTIONS[cls.classCode]) {
-            setClassSections(prev => ({ ...prev, [cls.classCode]: MOCK_SECTIONS[cls.classCode] }));
+            console.log(`Using mock data for ${cls.classCode}`);
+            
+            // Add lecture sections under the expected key
+            const mockData = { 
+              [cls.classCode]: {
+                ...MOCK_SECTIONS[cls.classCode],
+                // If lecture key doesn't exist but sections does, copy it
+                ...(MOCK_SECTIONS[cls.classCode].sections && !MOCK_SECTIONS[cls.classCode].lecture 
+                    ? { lecture: MOCK_SECTIONS[cls.classCode].sections } 
+                    : {})
+              } 
+            };
+            
+            setClassSections(prev => ({ ...prev, ...mockData }));
+            
+            // Report mock sections to parent component if callback exists
+            if (onSectionsLoaded) {
+              console.log(`Reporting mock sections for ${cls.classCode} to parent`, mockData);
+              onSectionsLoaded(mockData);
+            }
           }
         })
         .finally(() => setLoading(prev => ({ ...prev, [cls.classCode]: false })));
     });
-  }, [classes, classSections, loading]);
+  }, [classes, classSections, loading, onSectionsLoaded]);
 
   /* ─── type‑ahead dropdown logic ─── */
   useEffect(() => {
@@ -82,7 +126,7 @@ const ClassSpot = ({ index, classes, onUpdate, onRemove }: ClassSpotProps) => {
         .slice(0, 8);                               // max 8 options
 
       setFilteredClasses(matches);
-      setShowDropdown(prev => ({ ...prev, [idx]: matches.length > 0 }));
+      setShowDropdown(prev => ({ ...prev, [idx]: matches.length > 0 && inputFocused[idx] }));
     });
   }, [classes, availableClasses, inputFocused]);
 
@@ -154,7 +198,7 @@ const ClassSpot = ({ index, classes, onUpdate, onRemove }: ClassSpotProps) => {
           {/* class‑code input + dropdown */}
           <div className="relative">
             <input
-              ref={el => (inputRefs.current[idx] = el)}
+              ref={(el) => { inputRefs.current[idx] = el; }}
               type="text"
               value={cls.classCode}
               onChange={e => handleInputChange(idx, e.target.value)}
@@ -165,6 +209,13 @@ const ClassSpot = ({ index, classes, onUpdate, onRemove }: ClassSpotProps) => {
                 const matches = availableClasses.filter(c => c.includes(q)).slice(0,8);
                 setFilteredClasses(matches);
                 setShowDropdown(prev => ({ ...prev, [idx]: matches.length > 0 }));
+                
+                // Force dropdown to show even if there are no matches initially
+                if (!matches.length && q === '') {
+                  const allMatches = availableClasses.slice(0, 8);
+                  setFilteredClasses(allMatches);
+                  setShowDropdown(prev => ({ ...prev, [idx]: allMatches.length > 0 }));
+                }
               }}
               onBlur={() => {
                 setTimeout(() => {
@@ -177,7 +228,7 @@ const ClassSpot = ({ index, classes, onUpdate, onRemove }: ClassSpotProps) => {
               autoComplete="off"
             />
 
-            {showDropdown[idx] && filteredClasses.length > 0 && inputFocused[idx] && (
+            {showDropdown[idx] && filteredClasses.length > 0 && (
               <div className="absolute z-50 left-0 top-full mt-1 w-60 max-h-60 overflow-y-auto bg-gray-800 border border-white/20 rounded-lg shadow-lg">
                 {filteredClasses.map(opt => (
                   <div

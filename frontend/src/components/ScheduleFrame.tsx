@@ -150,7 +150,12 @@ const ScheduleFrame: React.FC<ScheduleFrameProps> = ({ classes }) => {
             return cols.map((col, dIdx) => (
               <div
                 key={`${idx}-${sIdx}-${dIdx}`}
-                className={`${CLASS_COLORS[idx % CLASS_COLORS.length]} rounded-md text-gray-800 p-0.5 flex flex-col text-[0.65rem] shadow overflow-hidden truncate`}
+                className={`${CLASS_COLORS[idx % CLASS_COLORS.length]} rounded-md text-gray-800 p-0.5 flex flex-col text-[0.6rem] shadow overflow-hidden truncate ${
+                  sec.seats_registered !== undefined && 
+                  sec.seats_total !== undefined && 
+                  sec.seats_registered >= sec.seats_total ? 
+                  'ring-2 ring-red-600 ring-opacity-80' : ''
+                }`}
                 style={{
                   gridColumn: col,
                   gridRow: `${start} / span ${span}`,
@@ -158,11 +163,11 @@ const ScheduleFrame: React.FC<ScheduleFrameProps> = ({ classes }) => {
                 }}
               >
                 {/* course code */}
-                <span className="font-bold truncate">{cls.code}</span>
+                <span className="font-bold truncate text-[0.55rem]">{cls.code}</span>
 
                 {/* section type + seat counts */}
-                <div className="truncate">
-                  {sec.type}{' '}
+                <div className="truncate text-[0.5rem]">
+                  {sec.type && sec.type.charAt(0).toUpperCase() + sec.type.slice(1).toLowerCase()}{' '}
                   {sec.seats_registered !== undefined && sec.seats_total !== undefined && (
                     <span
                       className={
@@ -173,6 +178,10 @@ const ScheduleFrame: React.FC<ScheduleFrameProps> = ({ classes }) => {
                     </span>
                   )}
                 </div>
+                {/* instructor name */}
+                {sec.instructor && (
+                  <div className="truncate text-[0.5rem]">{sec.instructor}</div>
+                )}
               </div>
             ));
           })
@@ -183,184 +192,3 @@ const ScheduleFrame: React.FC<ScheduleFrameProps> = ({ classes }) => {
 };
 
 export default ScheduleFrame;
-
-
-// import React, { useMemo } from 'react';
-
-// interface ScheduleFrameProps {
-//   classes: Array<{
-//     code: string;
-//     sections: Array<{
-//       type: string;
-//       days: string;
-//       time: string;
-//       instructor: string;
-//       seats_registered?: number;
-//       seats_total?: number;
-//     }>;
-//   }>;
-// }
-
-// /** 8 distinct tailwind colours that read well on dark bg */
-// const CLASS_COLORS = [
-//   'bg-yellow-400',
-//   'bg-blue-400',
-//   'bg-green-400',
-//   'bg-purple-400',
-//   'bg-pink-400',
-//   'bg-cyan-400',
-//   'bg-orange-400',
-//   'bg-lime-400',
-// ];
-
-// /** ───────────────────────────────────────────────────────── */
-
-// const ROW_PX = 6;                        // 15‑minute grid row height
-// const START_HOUR = 6;                    // 6 am
-// const END_HOUR   = 22;                   // 10 pm
-// const ROWS_PER_HOUR = 4;                 // 60 / 15
-
-// const ScheduleFrame = ({ classes }: ScheduleFrameProps) => {
-//   /* build “6am, 7am … 10pm” labels */
-//   const timeSlots = useMemo(() => {
-//     const slots: string[] = [];
-//     for (let h = START_HOUR; h <= END_HOUR; ++h) {
-//       const display = h > 12 ? h - 12 : h;
-//       const meridian = h >= 12 ? 'pm' : 'am';
-//       slots.push(`${display}${meridian}`);
-//     }
-//     return slots;
-//   }, []);
-
-//   /* ─────────────── helpers ─────────────── */
-
-//   /** map "MonWedFri" etc → css grid columns */
-//   const getDayColumns = (dayStr: string) => {
-//     // normalise: drop braces, make uniform separators, kill extra spaces
-//   const tokens = raw
-//     .replace(/[{}]/g, '')        // {Tue,Thu} -> Tue,Thu
-//     .replace(/-/g, ',')          // just in case
-//     .split(/[, ]+/)              // split on comma OR space
-//     .filter(Boolean);            // remove empty strings
-
-//   const col: Record<string, number> = {
-//     Mon: 2,  M: 2,
-//     Tue: 3,  Tu: 3,  T: 3,
-//     Wed: 4,  W: 4,
-//     Thu: 5,  Th: 5,
-//     Fri: 6,  F: 6,
-//   };
-
-//   // de‑duplicate so a “Tue,Thu” section isn’t rendered twice on Tue
-//   return [...new Set(
-//     tokens.flatMap(t => {
-//       // first try the whole token; if no hit fall back to the first char (M/W/F/T)
-//       const key = col[t] !== undefined ? t : t[0];
-//       return col[key] !== undefined ? [col[key]] : [];
-//     })
-//   )];
-// };
-
-//   /** convert "8:00 am‑9:50 am" → { start, span } (grid rows) */
-//   const getTimePosition = (timeStr: string) => {
-//     if (timeStr === 'TBA') return { start: 2, span: 4 };
-
-//     const [startStr, endStr] = timeStr.split('-');
-//     const parse = (s: string) => {
-//       const m = s.trim().match(/(\d+):(\d+)\s*(am|pm)/i);
-//       if (!m) return null;
-//       let h = +m[1] % 12 + (m[3].toLowerCase() === 'pm' ? 12 : 0);
-//       return { h, m: +m[2] };
-//     };
-//     const s = parse(startStr);
-//     const e = parse(endStr);
-//     if (!s || !e) return { start: 2, span: 4 };
-
-//     const row = (p: { h: number; m: number }) =>
-//       (p.h - START_HOUR) * ROWS_PER_HOUR + Math.floor(p.m / 15) + 2;
-
-//     const start = row(s);
-//     const end   = Math.max(start + 1, row(e) + 1); // +1 so 8‑8:50 spans ≥1 row
-//     return { start, span: end - start };
-//   };
-
-//   /* ─────────────── render ─────────────── */
-
-//   const totalRows = (END_HOUR - START_HOUR + 1) * ROWS_PER_HOUR;
-
-//   return (
-//     <div className="bg-white/10 rounded-lg p-1 overflow-x-auto">
-//       <div
-//         className="grid grid-cols-[30px,repeat(5,1fr)] gap-0.5"
-//         style={{
-//           gridTemplateRows: `auto repeat(${totalRows}, ${ROW_PX}px)`,
-//           minHeight: '450px',
-//         }}
-//       >
-//         {/* ─── day headers ─── */}
-//         <div />
-//         {['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map((d) => (
-//           <div key={d} className="py-1 text-center font-bold text-sm">
-//             {d}
-//           </div>
-//         ))}
-
-//         {/* ─── hour markers + horizontal lines ─── */}
-//         {timeSlots.map((t, i) => (
-//           <React.Fragment key={t}>
-//             <div
-//               className="text-xs pr-0 row-span-4 flex items-start justify-end -translate-y-1.5"
-//               style={{ gridRow: `${i * ROWS_PER_HOUR + 2} / span 4`, gridColumn: 1 }}
-//             >
-//               {t}
-//             </div>
-//             <div
-//               className="col-span-5 border-t border-white/20"
-//               style={{ gridRow: `${i * ROWS_PER_HOUR + 2}`, gridColumn: '2 / span 5' }}
-//             />
-//           </React.Fragment>
-//         ))}
-
-//         {/* ─── class blocks ─── */}
-//         {classes.map((cls, idx) =>
-//           cls.sections.map((sec, sIdx) => {
-//             const cols = getDayColumns(sec.days);
-//             const { start, span } = getTimePosition(sec.time);
-//             return cols.map((col, dIdx) => (
-//               <div
-//                 key={`${idx}-${sIdx}-${dIdx}`}
-//                 className={`${CLASS_COLORS[idx % CLASS_COLORS.length]} rounded-md text-gray-800 p-0.5 flex flex-col text-[0.65rem] shadow overflow-hidden truncate`}
-//                 style={{
-//                   gridColumn: col,
-//                   gridRow: `${start} / span ${span}`,
-//                   zIndex: 10,
-//                 }}
-//               >
-//                 {/* line 1: course code */}
-//                 <span className="font-bold truncate">{cls.code}</span>
-
-//                 {/* line 2: type + seats fraction */}
-//                 <div className="truncate">
-//                   {sec.type}{" "}
-//                   {sec.seats_registered !== undefined && sec.seats_total !== undefined && (
-//                     <span
-//                       className={
-//                         sec.seats_registered >= sec.seats_total ? "font-bold text-red-700" : ""
-//                       }
-//                     >
-//                       {sec.seats_registered}/{sec.seats_total}
-//                     </span>
-//                   )}
-//                 </div>
-
-//               </div>
-//             ));
-//           })
-//         )}
-//       </div>
-//     </div>
-//   );
-
-// };
-
-// export default ScheduleFrame;
