@@ -7,6 +7,10 @@ const fs         = require('fs');
 const { spawn }  = require('child_process');
 const { Pool }   = require('pg');
 
+// Import routes
+const authRoutes = require('./routes/auth');
+const scheduleRoutes = require('./routes/schedules');
+
 const app       = express();
 const PORT      = process.env.PORT || 3001;
 const SEMESTER  = '20253';                                              // ← adjust if needed
@@ -20,9 +24,13 @@ app.use(cors({
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+/* ───────── Routes ───────── */
+app.use('/api/auth', authRoutes);
+app.use('/api/schedules', scheduleRoutes);
+
 /* ───────── Postgres pool ───────── */
 const pool = new Pool({
-  host:     process.env.USC_DB_HOST     || 'localhost',
+  host:     process.env.USC_DB_HOST     || 'localhost', // Docker container is mapped to localhost
   port:     process.env.USC_DB_PORT     || 5432,
   database: process.env.USC_DB_NAME     || 'usc_sched',
   user:     process.env.USC_DB_USER     || 'REDACTED',
@@ -410,6 +418,16 @@ app.listen(PORT, () => {
   console.log(`- GET /api/class-sections/:code     (get sections for a class)`);
   console.log(`- GET /api/professor-ratings        (get professor ratings)`);
   console.log(`- GET /api/generate-schedules-stream (generate schedules via SSE)`);
+  console.log(`- POST /api/auth/signup             (create a new user account)`);
+  console.log(`- POST /api/auth/login              (login with email/password)`);
+  console.log(`- GET /api/auth/profile             (get user profile, requires token)`);
+  console.log(`- POST /api/auth/forgot-password    (request a password reset)`);
+  console.log(`- POST /api/auth/reset-password     (reset password with token)`);
+  console.log(`- GET /api/schedules/user           (get user's saved schedules, requires token)`);
+  console.log(`- POST /api/schedules               (save a new schedule, requires token)`);
+  console.log(`- GET /api/schedules/:id            (get a specific schedule, requires token)`);
+  console.log(`- PUT /api/schedules/:id            (update a saved schedule, requires token)`);
+  console.log(`- DELETE /api/schedules/:id         (delete a saved schedule, requires token)`);
   console.log(`=================================================================`);
 });
 /* ────────────────────────────────────────────────────────────────────── */
