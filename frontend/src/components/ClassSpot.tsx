@@ -244,23 +244,92 @@ const ClassSpot = ({ index, classes, onUpdate, onRemove, onSectionsLoaded }: Cla
             <div className="text-white/60 text-sm">Loading sections…</div>
           ) : (
             classSections[cls.classCode] &&
-            Object.entries(classSections[cls.classCode]).map(([type, secs]) => (
-              <select
-                key={type}
-                value={cls.selectedSections[type as keyof typeof cls.selectedSections] || ''}
-                onChange={e => updateSection(idx, type, e.target.value)}
-                className="w-56 p-2 bg-white/5 border border-white/20 rounded-lg text-white text-sm"
-              >
-                <option value="">
-                  Select {sectionLabel[type] ?? type} (optional)
-                </option>
-                {(secs as any[]).map(sec => (
-                  <option key={sec.id} value={sec.id}>
-                    {`${sec.professor}, ${sec.days}, ${sec.time}, ${sec.seats} seats`}
+            Object.entries(classSections[cls.classCode]).map(([type, secs]) => {
+              // Sort sections by professor last name, then by day, then by time
+              const sortedSections = [...(secs as any[])].sort((a, b) => {
+                // Get last names
+                const getLastName = (professor: string) => {
+                  if (!professor || professor === 'TBA') return 'zzzz'; // Put TBA at the end
+                  return professor.split(' ').pop() || '';
+                };
+                
+                const aLastName = getLastName(a.professor);
+                const bLastName = getLastName(b.professor);
+                
+                // Primary sort: Professor's last name
+                if (aLastName !== bLastName) return aLastName.localeCompare(bLastName);
+                
+                // If professor is the same or both TBA, sort by day then time
+                if (a.days !== b.days) return a.days.localeCompare(b.days);
+                return a.time.localeCompare(b.time);
+              });
+              
+              // Helper to format professor name with abbreviated first name
+              const formatProfName = (name: string) => {
+                if (!name || name === 'TBA') return name;
+                const parts = name.split(' ');
+                if (parts.length === 1) return name;
+                return `${parts[0][0]}. ${parts.slice(1).join(' ')}`;
+              };
+              
+              // Helper to format days abbreviation
+              const formatDays = (days: string) => {
+                if (!days || days === 'TBA') return days;
+                
+                // Replace common day patterns
+                let formatted = days;
+                formatted = formatted.replace(/Monday/gi, 'M');
+                formatted = formatted.replace(/Tuesday/gi, 'T');
+                formatted = formatted.replace(/Wednesday/gi, 'W');
+                formatted = formatted.replace(/Thursday/gi, 'Th');
+                formatted = formatted.replace(/Friday/gi, 'F');
+                
+                // Also handle short forms
+                formatted = formatted.replace(/Mon/gi, 'M');
+                formatted = formatted.replace(/Tue/gi, 'T');
+                formatted = formatted.replace(/Wed/gi, 'W');
+                formatted = formatted.replace(/Thu/gi, 'Th');
+                formatted = formatted.replace(/Fri/gi, 'F');
+                
+                return formatted;
+              };
+              
+              // Helper to check if section is full
+              const isSectionFull = (section: any) => {
+                if (!section.seats) return false;
+                
+                const parts = section.seats.split('/');
+                if (parts.length !== 2) return false;
+                
+                const registered = parseInt(parts[0], 10);
+                const total = parseInt(parts[1], 10);
+                
+                return registered >= total;
+              };
+              
+              return (
+                <select
+                  key={type}
+                  value={cls.selectedSections[type as keyof typeof cls.selectedSections] || ''}
+                  onChange={e => updateSection(idx, type, e.target.value)}
+                  className="w-56 p-2 bg-white/5 border border-white/20 rounded-lg text-white text-sm"
+                >
+                  <option value="">
+                    Select {sectionLabel[type] ?? type} (optional)
                   </option>
-                ))}
-              </select>
-            ))
+                  {sortedSections.map(sec => {
+                    const fullSection = isSectionFull(sec);
+                    
+                    return (
+                      <option key={sec.id} value={sec.id}>
+                        {`${formatProfName(sec.professor)}, ${formatDays(sec.days)}, ${sec.time}, `}
+                        {fullSection ? `${sec.seats} seats (FULL)` : `${sec.seats} seats`}
+                      </option>
+                    );
+                  })}
+                </select>
+              );
+            })
           )}
 
           {/* remove class input */}

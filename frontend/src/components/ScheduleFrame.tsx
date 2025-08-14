@@ -163,10 +163,10 @@ const ScheduleFrame: React.FC<ScheduleFrameProps> = ({ classes }) => {
                 }}
               >
                 {/* course code */}
-                <span className="font-bold truncate text-[0.55rem]">{cls.code}</span>
+                <span className="font-bold truncate text-[0.55rem] -mb-0.5">{cls.code}</span>
 
                 {/* section type + seat counts */}
-                <div className="truncate text-[0.5rem]">
+                <div className="truncate text-[0.5rem] -mb-0.5">
                   {sec.type && sec.type.charAt(0).toUpperCase() + sec.type.slice(1).toLowerCase()}{' '}
                   {sec.seats_registered !== undefined && sec.seats_total !== undefined && (
                     <span
