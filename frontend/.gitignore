@@ -22,3 +22,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Project specific files to ignore
+src/components/TestAPI.tsx
+../ingestion/app/bisc120.html
+../ingestion/app/buad310.html
+../ingestion/app/math126.html
+../ingestion/app/scrapers/acmd_html.html
+../ingestion/app/scrapers/csci_25.html
+../ingestion/app/scrapers/programs_20253.html
+../server/test.js
+../start_dev.sh

@@ -73,7 +73,7 @@ const Navbar = ({ activeSection, setActiveSection }: NavbarProps) => {
               navigate("/");
               setActiveSection("hero");
             }}
-            className="text-white hover:text-usc-red text-sm"
+            className="text-base sm:text-lg text-white hover:text-usc-red transition-all duration-200"
           >
             Logout
           </button>

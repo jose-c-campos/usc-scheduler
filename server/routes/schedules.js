@@ -3,6 +3,8 @@ const express = require('express');
 const router = express.Router();
 const { Pool } = require('pg');
 
+console.log('Schedules routes module loaded');
+
 // Initialize database connection pool (reusing your existing config)
 const pool = new Pool({
   host:     process.env.USC_DB_HOST     || 'localhost', // Docker container is mapped to localhost
@@ -17,6 +19,9 @@ function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN format
   
+  console.log('Auth header:', authHeader);
+  console.log('Token:', token);
+  
   if (!token) {
     return res.status(401).json({ message: 'Authentication token required' });
   }
@@ -26,12 +31,18 @@ function authenticateToken(req, res, next) {
   
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) {
+      console.error('Token verification error:', err);
       return res.status(403).json({ message: 'Invalid or expired token' });
     }
     req.user = user;
     next();
   });
 }
+
+// Debug endpoint - no authentication required
+router.get('/debug', (req, res) => {
+  res.json({ message: 'Schedules routes are working!' });
+});
 
 // Get all saved schedules for the current user
 router.get('/user', authenticateToken, async (req, res) => {
@@ -82,15 +93,32 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ message: 'Name, semester, and schedule data are required' });
     }
     
-    const { rows } = await pool.query(
-      'INSERT INTO user_schedules (user_id, name, semester, schedule_data) VALUES ($1, $2, $3, $4) RETURNING *',
-      [userId, name, semester, schedule_data]
-    );
-    
-    res.status(201).json({ 
-      message: 'Schedule saved successfully', 
-      schedule: rows[0] 
-    });
+    try {
+      // Ensure schedule_data is properly formatted as JSON for PostgreSQL
+      const jsonData = typeof schedule_data === 'string' 
+        ? JSON.parse(schedule_data) 
+        : schedule_data;
+      
+      console.log('Saving schedule with data:', {
+        userId,
+        name,
+        semester,
+        dataType: typeof jsonData
+      });
+      
+      const { rows } = await pool.query(
+        'INSERT INTO user_schedules (user_id, name, semester, schedule_data) VALUES ($1, $2, $3, $4) RETURNING *',
+        [userId, name, semester, JSON.stringify(jsonData)]
+      );
+      
+      res.status(201).json({ 
+        message: 'Schedule saved successfully', 
+        schedule: rows[0] 
+      });
+    } catch (jsonError) {
+      console.error('Error processing JSON data:', jsonError);
+      res.status(400).json({ message: 'Invalid schedule data format' });
+    }
   } catch (error) {
     console.error('Error saving schedule:', error);
     res.status(500).json({ message: 'Server error saving schedule' });
@@ -157,6 +185,11 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     console.error('Error deleting schedule:', error);
     res.status(500).json({ message: 'Server error deleting schedule' });
   }
+});
+
+// Debug endpoint
+router.get('/debug', (req, res) => {
+  res.json({ message: 'Schedules routes are working!' });
 });
 
 module.exports = router;

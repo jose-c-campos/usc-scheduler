@@ -16,10 +16,43 @@ const PORT      = process.env.PORT || 3001;
 const SEMESTER  = '20253';                                              // ← adjust if needed
 const schedulerPath = path.resolve(__dirname, '../scheduler/build/scheduler');
 
+// Explicitly set development mode for local development
+process.env.NODE_ENV = process.env.NODE_ENV || 'development';
+
 /* ───────── middleware ───────── */
+// Robust CORS setup for both development and production
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
-  credentials: true
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Check if in development environment
+    const isDevelopment = process.env.NODE_ENV !== 'production';
+    
+    if (isDevelopment) {
+      // In development, allow any localhost origin
+      if (origin.match(/^https?:\/\/localhost:[0-9]+$/) || 
+          origin.match(/^https?:\/\/127\.0\.0\.1:[0-9]+$/)) {
+        return callback(null, true);
+      }
+    } else {
+      // In production, allow only specific origins
+      // Update this with your actual production domain(s)
+      const allowedOrigins = [
+        'https://usc-scheduler.com',
+        'https://www.usc-scheduler.com'
+      ];
+      
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+    }
+    
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -27,6 +60,16 @@ app.use(bodyParser.urlencoded({ extended: true }));
 /* ───────── Routes ───────── */
 app.use('/api/auth', authRoutes);
 app.use('/api/schedules', scheduleRoutes);
+
+// Simple test endpoint directly in server.js
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'API is working!' });
+});
+
+// Direct debug endpoint to test schedules route
+app.get('/api/schedules-test', (req, res) => {
+  res.json({ message: 'Schedules test endpoint in server.js' });
+});
 
 /* ───────── Postgres pool ───────── */
 const pool = new Pool({

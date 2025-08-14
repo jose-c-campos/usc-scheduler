@@ -7,7 +7,7 @@ import ScheduleFrame from '../components/ScheduleFrame';
 import ProfessorFrame from '../components/ProfessorFrame';
 import SchedulePreview from '../components/SchedulePreview';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import api from '../services/api';
 
 /* -------------------------------------------------------------------------- *
  *  Scheduler page – fully self‑contained version
@@ -99,21 +99,101 @@ const Scheduler: React.FC = () => {
     setSaveSuccess('');
     
     try {
+      // Get all class selections that have a class code and at least one selected section
+      const validClassSelections = getAllClassSelections().filter(
+        cls => cls.classCode && Object.keys(cls.selectedSections).length > 0
+      );
+      
+      // Format classes for schedule data
+      const classDataArray = validClassSelections.map(cls => {
+        const sectionData = classSections[cls.classCode];
+        if (!sectionData) return null;
+        
+        const sections = [];
+        
+        for (const [type, sectionId] of Object.entries(cls.selectedSections)) {
+          if (!sectionId) continue;
+          
+          let section = null;
+          
+          // Find the section in the appropriate array
+          if (sectionData[type] && Array.isArray(sectionData[type])) {
+            section = sectionData[type].find((s: any) => s.id === sectionId);
+          } else if (type === 'lecture' && sectionData.sections && Array.isArray(sectionData.sections)) {
+            section = sectionData.sections.find((s: any) => s.id === sectionId);
+          }
+          
+          if (section) {
+            // Process days format
+            let processedDays = section.days || 'TBA';
+            if (processedDays === 'MonWed') processedDays = 'Mon, Wed';
+            if (processedDays === 'TueThu') processedDays = 'Tue, Thu';
+            if (processedDays === 'WedFri') processedDays = 'Wed, Fri';
+            
+            // Process seats data
+            let seatsRegistered = 0;
+            let seatsTotal = 0;
+            
+            if (typeof section.seats_taken === 'number') {
+              seatsRegistered = section.seats_taken;
+              seatsTotal = section.seats_total || 0;
+            } else if (section.seats && typeof section.seats === 'string') {
+              const parts = section.seats.split('/');
+              if (parts.length === 2) {
+                seatsRegistered = parseInt(parts[0], 10) || 0;
+                seatsTotal = parseInt(parts[1], 10) || 0;
+              }
+            }
+            
+            sections.push({
+              type: section.type || type,
+              days: processedDays,
+              time: section.time || 'TBA',
+              instructor: section.professor || 'TBA',
+              location: section.location || "",
+              seats_registered: seatsRegistered,
+              seats_total: seatsTotal
+            });
+          }
+        }
+        
+        return sections.length > 0 ? {
+          code: cls.classCode,
+          sections
+        } : null;
+      }).filter(Boolean);
+      
+      // Create the formatted schedule data in the required format
       const scheduleData = {
-        classSpots,
-        preferences,
-        schedules: schedules.length > 0 ? schedules : []
+        schedules: [{
+          classes: classDataArray
+        }],
+        classSpots: classSpots.map(spot => ({
+          id: Math.random().toString(36).substring(2, 9),
+          classes: spot.classes.map(cls => ({
+            classCode: cls.classCode,
+            selectedSections: cls.selectedSections
+          }))
+        })),
+        preferences: {}
       };
       
-      await axios.post('/api/schedules', {
+      await api.post('/api/schedules', {
         name: scheduleName,
         semester: '20253', // Use the current semester
         schedule_data: scheduleData
       });
       
+      // Set success message
       setSaveSuccess('Schedule saved successfully!');
-      setSaveModalOpen(false);
+      
+      // Clear schedule name
       setScheduleName('');
+      
+      // Close modal after a slight delay to allow the user to see the success message
+      setTimeout(() => {
+        setSaveModalOpen(false);
+      }, 1500);
     } catch (err) {
       console.error('Error saving schedule:', err);
       setSaveError('Failed to save schedule. Please try again.');
@@ -126,50 +206,68 @@ const Scheduler: React.FC = () => {
       <div className="bg-gray-900 p-6 rounded-lg w-full max-w-md">
         <h2 className="text-xl font-bold text-white mb-4">Save Schedule</h2>
         
-        {saveError && (
-          <div className="mb-4 p-3 bg-red-800/30 border border-red-600 text-white rounded-lg">
-            {saveError}
+        {!isAuthenticated ? (
+          <div className="mb-4 p-4 bg-blue-800/30 border border-blue-600 text-white rounded-lg">
+            <p className="mb-2">You need to log in to save schedules.</p>
+            <a 
+              href="/auth" 
+              className="inline-block px-4 py-2 bg-usc-red text-white rounded-lg hover:bg-red-800"
+            >
+              Log In / Sign Up
+            </a>
           </div>
+        ) : (
+          <>
+            {saveError && (
+              <div className="mb-4 p-3 bg-red-800/30 border border-red-600 text-white rounded-lg">
+                {saveError}
+              </div>
+            )}
+            
+            {saveSuccess && (
+              <div className="mb-4 p-3 bg-green-800/30 border border-green-600 text-white rounded-lg">
+                {saveSuccess}
+              </div>
+            )}
+            
+            <div className="mb-4">
+              <label htmlFor="schedule-name" className="block text-white mb-2">
+                Schedule Name
+              </label>
+              <input
+                type="text"
+                id="schedule-name"
+                value={scheduleName}
+                onChange={(e) => setScheduleName(e.target.value)}
+                placeholder="My Fall 2025 Schedule"
+                className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-usc-red"
+              />
+            </div>
+            
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  setSaveModalOpen(false);
+                  setSaveError('');
+                  setSaveSuccess('');
+                }}
+                className="px-4 py-2 border border-white/30 text-white rounded-lg hover:border-white/50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSaveSchedule();
+                }}
+                className="px-4 py-2 bg-usc-red text-white rounded-lg hover:bg-red-800"
+              >
+                Save
+              </button>
+            </div>
+          </>
         )}
-        
-        {saveSuccess && (
-          <div className="mb-4 p-3 bg-green-800/30 border border-green-600 text-white rounded-lg">
-            {saveSuccess}
-          </div>
-        )}
-        
-        <div className="mb-4">
-          <label htmlFor="schedule-name" className="block text-white mb-2">
-            Schedule Name
-          </label>
-          <input
-            type="text"
-            id="schedule-name"
-            value={scheduleName}
-            onChange={(e) => setScheduleName(e.target.value)}
-            placeholder="My Fall 2025 Schedule"
-            className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-usc-red"
-          />
-        </div>
-        
-        <div className="flex justify-end space-x-3">
-          <button
-            onClick={() => {
-              setSaveModalOpen(false);
-              setSaveError('');
-              setSaveSuccess('');
-            }}
-            className="px-4 py-2 border border-white/30 text-white rounded-lg hover:border-white/50"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSaveSchedule}
-            className="px-4 py-2 bg-usc-red text-white rounded-lg hover:bg-red-800"
-          >
-            Save
-          </button>
-        </div>
       </div>
     </div>
   );
@@ -219,7 +317,8 @@ const Scheduler: React.FC = () => {
 
     // (2) open EventSource – encode payload as a single URL param
     const payload = encodeURIComponent(JSON.stringify({ classSpots: validSpots, preferences }));
-    const es = new EventSource(`http://localhost:3001/api/generate-schedules-stream?payload=${payload}`);
+    const serverUrl = '/api/generate-schedules-stream';
+    const es = new EventSource(`${serverUrl}?payload=${payload}`);
 
     // (3) listen for server log lines
     es.addEventListener('log', e => {
@@ -258,7 +357,7 @@ const Scheduler: React.FC = () => {
     schedule.classes.forEach((cls: any) => {
       cls.sections.forEach((sec: any) => {
         const name = sec.instructor?.trim();
-        if (!name) return;                         // ignore TBA
+        if (!name || name.toLowerCase() === 'tba' || name === 'TBA') return; // Skip TBA instructors
 
         // make sure rating object exists & provide 0 defaults
         const r = {
@@ -361,16 +460,6 @@ const Scheduler: React.FC = () => {
                 </h2>
 
                 <div className="flex items-center space-x-4">
-                  {isAuthenticated && schedules.length > 0 && (
-                    <button
-                      onClick={() => {
-                        setSaveModalOpen(true);
-                      }}
-                      className="px-3 py-1 bg-usc-red text-white text-sm rounded hover:bg-red-800 transition-colors"
-                    >
-                      Save Schedule
-                    </button>
-                  )}
                   <button className="text-white/80 hover:text-white underline" onClick={reset}>
                     Start Over
                   </button>
@@ -383,8 +472,8 @@ const Scheduler: React.FC = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                       {/* score */}
                       <div className="lg:col-span-2 flex flex-col items-center">
-                        <div className="text-5xl font-bold mb-2">{schedule.score.toFixed(1)}</div>
-                        <div className="text-xl mb-4">Score</div>
+                        <div className="text-5xl font-bold mb-2 text-white">{schedule.score.toFixed(1)}</div>
+                        <div className="text-xl mb-4 text-white">Score</div>
                       </div>
 
                       {/* calendar */}
@@ -435,6 +524,21 @@ const Scheduler: React.FC = () => {
                 >
                   Generate Schedules
                 </button>
+                {getAllClassSelections().some(cls => cls.classCode && Object.keys(cls.selectedSections).length > 0) && (
+                  <button 
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        setSaveError('You must be logged in to save schedules');
+                        setSaveModalOpen(true);
+                      } else {
+                        setSaveModalOpen(true);
+                      }
+                    }}
+                    className="w-56 h-10 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold rounded-lg flex items-center justify-center"
+                  >
+                    Save Schedule
+                  </button>
+                )}
               </div>
               
               {/* Schedule Preview - Below the buttons */}
