@@ -6,6 +6,7 @@ import Scheduler from './sections/Scheduler'
 import HowToUse from "./sections/HowToUse";
 import HelmetCanvas from './components/HelmetCanvas';
 import Landing from './sections/Landing';
+import TestAPI from './components/TestAPI';
 import './index.css'
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/scheduler" element={<Scheduler />} />
           <Route path="/howto" element={<HowToUse />} />
+          <Route path="/test" element={<TestAPI />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>

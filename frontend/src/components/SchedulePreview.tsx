@@ -19,26 +19,16 @@ const SchedulePreview = ({ classSections, classSelections }: SchedulePreviewProp
 
   // Transform class selections into the format expected by ScheduleFrame
   const scheduleData = useMemo(() => {
-    console.log("Raw class selections:", classSelections);
-    console.log("Available class sections data:", classSections);
-
     const classes = classSelections
       .filter(cls => cls.classCode && Object.keys(cls.selectedSections).length > 0)
       .map(cls => {
         const sections = [];
         const sectionData = classSections[cls.classCode];
         
-        console.log(`Processing class: ${cls.classCode}`, {
-          selectedSections: cls.selectedSections,
-          availableSectionData: sectionData
-        });
-        
         if (!sectionData) return null;
         
         // Add each selected section (lecture, lab, discussion, etc.)
         for (const [type, sectionId] of Object.entries(cls.selectedSections)) {
-          console.log(`Processing section type: ${type}, sectionId: ${sectionId}`);
-          
           if (!sectionId) continue;
           
           // Special handling for different section naming structures
@@ -48,13 +38,11 @@ const SchedulePreview = ({ classSections, classSelections }: SchedulePreviewProp
           // Try to find the section in the type-specific array
           if (sectionData[type] && Array.isArray(sectionData[type])) {
             section = sectionData[type].find((s: any) => s.id === sectionId);
-            console.log(`Found section in ${type} array:`, section);
           }
           
           // If not found and it's a lecture, try the 'sections' array
           if (!section && type === 'lecture' && sectionData.sections && Array.isArray(sectionData.sections)) {
             section = sectionData.sections.find((s: any) => s.id === sectionId);
-            console.log(`Found lecture in 'sections' array:`, section);
           }
           
           // If still not found, search all arrays for a section with matching ID
@@ -63,7 +51,6 @@ const SchedulePreview = ({ classSections, classSelections }: SchedulePreviewProp
               if (Array.isArray(sectionData[sectionType])) {
                 const possibleSection = sectionData[sectionType].find((s: any) => s.id === sectionId);
                 if (possibleSection) {
-                  console.log(`Found section with ID ${sectionId} in ${sectionType} array:`, possibleSection);
                   section = possibleSection;
                   break;
                 }
@@ -113,12 +100,9 @@ const SchedulePreview = ({ classSections, classSelections }: SchedulePreviewProp
               seats_registered: seatsRegistered,
               seats_total: seatsTotal
             });
-          } else {
-            console.log(`Could not find section with ID ${sectionId} for type ${type}`);
           }
         }
         
-        console.log(`Final sections for ${cls.classCode}:`, sections);
         
         return sections.length > 0 ? {
           code: cls.classCode,
@@ -138,7 +122,6 @@ const SchedulePreview = ({ classSections, classSelections }: SchedulePreviewProp
         }>
       }>;
       
-    console.log("Schedule data for preview:", classes);
     return classes;
   }, [classSections, classSelections]);
 
@@ -182,14 +165,18 @@ const SchedulePreview = ({ classSections, classSelections }: SchedulePreviewProp
       });
       
       try {
-        const response = await axios.get('http://localhost:3001/api/professor-ratings', {
+        // Clean professor names for query exactly like the backend does
+        const cleanedProfessorList = professorList.map(prof => 
+          prof.replace(/[{}"]/g, '').trim()
+        );
+        
+        // Get professor ratings from API
+        const response = await axios.get('/api/professor-ratings', {
           params: {
-            professors: professorList.join(','),
+            professors: cleanedProfessorList.join(','),
             courses: courseList.join(',')
           }
         });
-        
-        console.log("Professor ratings API response:", response.data);
         
         // Now we have ratings for all professors, process the schedule data
         scheduleData.forEach((cls: any) => {
@@ -199,7 +186,11 @@ const SchedulePreview = ({ classSections, classSelections }: SchedulePreviewProp
             const name = sec.instructor?.trim();
             if (!name || name.toLowerCase() === 'tba' || name === 'TBA') return;
             
-            const ratings = response.data[name] || {
+            // Clean the name to match how it was sent to API
+            const cleanName = name.replace(/[{}"]/g, '').trim();
+            
+            // Try to find in response data with both original and cleaned name
+            const ratings = response.data[name] || response.data[cleanName] || {
               quality: 3.5,
               difficulty: 3.0,
               would_take_again: 70,
@@ -246,7 +237,7 @@ const SchedulePreview = ({ classSections, classSelections }: SchedulePreviewProp
           return rest;
         }));
         
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching professor ratings:", error);
         
         // Fallback to defaults if API call fails
