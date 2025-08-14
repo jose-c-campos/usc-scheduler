@@ -17,14 +17,14 @@ interface ProfessorFrameProps {
 const ProfessorFrame = ({ professors }: ProfessorFrameProps) => {
   return (
     <div className="bg-white/10 rounded-lg p-2">
-      <h3 className="text-lg font-medium mb-2">Professors</h3>
+      <h3 className="text-lg font-medium mb-2 text-white">Professors</h3>
       
       {/* Two-column grid for professors */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-[450px] overflow-y-auto pr-1">
         {professors.map((professor) => (
           <div key={professor.name} className="bg-white/5 rounded p-2">
             {/* Professor name in bigger font */}
-            <div className="font-medium text-base mb-0.5">
+            <div className="font-medium text-base mb-0.5 text-white">
               {professor.name}
             </div>
             

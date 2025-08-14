@@ -121,7 +121,7 @@ const ScheduleFrame: React.FC<ScheduleFrameProps> = ({ classes }) => {
         {/* column headers */}
         <div />
         {['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map((d) => (
-          <div key={d} className="py-1 text-center font-bold text-sm">
+          <div key={d} className="py-1 text-center font-bold text-sm text-white">
             {d}
           </div>
         ))}
@@ -130,7 +130,7 @@ const ScheduleFrame: React.FC<ScheduleFrameProps> = ({ classes }) => {
         {timeSlots.map((t, i) => (
           <React.Fragment key={t}>
             <div
-              className="text-xs pr-0 row-span-4 flex items-start justify-end -translate-y-1.5"
+              className="text-xs pr-0 row-span-4 flex items-start justify-end -translate-y-1.5 text-white"
               style={{ gridRow: `${i * ROWS_PER_HOUR + 2} / span 4`, gridColumn: 1 }}
             >
               {t}

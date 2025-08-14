@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { FaPlus, FaTimes } from 'react-icons/fa';
-import axios from 'axios';
+import api from '../services/api';
 
 /* fallback mocks – unchanged */
 const MOCK_SECTIONS: Record<string, any> = { /* … */ };
@@ -39,7 +39,7 @@ const ClassSpot = ({ index, classes, onUpdate, onRemove, onSectionsLoaded }: Cla
 
   /* ─── fetch class list once ─── */
   useEffect(() => {
-    axios.get('http://localhost:3001/api/available-classes')
+    api.get('/api/available-classes')
       .then(r => setAvailableClasses(r.data.classes || []))
       .catch(err => {
         console.error('Error fetching class list:', err);
@@ -53,7 +53,7 @@ const ClassSpot = ({ index, classes, onUpdate, onRemove, onSectionsLoaded }: Cla
       if (!cls.classCode || classSections[cls.classCode] || loading[cls.classCode]) return;
 
       setLoading(prev => ({ ...prev, [cls.classCode]: true }));
-      axios.get(`http://localhost:3001/api/class-sections/${encodeURIComponent(cls.classCode)}`)
+      api.get(`/api/class-sections/${encodeURIComponent(cls.classCode)}`)
         .then(r => {
           // Process the data to ensure lecture sections are properly accessible
           let processedData = r.data;

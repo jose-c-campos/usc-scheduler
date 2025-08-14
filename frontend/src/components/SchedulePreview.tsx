@@ -1,8 +1,8 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import axios from 'axios';
 import ScheduleFrame from './ScheduleFrame';
 import ProfessorFrame from './ProfessorFrame';
 import type { ClassSectionSelection } from './ClassSpot';
+import api from '../services/api';
 
 interface SchedulePreviewProps {
   classSections: Record<string, any>;
@@ -13,9 +13,70 @@ interface SchedulePreviewProps {
 const runningAverage = (oldVal: number, newVal: number, n: number) =>
   (oldVal * (n - 1) + newVal) / n;
 
+// Save Schedule Modal Component
+interface SaveScheduleModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (name: string) => void;
+  isSaving: boolean;
+}
+
+const SaveScheduleModal: React.FC<SaveScheduleModalProps> = ({ isOpen, onClose, onSave, isSaving }) => {
+  const [scheduleName, setScheduleName] = useState('');
+  
+  if (!isOpen) return null;
+  
+  return (
+    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/70">
+      <div className="bg-gray-900 p-6 rounded-lg w-full max-w-md">
+        <h2 className="text-xl font-bold text-white mb-4">Save Schedule</h2>
+        
+        <div className="mb-4">
+          <label htmlFor="schedule-name" className="block text-white mb-2">
+            Schedule Name
+          </label>
+          <input
+            type="text"
+            id="schedule-name"
+            value={scheduleName}
+            onChange={(e) => setScheduleName(e.target.value)}
+            placeholder="My Fall 2025 Schedule"
+            className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-usc-red"
+          />
+        </div>
+        
+        <div className="flex justify-end space-x-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 border border-white/30 text-white rounded-lg hover:border-white/50"
+            disabled={isSaving}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => {
+              if (scheduleName.trim()) {
+                onSave(scheduleName);
+              }
+            }}
+            disabled={!scheduleName.trim() || isSaving}
+            className="px-4 py-2 bg-usc-red text-white rounded-lg hover:bg-red-800 disabled:opacity-50"
+          >
+            {isSaving ? 'Saving...' : 'Save'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const SchedulePreview = ({ classSections, classSelections }: SchedulePreviewProps) => {
   // State to hold professor data after async fetch
   const [professorData, setProfessorData] = useState<any[]>([]);
+  const [saveModalOpen, setSaveModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const [saveSuccess, setSaveSuccess] = useState('');
 
   // Transform class selections into the format expected by ScheduleFrame
   const scheduleData = useMemo(() => {
@@ -171,7 +232,7 @@ const SchedulePreview = ({ classSections, classSelections }: SchedulePreviewProp
         );
         
         // Get professor ratings from API
-        const response = await axios.get('/api/professor-ratings', {
+        const response = await api.get('/api/professor-ratings', {
           params: {
             professors: cleanedProfessorList.join(','),
             courses: courseList.join(',')
@@ -289,12 +350,58 @@ const SchedulePreview = ({ classSections, classSelections }: SchedulePreviewProp
       </div>
     );
   }
+  
+  // Handle saving the schedule
+  const handleSaveSchedule = async (name: string) => {
+    setIsSaving(true);
+    setSaveError('');
+    setSaveSuccess('');
+    
+    try {
+      // Format data exactly in the required format
+      const saveData = {
+        schedules: [{
+          classes: scheduleData.map((cls: any) => ({
+            code: cls.code,
+            sections: cls.sections
+          }))
+        }],
+        classSpots: classSelections.map(cls => ({
+          id: Math.random().toString(36).substring(2, 9),
+          classes: [{
+            classCode: cls.classCode,
+            selectedSections: cls.selectedSections
+          }]
+        })),
+        preferences: {}
+      };
+      
+      await api.post('/api/schedules', {
+        name,
+        semester: '20253', // Fall 2025
+        schedule_data: saveData
+      });
+      
+      setSaveSuccess('Schedule saved successfully!');
+      setTimeout(() => {
+        setSaveModalOpen(false);
+        setSaveSuccess('');
+      }, 1500);
+    } catch (err: any) {
+      console.error('Error saving schedule:', err);
+      setSaveError(err.response?.data?.message || 'Failed to save schedule');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="mt-10">
-      <h3 className="text-xl font-semibold mb-4">Schedule Preview</h3>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-xl font-semibold">Schedule Preview</h3>
+      </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-white/5 rounded-lg p-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 rounded-lg p-4">
         {/* Calendar view */}
         <div className="lg:col-span-8">
           <ScheduleFrame classes={scheduleData} />
@@ -313,6 +420,27 @@ const SchedulePreview = ({ classSections, classSelections }: SchedulePreviewProp
           )}
         </div>
       </div>
+      
+      {/* Save Schedule Modal */}
+      <SaveScheduleModal
+        isOpen={saveModalOpen}
+        onClose={() => setSaveModalOpen(false)}
+        onSave={handleSaveSchedule}
+        isSaving={isSaving}
+      />
+      
+      {/* Error/Success Messages */}
+      {saveError && (
+        <div className="mt-4 p-3 bg-red-800/30 border border-red-600 text-white rounded-lg">
+          {saveError}
+        </div>
+      )}
+      
+      {saveSuccess && (
+        <div className="mt-4 p-3 bg-green-800/30 border border-green-600 text-white rounded-lg">
+          {saveSuccess}
+        </div>
+      )}
     </div>
   );
 };

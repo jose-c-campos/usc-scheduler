@@ -15,8 +15,8 @@ const SkillBar = ({ label, value, maxValue, color, showAsPercentage }: Props) =>
   const percent = Math.min(100, (safeValue / maxValue) * 100);
 
   return (
-    <div>
-      <div className="flex justify-between text-[11px] mb-[2px]">
+    <div className="text-white">
+      <div className="flex justify-between text-[11px] mb-[2px] text-white">
         <span>{label}</span>
         <span>
           {showAsPercentage
