@@ -1,0 +1,13 @@
+{
+  "name": "usc-scheduler-auth",
+  "version": "1.0.0",
+  "description": "Authentication-related dependencies for USC Scheduler",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.0",
+    "jsonwebtoken": "^9.0.0"
+  }
+}

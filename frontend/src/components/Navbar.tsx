@@ -1,20 +1,26 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 interface NavbarProps {
   activeSection: string;
   setActiveSection: (section: string) => void;
 }
 
-const navLinks = [
-  { label: "Home", section: "hero", path: "/" },
-  { label: "Login/Signup", section: "login", path: "/login" },
-  { label: "Contact", section: "contact", path: "/contact" },
-];
-
 const Navbar = ({ activeSection, setActiveSection }: NavbarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuth();
+  
+  // Define nav links based on authentication status
+  const navLinks = [
+    { label: "Home", section: "hero", path: "/" },
+    ...(isAuthenticated 
+      ? [{ label: "My Profile", section: "profile", path: "/profile" }]
+      : [{ label: "Login/Signup", section: "login", path: "/login" }]
+    ),
+    { label: "Contact", section: "contact", path: "/contact" },
+  ];
   
     React.useEffect(() => {
     if (location.pathname === "/scheduler") {
@@ -58,6 +64,20 @@ const Navbar = ({ activeSection, setActiveSection }: NavbarProps) => {
             {link.label}
           </Link>
         ))}
+
+        {/* Show logout button if authenticated */}
+        {isAuthenticated && (
+          <button
+            onClick={() => {
+              logout();
+              navigate("/");
+              setActiveSection("hero");
+            }}
+            className="text-white hover:text-usc-red text-sm"
+          >
+            Logout
+          </button>
+        )}
 
         {/* Scheduler CTA button – highlights when on /scheduler */}
         <button

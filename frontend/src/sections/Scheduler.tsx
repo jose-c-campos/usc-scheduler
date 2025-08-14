@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import ClassSpot from '../components/ClassSpot';
 import type { ClassSectionSelection } from '../components/ClassSpot';
 import PreferencePanel from '../components/PreferencePanel';
 import ScheduleFrame from '../components/ScheduleFrame';
 import ProfessorFrame from '../components/ProfessorFrame';
 import SchedulePreview from '../components/SchedulePreview';
+import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
 
 /* -------------------------------------------------------------------------- *
  *  Scheduler page – fully self‑contained version
@@ -46,8 +49,130 @@ const Scheduler: React.FC = () => {
   // progress‑tracking numbers taken from SSE `log` lines
   const [buildStats, setBuildStats] = useState<BuildStats>({ total: 0, ms: 0 });
   const [scoreMs, setScoreMs]       = useState(0);
+  
+  // Save schedule state
+  const [saveModalOpen, setSaveModalOpen] = useState(false);
+  const [scheduleName, setScheduleName] = useState('');
+  const [saveError, setSaveError] = useState('');
+  const [saveSuccess, setSaveSuccess] = useState('');
+  const [selectedScheduleIndex, setSelectedScheduleIndex] = useState(0);
+  
+  // Get auth context
+  const { isAuthenticated } = useAuth();
+  const location = useLocation();
+  
+  // Check if we have a loaded schedule from profile page
+  useEffect(() => {
+    const state = location.state as any;
+    if (state?.loadedSchedule) {
+      try {
+        const loadedData = state.loadedSchedule;
+        setClassSpots(loadedData.classSpots || []);
+        setPreferences(loadedData.preferences || {});
+        // If schedules are included, load them
+        if (loadedData.schedules && loadedData.schedules.length > 0) {
+          setSchedules(loadedData.schedules);
+          setShowResults(true);
+          setLoadingStage('done');
+        }
+      } catch (err) {
+        console.error('Error loading saved schedule:', err);
+        setError('Failed to load the saved schedule');
+      }
+    }
+  }, [location.state]);
 
-  /** ───────── Class‑spot helpers ───────── */
+  /** ───────── Schedule saving ───────── */
+  const handleSaveSchedule = async () => {
+    if (!isAuthenticated) {
+      setSaveError('You must be logged in to save schedules');
+      return;
+    }
+    
+    if (!scheduleName.trim()) {
+      setSaveError('Please enter a name for your schedule');
+      return;
+    }
+    
+    // Clear previous messages
+    setSaveError('');
+    setSaveSuccess('');
+    
+    try {
+      const scheduleData = {
+        classSpots,
+        preferences,
+        schedules: schedules.length > 0 ? schedules : []
+      };
+      
+      await axios.post('/api/schedules', {
+        name: scheduleName,
+        semester: '20253', // Use the current semester
+        schedule_data: scheduleData
+      });
+      
+      setSaveSuccess('Schedule saved successfully!');
+      setSaveModalOpen(false);
+      setScheduleName('');
+    } catch (err) {
+      console.error('Error saving schedule:', err);
+      setSaveError('Failed to save schedule. Please try again.');
+    }
+  };
+  
+  // Save schedule modal component
+  const SaveScheduleModal = () => (
+    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/70">
+      <div className="bg-gray-900 p-6 rounded-lg w-full max-w-md">
+        <h2 className="text-xl font-bold text-white mb-4">Save Schedule</h2>
+        
+        {saveError && (
+          <div className="mb-4 p-3 bg-red-800/30 border border-red-600 text-white rounded-lg">
+            {saveError}
+          </div>
+        )}
+        
+        {saveSuccess && (
+          <div className="mb-4 p-3 bg-green-800/30 border border-green-600 text-white rounded-lg">
+            {saveSuccess}
+          </div>
+        )}
+        
+        <div className="mb-4">
+          <label htmlFor="schedule-name" className="block text-white mb-2">
+            Schedule Name
+          </label>
+          <input
+            type="text"
+            id="schedule-name"
+            value={scheduleName}
+            onChange={(e) => setScheduleName(e.target.value)}
+            placeholder="My Fall 2025 Schedule"
+            className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-usc-red"
+          />
+        </div>
+        
+        <div className="flex justify-end space-x-3">
+          <button
+            onClick={() => {
+              setSaveModalOpen(false);
+              setSaveError('');
+              setSaveSuccess('');
+            }}
+            className="px-4 py-2 border border-white/30 text-white rounded-lg hover:border-white/50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSaveSchedule}
+            className="px-4 py-2 bg-usc-red text-white rounded-lg hover:bg-red-800"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  );
   const addClassSpot = () => {
     const newId = classSpots.length > 0 ? Math.max(...classSpots.map(s => s.id)) + 1 : 1;
     setClassSpots([...classSpots, { id: newId, classes: [{ classCode: '', selectedSections: {} }] }]);
@@ -65,7 +190,7 @@ const Scheduler: React.FC = () => {
   };
 
   /** ───────── Preference helpers ───────── */
-  const updatePreference = (key: keyof typeof preferences, value: any) =>
+  const updatePreference = (key: string, value: any) =>
     setPreferences(p => ({ ...p, [key]: value }));
 
   /** ───────── Reset ("Start over") ───────── */
@@ -235,9 +360,21 @@ const Scheduler: React.FC = () => {
                   </span>
                 </h2>
 
-                <button className="text-white/80 hover:text-white underline" onClick={reset}>
-                  Start Over
-                </button>
+                <div className="flex items-center space-x-4">
+                  {isAuthenticated && schedules.length > 0 && (
+                    <button
+                      onClick={() => {
+                        setSaveModalOpen(true);
+                      }}
+                      className="px-3 py-1 bg-usc-red text-white text-sm rounded hover:bg-red-800 transition-colors"
+                    >
+                      Save Schedule
+                    </button>
+                  )}
+                  <button className="text-white/80 hover:text-white underline" onClick={reset}>
+                    Start Over
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-8">
@@ -314,6 +451,9 @@ const Scheduler: React.FC = () => {
       {error && (
         <div className="mt-6 bg-red-700/80 p-3 rounded text-center font-medium">{error}</div>
       )}
+      
+      {/* Save Schedule Modal */}
+      {saveModalOpen && <SaveScheduleModal />}
     </div>
   );
 };

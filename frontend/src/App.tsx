@@ -4,6 +4,8 @@ import Navbar from './components/Navbar'
 import Hero from './sections/Hero'
 import Scheduler from './sections/Scheduler'
 import HowToUse from "./sections/HowToUse";
+import Auth from "./sections/Auth";
+import Profile from "./sections/Profile";
 import HelmetCanvas from './components/HelmetCanvas';
 import Landing from './sections/Landing';
 import TestAPI from './components/TestAPI';
@@ -20,6 +22,8 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/scheduler" element={<Scheduler />} />
           <Route path="/howto" element={<HowToUse />} />
+          <Route path="/login" element={<Auth />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/test" element={<TestAPI />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
