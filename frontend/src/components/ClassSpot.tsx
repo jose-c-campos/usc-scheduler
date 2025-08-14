@@ -55,14 +55,11 @@ const ClassSpot = ({ index, classes, onUpdate, onRemove, onSectionsLoaded }: Cla
       setLoading(prev => ({ ...prev, [cls.classCode]: true }));
       axios.get(`http://localhost:3001/api/class-sections/${encodeURIComponent(cls.classCode)}`)
         .then(r => {
-          console.log(`Sections received for ${cls.classCode}:`, r.data);
-          
           // Process the data to ensure lecture sections are properly accessible
           let processedData = r.data;
           
           // If lectures are stored in a 'sections' array, restructure for consistency
           if (r.data.sections && Array.isArray(r.data.sections) && !r.data.lecture) {
-            console.log(`Restructuring ${cls.classCode} data to include lecture from sections`);
             processedData = {
               ...r.data,
               lecture: r.data.sections // Add lecture sections under the key expected by the schedule preview
@@ -74,15 +71,12 @@ const ClassSpot = ({ index, classes, onUpdate, onRemove, onSectionsLoaded }: Cla
           
           // Report sections to parent component if callback exists
           if (onSectionsLoaded) {
-            console.log(`Reporting sections for ${cls.classCode} to parent`, newSections);
             onSectionsLoaded(newSections);
           }
         })
         .catch(err => {
           console.error(`Error fetching sections for ${cls.classCode}:`, err);
           if (MOCK_SECTIONS[cls.classCode]) {
-            console.log(`Using mock data for ${cls.classCode}`);
-            
             // Add lecture sections under the expected key
             const mockData = { 
               [cls.classCode]: {
@@ -98,7 +92,6 @@ const ClassSpot = ({ index, classes, onUpdate, onRemove, onSectionsLoaded }: Cla
             
             // Report mock sections to parent component if callback exists
             if (onSectionsLoaded) {
-              console.log(`Reporting mock sections for ${cls.classCode} to parent`, mockData);
               onSectionsLoaded(mockData);
             }
           }

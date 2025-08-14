@@ -13,8 +13,12 @@ const SEMESTER  = '20253';                                              // ← a
 const schedulerPath = path.resolve(__dirname, '../scheduler/build/scheduler');
 
 /* ───────── middleware ───────── */
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+  credentials: true
+}));
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 /* ───────── Postgres pool ───────── */
 const pool = new Pool({
@@ -207,8 +211,6 @@ app.get('/api/professor-ratings', async (req, res) => {
       const profName = professorList[i];
       const courseCode = i < courseList.length ? courseList[i] : '';
       
-      console.log(`Looking up ratings for professor: ${profName}, course: ${courseCode || 'any'}`);
-      
       // Skip empty professor names
       if (!profName || profName.toLowerCase() === 'tba') {
         continue;
@@ -218,10 +220,11 @@ app.get('/api/professor-ratings', async (req, res) => {
       let cleanName = profName.replace(/[{}"]/g, '').trim();
       
       try {
-        // First try course-specific ratings if we have a course code
+          // First try course-specific ratings if we have a course code
         let courseSpecificRatings = null;
         
         if (courseCode) {
+          // Use exactly the same query as the C++ code
           const courseQuery = `
             SELECT 
               COALESCE(pcr.avg_quality, 0) as course_quality,
@@ -250,6 +253,7 @@ app.get('/api/professor-ratings', async (req, res) => {
         
         // If we couldn't get course-specific ratings, get general professor ratings
         if (!courseSpecificRatings) {
+          // Match the C++ implementation more closely - using ILIKE with %name%
           const professorQuery = `
             SELECT 
               avg_rating as quality, 
@@ -292,7 +296,6 @@ app.get('/api/professor-ratings', async (req, res) => {
       }
     }
     
-    console.log('Professor ratings response:', ratings);
     res.json(ratings);
   } catch (err) {
     console.error('professor-ratings:', err);
@@ -372,6 +375,23 @@ function getMockProfessorRating(profName) {
 }
 
 /* --------------------------------------------------------------------- */
+/*  GET  /api/mock-professor                                             */
+/* --------------------------------------------------------------------- */
+app.get('/api/mock-professor', (req, res) => {
+  console.log('Mock professor API hit');
+  const mockData = {
+    'Tracie Mayfield': {
+      quality: 4.6,
+      difficulty: 2.9,
+      would_take_again: 92,
+      course_quality: 4.5,
+      course_difficulty: 3.0
+    }
+  };
+  res.json(mockData);
+});
+
+/* --------------------------------------------------------------------- */
 /*  POST /api/generate‑schedules   (existing JSON endpoint)               */
 /* --------------------------------------------------------------------- */
 app.post('/api/generate-schedules', async (req, res) => {
@@ -380,7 +400,18 @@ app.post('/api/generate-schedules', async (req, res) => {
 });
 
 /* --------------------------------------------------------------------- */
-app.listen(PORT, () => console.log(`Server listening on ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`=================================================================`);
+  console.log(`✅ Server listening on http://localhost:${PORT}`);
+  console.log(`=================================================================`);
+  console.log('Available routes:');
+  console.log(`- GET /api/test                     (test server connection)`);
+  console.log(`- GET /api/available-classes        (get list of classes)`);
+  console.log(`- GET /api/class-sections/:code     (get sections for a class)`);
+  console.log(`- GET /api/professor-ratings        (get professor ratings)`);
+  console.log(`- GET /api/generate-schedules-stream (generate schedules via SSE)`);
+  console.log(`=================================================================`);
+});
 /* ────────────────────────────────────────────────────────────────────── */
 
 /* ---------- helpers for the SSE route ---------- */
