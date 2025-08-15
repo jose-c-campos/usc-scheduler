@@ -215,10 +215,13 @@ void output_schedules_as_json(const std::vector<std::pair<Schedule, double>>& sc
         }
         double avg_quality = (prof_count > 0) ? (total_quality / prof_count) : 0;
         double avg_difficulty = (prof_count > 0) ? (total_difficulty / prof_count) : 0;
-        double scaled_score = (score / 100.0) * 10.0;
-        scaled_score = std::min(10.0, scaled_score);
+        
+        // The score is already normalized to 0-10 range, don't scale it again
+        double final_score = score;
+        final_score = std::min(10.0, final_score);
+        
         std::cout << "{\"id\":" << (i + 1) 
-                  << ",\"score\":" << std::fixed << std::setprecision(1) << scaled_score
+                  << ",\"score\":" << std::fixed << std::setprecision(1) << final_score
                   << ",\"avgProfRating\":" << std::fixed << std::setprecision(2) << avg_quality
                   << ",\"avgDifficulty\":" << std::fixed << std::setprecision(2) << avg_difficulty
                   << ",\"classes\":[";

@@ -34,6 +34,11 @@ public:
     std::map<std::string,double> get_score_breakdown(
         const Schedule& sched,
         const UserPreferences& prefs = {}) const;
+        
+    /* schedule diversity function */
+    std::vector<Schedule> diversify_schedules(
+        const std::vector<std::pair<Schedule, double>>& scored_schedules, 
+        int count_to_return) const;
 
     /* helpers exposed for diagnostics */
     std::set<std::string> get_schedule_days_used(const Schedule& sched) const;
