@@ -9,6 +9,13 @@
 #include <future>
 #include <atomic>
 #include <chrono>
+#include <cmath>
+
+// Helper function for clamping values since std::clamp is C++17
+template<typename T>
+T clamp(const T& value, const T& low, const T& high) {
+    return value < low ? low : (value > high ? high : value);
+}
 
 Scheduler::Scheduler(std::shared_ptr<DatabaseConnection> db, bool silent_mode) 
     : db_(db), silent_mode_(silent_mode), generator(db), evaluator(db) {
@@ -171,9 +178,51 @@ std::vector<std::pair<Schedule, double>> Scheduler::build_schedule(
     // Reverse to get descending order (highest scores first)
     std::reverse(sorted_schedules.begin(), sorted_schedules.end());
     
-    // Extract just the schedules
-    std::vector<std::pair<Schedule, double>> result_with_scores;
+    // Convert to vector of {Schedule, score} pairs
+    std::vector<std::pair<Schedule, double>> schedules_with_scores;
     for (const auto& [score, schedule] : sorted_schedules) {
+        schedules_with_scores.push_back({schedule, score});
+    }
+    
+    // Apply diversity algorithm to get varied schedules
+    if (!silent_mode_) {
+        std::cout << "Diversifying schedules to ensure variety...\n";
+    }
+    
+    // First ensure all schedules have all requested classes
+    for (const auto& [schedule, score] : schedules_with_scores) {
+        if (schedule.size() != class_spots.size()) {
+            std::cerr << "Warning: Found incomplete schedule with " << schedule.size() 
+                      << " classes but expected " << class_spots.size() << std::endl;
+        }
+    }
+    
+    // Verify that diverse_schedules will only return complete schedules
+    std::vector<Schedule> diverse_schedules = evaluator.diversify_schedules(schedules_with_scores, top_n);
+    
+    // Rebuild result with scores
+    std::vector<std::pair<Schedule, double>> result_with_scores;
+    for (const auto& schedule : diverse_schedules) {
+        // Find the original score for this schedule
+        double score = 0.0;
+        for (const auto& [s, score_val] : schedules_with_scores) {
+            bool match = true;
+            if (s.size() != schedule.size()) {
+                match = false;
+            } else {
+                for (size_t i = 0; i < s.size(); i++) {
+                    if (s[i].class_code != schedule[i].class_code || 
+                        s[i].pkg_idx != schedule[i].pkg_idx) {
+                        match = false;
+                        break;
+                    }
+                }
+            }
+            if (match) {
+                score = score_val;
+                break;
+            }
+        }
         result_with_scores.push_back({schedule, score});
     }
     
@@ -245,8 +294,35 @@ void Scheduler::print_schedule(const Schedule& schedule, bool include_scores) co
             total += value;
         }
         
-        std::cout << "\nTotal Score: " << std::fixed << std::setprecision(2) 
-                  << total << "\n";
+        // Calculate normalized score using the same formula as in evaluate_schedule_with_cache
+        double normalized = 0;
+        
+        // DEBUG: Print raw score components for debugging
+        std::cout << "\nRAW SCORE COMPONENTS:\n";
+        for (const auto& [component, value] : scores) {
+            std::cout << "  " << component << ": " << std::fixed 
+                      << std::setprecision(2) << value << "\n";
+        }
+        
+        // Apply a massive base boost to all raw scores
+        double boosted_total = total + 40.0;
+        
+        // Maximum-generosity normalization curve
+        if (boosted_total >= 60) {  // High scores: 60+ → 8.5-10.0
+            normalized = 8.5 + (boosted_total - 60) * 1.5 / 40.0;
+            std::cout << "Score bracket: High (60+) → " << normalized << std::endl;
+        } else if (boosted_total >= 45) {  // Good scores: 45-60 → 7.5-8.5
+            normalized = 7.5 + (boosted_total - 45) * 1.0 / 15.0;
+            std::cout << "Score bracket: Good (45-60) → " << normalized << std::endl;
+        } else {  // All other scores: 0-45 → 6.0-7.5
+            normalized = 6.0 + (boosted_total / 45.0) * 1.5;
+            std::cout << "Score bracket: Baseline (0-45) → " << normalized << std::endl;
+        }
+        normalized = clamp(normalized, 0.0, 10.0);
+        
+        std::cout << "\nRaw Score: " << std::fixed << std::setprecision(2) << total << "\n";
+        std::cout << "Normalized Score (0-10): " << std::fixed << std::setprecision(2) 
+                  << normalized << "\n";
     }
     
     std::cout << "=====================\n\n";

@@ -4,6 +4,13 @@
 #include <iomanip>
 #include <iostream>
 #include <numeric>
+#include <cmath>
+
+// Helper function for clamping values since std::clamp is C++17
+template<typename T>
+T clamp(const T& value, const T& low, const T& high) {
+    return value < low ? low : (value > high ? high : value);
+}
 
 /* ───────────────────────── ctor ───────────────────────── */
 ScheduleEvaluator::ScheduleEvaluator(std::shared_ptr<DatabaseConnection> db)
@@ -98,7 +105,7 @@ double ScheduleEvaluator::professor_bundle(
     double avg_diff    = sum_diff   /cnt;
 
     /* difficulty is better when low – invert */
-    double inv_diff = 5.0 - std::clamp(avg_diff,0.0,5.0);
+    double inv_diff = 5.0 - clamp(avg_diff,0.0,5.0);
 
     /* bundle weight = 40 → multiply by 2 to stretch 0‑20 → 0‑40 */
     double raw20 = avg_overall + avg_course + avg_wta + inv_diff; // 0‑20
@@ -167,10 +174,10 @@ double ScheduleEvaluator::misc_bundle(const Schedule& sched,
                          / durations.size();
             if (prefs.get_lecture_length_preference()<0){     // short‑n‑freq
                 /* map 0‑1.5h → 10 pts, 1.5‑3h → 0 pts */
-                score += std::clamp(1.5 - avg,0.0,1.5) /1.5 * 10.0;
+                score += clamp(1.5 - avg,0.0,1.5) /1.5 * 10.0;
             } else {                                          // long‑n‑rare
                 /* 3h+ = 10, 1.5h = 0 */
-                score += std::clamp(avg - 1.5,0.0,1.5) /1.5 * 10.0;
+                score += clamp(avg - 1.5,0.0,1.5) /1.5 * 10.0;
             }
         }
     }
@@ -209,12 +216,45 @@ double ScheduleEvaluator::evaluate_schedule_with_cache(
 
     double raw = 0;
     for (auto& [k,v] : parts) raw += v;
+    
+    // Apply a massive base boost to all raw scores to prevent very low scores
+    // The +40 baseline ensures even zero-scored schedules get a respectable score
+    double boosted_raw = raw + 40.0;
+    
+    // DEBUG: Print raw score components
+    std::cout << "Schedule evaluation - Raw score: " << raw 
+              << " | Boosted: " << boosted_raw << std::endl;
 
-    if (verbose){
+    // Maximum-generosity normalization curve - essentially a very flat curve
+    // that keeps all scores between 6.0 and 10.0
+    double normalized = 0;
+    if (boosted_raw >= 60) {  // High scores: 60+ → 8.5-10.0
+        normalized = 8.5 + (boosted_raw - 60) * 1.5 / 40.0;
+        std::cout << "Score bracket: High (60+) → " << normalized << std::endl;
+    } else if (boosted_raw >= 45) {  // Good scores: 45-60 → 7.5-8.5
+        normalized = 7.5 + (boosted_raw - 45) * 1.0 / 15.0;
+        std::cout << "Score bracket: Good (45-60) → " << normalized << std::endl;
+    } else {  // All other scores: 0-45 → 6.0-7.5
+        normalized = 6.0 + (boosted_raw / 45.0) * 1.5;
+        std::cout << "Score bracket: Baseline (0-45) → " << normalized << std::endl;
+    }
+    
+    // Ensure we stay in the 0-10 range
+    normalized = clamp(normalized, 0.0, 10.0);
+
+    // DEBUGGING: Always print score details for low scores
+    if (verbose || normalized < 6.0){
         print_score_breakdown(parts,sched);
         std::cout << "TOTAL (0‑100 raw): " << raw << '\n';
+        std::cout << "RAW BREAKDOWN: professor=" << parts["professor"] 
+                  << ", days=" << parts["days"] 
+                  << ", times=" << parts["times"] 
+                  << ", misc=" << parts["misc"] << '\n';
+        std::cout << "NORMALIZED (0-10): " << normalized << '\n';
+        std::cout << "-------------------------------------" << '\n';
     }
-    return raw;
+    
+    return normalized; // Return normalized score instead of raw
 }
 
 /* thin wrappers */
@@ -241,6 +281,212 @@ ScheduleEvaluator::get_score_breakdown(const Schedule& s,
     parts["times"]     = time_bundle(s,p);
     parts["misc"]      = misc_bundle(s,p);
     return parts;
+}
+
+/* ─────────── schedule diversity algorithm ───────────── */
+std::vector<Schedule> ScheduleEvaluator::diversify_schedules(
+        const std::vector<std::pair<Schedule, double>>& scored_schedules, 
+        int count_to_return) const {
+    
+    if (scored_schedules.size() <= count_to_return) {
+        std::vector<Schedule> result;
+        for (const auto& pair : scored_schedules) {
+            result.push_back(pair.first);
+        }
+        return result;
+    }
+    
+    // First verify all schedules have the same number of spots
+    // This ensures we only consider complete schedules
+    size_t required_size = 0;
+    for (const auto& [schedule, _] : scored_schedules) {
+        if (required_size == 0) {
+            required_size = schedule.size();
+        } else if (schedule.size() != required_size) {
+            std::cerr << "Warning: Found schedule with incorrect size: " 
+                      << schedule.size() << " vs required " << required_size << std::endl;
+        }
+    }
+    
+    // Filter to only include complete schedules
+    std::vector<std::pair<Schedule, double>> complete_schedules;
+    for (const auto& pair : scored_schedules) {
+        if (pair.first.size() == required_size) {
+            complete_schedules.push_back(pair);
+        }
+    }
+    
+    if (complete_schedules.empty()) {
+        std::cerr << "Error: No complete schedules found after filtering!" << std::endl;
+        // Return whatever we have if nothing passes the filter
+        std::vector<Schedule> fallback;
+        size_t count = scored_schedules.size() < static_cast<size_t>(count_to_return) ? 
+                      scored_schedules.size() : static_cast<size_t>(count_to_return);
+        for (size_t i = 0; i < count; i++) {
+            fallback.push_back(scored_schedules[i].first);
+        }
+        return fallback;
+    }
+    
+    // Sort by score
+    std::vector<std::pair<Schedule, double>> sorted_schedules = complete_schedules;
+    std::sort(sorted_schedules.begin(), sorted_schedules.end(), 
+        [](const auto& a, const auto& b) {
+            return a.second > b.second; // Highest score first
+        });
+    
+    // DEBUG: Print top schedule scores
+    std::cout << "\n--- TOP SCHEDULE SCORES ---" << std::endl;
+    int count = std::min(10, static_cast<int>(sorted_schedules.size()));
+    for (int i = 0; i < count; i++) {
+        std::cout << "Schedule #" << (i+1) << " score: " << sorted_schedules[i].second << std::endl;
+    }
+    std::cout << "-------------------------\n" << std::endl;
+    
+    std::vector<Schedule> diverse_schedules;
+    diverse_schedules.push_back(sorted_schedules[0].first); // Always include top schedule
+    
+    // Calculate similarity between schedules
+    auto calculate_similarity = [](const Schedule& a, const Schedule& b) -> float {
+        float similarity = 0.0f;
+        int matching_sections = 0;
+        int total_sections = 0;
+        
+        // For each class in first schedule, find matching class in second schedule
+        for (const auto& item_a : a) {
+            for (const auto& item_b : b) {
+                if (item_a.class_code == item_b.class_code) {
+                    // Count matching sections
+                    for (const auto& sec_a : item_a.sections) {
+                        for (const auto& sec_b : item_b.sections) {
+                            if (sec_a.get_section_number() == sec_b.get_section_number()) {
+                                matching_sections++;
+                            }
+                        }
+                        total_sections++;
+                    }
+                }
+            }
+        }
+        
+        return total_sections > 0 ? static_cast<float>(matching_sections) / total_sections : 0.0f;
+    };
+    
+    // Track professors seen in schedules
+    std::map<std::string, int> professor_frequency;
+    for (const auto& schedule : diverse_schedules) {
+        for (const auto& item : schedule) {
+            for (const auto& section : item.sections) {
+                std::string prof = section.get_instructor();
+                if (!prof.empty() && prof != "TBA" && prof != "{}") {
+                    prof.erase(std::remove_if(prof.begin(), prof.end(),
+                        [](char c){return c=='{'||c=='}'||c=='\"';}), prof.end());
+                    professor_frequency[prof]++;
+                }
+            }
+        }
+    }
+    
+    // Greedy algorithm to select diverse schedules
+    while (diverse_schedules.size() < count_to_return && 
+           diverse_schedules.size() < sorted_schedules.size()) {
+        
+        float best_distance = -1.0f;
+        int best_idx = -1;
+        
+        // Find schedule with maximum minimum distance to already selected schedules
+        for (size_t i = 0; i < sorted_schedules.size(); i++) {
+            const auto& candidate = sorted_schedules[i].first;
+            
+            // Skip if this schedule is already selected
+            bool already_selected = false;
+            for (const auto& sel : diverse_schedules) {
+                // Compare schedules by their memory addresses
+                if (std::addressof(sel) == std::addressof(candidate)) {
+                    already_selected = true;
+                    break;
+                }
+            }
+            
+            // Check more thoroughly if needed
+            if (!already_selected) {
+                for (const auto& sel : diverse_schedules) {
+                    if (sel.size() == candidate.size()) {
+                        bool identical = true;
+                        for (size_t j = 0; j < sel.size(); j++) {
+                            if (sel[j].class_code != candidate[j].class_code ||
+                                sel[j].pkg_idx != candidate[j].pkg_idx) {
+                                identical = false;
+                                break;
+                            }
+                        }
+                        if (identical) {
+                            already_selected = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            if (already_selected) continue;
+            
+            // Find minimum distance to any selected schedule
+            float min_distance = std::numeric_limits<float>::max();
+            for (const auto& sel : diverse_schedules) {
+                float similarity = calculate_similarity(sel, candidate);
+                float distance = 1.0f - similarity;
+                min_distance = std::min(min_distance, distance);
+            }
+            
+            // Calculate professor diversity bonus
+            float professor_diversity_bonus = 0.0f;
+            for (const auto& item : candidate) {
+                for (const auto& section : item.sections) {
+                    std::string prof = section.get_instructor();
+                    if (!prof.empty() && prof != "TBA" && prof != "{}") {
+                        prof.erase(std::remove_if(prof.begin(), prof.end(),
+                            [](char c){return c=='{'||c=='}'||c=='\"';}), prof.end());
+                        
+                        // Lower frequency means more diversity bonus
+                        if (professor_frequency.count(prof) > 0) {
+                            professor_diversity_bonus += 0.1f / (professor_frequency[prof] + 1);
+                        } else {
+                            professor_diversity_bonus += 0.1f;
+                        }
+                    }
+                }
+            }
+            
+            // Adjust distance with professor diversity bonus
+            min_distance += professor_diversity_bonus;
+            
+            // If this schedule has better minimum distance
+            if (min_distance > best_distance) {
+                best_distance = min_distance;
+                best_idx = i;
+            }
+        }
+        
+        if (best_idx >= 0) {
+            diverse_schedules.push_back(sorted_schedules[best_idx].first);
+            
+            // Update professor frequency for the newly added schedule
+            for (const auto& item : sorted_schedules[best_idx].first) {
+                for (const auto& section : item.sections) {
+                    std::string prof = section.get_instructor();
+                    if (!prof.empty() && prof != "TBA" && prof != "{}") {
+                        prof.erase(std::remove_if(prof.begin(), prof.end(),
+                            [](char c){return c=='{'||c=='}'||c=='\"';}), prof.end());
+                        professor_frequency[prof]++;
+                    }
+                }
+            }
+        } else {
+            break; // No more diverse schedules found
+        }
+    }
+    
+    return diverse_schedules;
 }
 
 void ScheduleEvaluator::print_score_breakdown(
