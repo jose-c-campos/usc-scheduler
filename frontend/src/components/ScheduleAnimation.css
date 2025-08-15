@@ -1,44 +1,243 @@
 /* Animation-specific styles */
-.schedule-animation-container {
+.animation-container {
   position: relative;
+  overflow: hidden;
+  background-color: #111827;
+  min-height: 85vh;
+}
+
+.animation-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.schedule-wrapper {
+  position: relative;
+  transition: all 0.3s ease;
+  margin-top: 10px;
   overflow: hidden;
 }
 
+.full-section {
+  position: relative;
+}
+
+.full-section::after {
+  content: 'FULL';
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: rgba(220, 38, 38, 0.9);
+  color: white;
+  font-size: 0.6rem;
+  font-weight: bold;
+  padding: 2px 4px;
+  border-radius: 2px;
+  z-index: 10;
+}
+
+.schedule-score {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(255, 199, 0, 0.2);
+  color: #FFC700;
+  border-radius: 9999px;
+  padding: 6px 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  z-index: 10;
+}
+
 .class-block {
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
 }
 
 .class-block:hover {
   transform: scale(1.02);
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-/* These are utility classes that the animation can use */
-.hero-ghost {
+.zoom-highlight {
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.5) !important;
+  z-index: 20 !important;
+}
+
+.browse-controls {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.browse-button {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 14px;
+}
+
+.browse-button:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.browse-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.loading-overlay {
   position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   z-index: 50;
-  pointer-events: none;
-  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-  cursor: move;
 }
 
-.hero-star {
+/* Typing cursor animation */
+.typing-cursor {
+  position: absolute;
+  right: -2px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 16px;
+  background-color: #DC2626;
+  animation: blink 0.8s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Spinner for loading states */
+.spinner {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #FFC700;
+  animation: spin 1s infinite linear;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Schedule indicator dots */
+.schedule-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.indicator-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.indicator-dot.active {
+  background-color: #FFC700;
+  transform: scale(1.2);
+}
+
+.zoom-container {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.5s ease;
+}
+
+.schedule-info {
   position: absolute;
   top: 10px;
-  right: 10px;
-  z-index: 20;
-  transform-origin: center center;
-}
-
-/* Highlight animation for comparing schedules */
-@keyframes pulse-highlight {
-  0%, 100% { 
-    box-shadow: 0 0 0 0 rgba(255, 199, 0, 0);
-  }
-  50% { 
-    box-shadow: 0 0 0 6px rgba(255, 199, 0, 0.3);
-  }
+  left: 10px;
+  background-color: rgba(220, 38, 38, 0.2);
+  color: #ef4444;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-weight: 500;
+  font-size: 14px;
+  z-index: 10;
 }
 
 .highlight-pulse {
   animation: pulse-highlight 1.5s infinite;
+}
+
+@keyframes pulse-highlight {
+  0%, 100% { 
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+  }
+  50% { 
+    box-shadow: 0 0 0 6px rgba(220, 38, 38, 0.3);
+  }
+}
+
+/* Custom color to match USC branding */
+.text-usc-red {
+  color: #990000;
+}
+
+.bg-usc-red {
+  background-color: #990000;
+}
+
+.border-usc-red {
+  border-color: #990000;
+}
+
+/* Floating animation for highlighted elements */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.animate-float {
+  animation: float 2s ease-in-out infinite;
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Class block highlight effect */
+.class-block-highlight {
+  box-shadow: 0 0 0 3px rgba(255, 199, 0, 0.5);
+  transform: scale(1.05);
+  transition: all 0.3s ease;
+}
+
+/* Full section highlight effect */
+.class-block-full {
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.5);
+  transform: scale(1.05);
+  transition: all 0.3s ease;
 }
