@@ -168,9 +168,9 @@ const GenerateSchedulesAnimation: React.FC<GenerateSchedulesAnimationProps> = ({
       if (btn) gsap.fromTo(btn, { scale: 1 }, { scale: 0.96, duration: 0.1, yoyo: true, repeat: 1 });
     });
 
-    // Fade caption and this stage out, then signal complete (next stage shows loader/results)
-    tl.call(() => onCaptionChange?.(''));
-    tl.to(containerRef.current, { autoAlpha: 0, duration: 0.6, ease: 'power2.out' });
+  // Fade this stage out; clear caption 0.3s before fade completes
+  tl.to(containerRef.current, { autoAlpha: 0, duration: 0.6, ease: 'power2.out' });
+  tl.call(() => onCaptionChange?.(''), [], '-=0.3');
     tl.call(() => onComplete?.());
 
     return () => { tl.kill(); };
