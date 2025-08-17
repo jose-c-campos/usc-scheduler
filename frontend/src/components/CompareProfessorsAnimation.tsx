@@ -10,6 +10,12 @@ interface CompareProfessorsAnimationProps {
 
 const CompareProfessorsAnimation: React.FC<CompareProfessorsAnimationProps> = ({ onCaptionChange, onComplete }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const captionCbRef = useRef<typeof onCaptionChange>(onCaptionChange);
+  const completeCbRef = useRef<typeof onComplete>(onComplete);
+
+  // keep latest callbacks without retriggering the animation
+  useEffect(() => { captionCbRef.current = onCaptionChange; }, [onCaptionChange]);
+  useEffect(() => { completeCbRef.current = onComplete; }, [onComplete]);
 
   const professors = useMemo(() => (
     [
@@ -50,7 +56,7 @@ const CompareProfessorsAnimation: React.FC<CompareProfessorsAnimationProps> = ({
       gsap.set(containerRef.current, { autoAlpha: 0, y: 6 });
 
       // Caption in sync with fade-in
-      onCaptionChange?.('Compare RateMyProfessor scores');
+      captionCbRef.current?.('Compare RateMyProfessor scores');
 
       // Robust fade-in
       tl.fromTo(containerRef.current, { autoAlpha: 0, y: 6 }, { autoAlpha: 1, y: 0, duration: 0.6 });
@@ -74,14 +80,14 @@ const CompareProfessorsAnimation: React.FC<CompareProfessorsAnimationProps> = ({
       tl.to({}, { duration: 3.0 });
 
       // Fade out and clear caption
-      tl.call(() => onCaptionChange?.(''));
+      tl.call(() => captionCbRef.current?.(''));
       tl.to(containerRef.current, { autoAlpha: 0, duration: 0.6, ease: 'power2.out' });
 
-      tl.call(() => onComplete?.());
+      tl.call(() => completeCbRef.current?.());
     }, containerRef);
 
     return () => { ctx.revert(); };
-  }, [onCaptionChange, onComplete]);
+  }, []);
 
   return (
     <div ref={containerRef} className="w-full min-h-[360px] flex items-center justify-center relative z-10 opacity-0">
@@ -93,25 +99,25 @@ const CompareProfessorsAnimation: React.FC<CompareProfessorsAnimationProps> = ({
               data-card
               className="bg-white/10 rounded-lg p-5 shadow-md text-white w-48 md:w-64 aspect-square flex flex-col"
             >
-              <div className="font-semibold text-sm md:text-base mb-2 line-clamp-2">{p.name}</div>
-              <div className="text-[10px] md:text-xs text-white/70 mb-2 truncate">{p.classCodes.join(', ')}</div>
+              <div className="font-semibold text-sm md:text-lg mb-2 line-clamp-2">{p.name}</div>
+              <div className="text-[10px] md:text-sm text-white/70 mb-2 truncate">{p.classCodes.join(', ')}</div>
 
-              <div className="space-y-2 text-[10px] md:text-xs">
+              <div className="space-y-2 text-[10px] md:text-sm">
                 <div>
-                  <div className="flex justify-between mb-0.5"><span>Overall</span><span>{p.overallRating.toFixed(1)}</span></div>
-                  <div className="h-[6px] w-full bg-white/20 rounded"><div className="h-full bg-white rounded" style={{ width: `${(p.overallRating / 5) * 100}%` }} /></div>
+                  <div className="flex justify-between mb-1"><span>Overall</span><span>{p.overallRating.toFixed(1)}</span></div>
+                  <div className="h-[7px] w-full bg-white/20 rounded"><div className="h-full bg-white rounded" style={{ width: `${(p.overallRating / 5) * 100}%` }} /></div>
                 </div>
                 <div>
-                  <div className="flex justify-between mb-0.5"><span>Course</span><span>{p.courseRating.toFixed(1)}</span></div>
-                  <div className="h-[6px] w-full bg-white/20 rounded"><div className="h-full bg-white rounded" style={{ width: `${(p.courseRating / 5) * 100}%` }} /></div>
+                  <div className="flex justify-between mb-1"><span>Course</span><span>{p.courseRating.toFixed(1)}</span></div>
+                  <div className="h-[7px] w-full bg-white/20 rounded"><div className="h-full bg-white rounded" style={{ width: `${(p.courseRating / 5) * 100}%` }} /></div>
                 </div>
                 <div>
-                  <div className="flex justify-between mb-0.5"><span>Difficulty</span><span>{p.difficulty.toFixed(1)}</span></div>
-                  <div className="h-[6px] w-full bg-white/20 rounded"><div className="h-full bg-white rounded" style={{ width: `${(p.difficulty / 5) * 100}%` }} /></div>
+                  <div className="flex justify-between mb-1"><span>Difficulty</span><span>{p.difficulty.toFixed(1)}</span></div>
+                  <div className="h-[7px] w-full bg-white/20 rounded"><div className="h-full bg-white rounded" style={{ width: `${(p.difficulty / 5) * 100}%` }} /></div>
                 </div>
                 <div>
-                  <div className="flex justify-between mb-0.5"><span>Would Take</span><span>{p.wouldTakeAgain}%</span></div>
-                  <div className="h-[6px] w-full bg-white/20 rounded"><div className="h-full bg-white rounded" style={{ width: `${p.wouldTakeAgain}%` }} /></div>
+                  <div className="flex justify-between mb-1"><span>Would Take</span><span>{p.wouldTakeAgain}%</span></div>
+                  <div className="h-[7px] w-full bg-white/20 rounded"><div className="h-full bg-white rounded" style={{ width: `${p.wouldTakeAgain}%` }} /></div>
                 </div>
               </div>
             </div>

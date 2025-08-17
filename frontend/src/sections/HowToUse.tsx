@@ -5,6 +5,8 @@ import CompareSchedulesAnimation from '../components/CompareSchedulesAnimation';
 import CompareProfessorsAnimation from '../components/CompareProfessorsAnimation';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import GenerateSchedulesAnimation from '../components/GenerateSchedulesAnimation';
+import GeneratedResultsAnimation from '../components/GeneratedResultsAnimation';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -14,6 +16,8 @@ const HowToUse = () => {
   const [displayCaption, setDisplayCaption] = useState<string>('');
   const [showCompare, setShowCompare] = useState(false);
   const [showProfessors, setShowProfessors] = useState(false);
+  const [showGenerate, setShowGenerate] = useState(false);
+  const [showResults, setShowResults] = useState(false);
   
   useEffect(() => {
     if (!sectionRef.current) return;
@@ -101,6 +105,20 @@ const HowToUse = () => {
       );
     }
 
+    // Special case: Browse Your Recommended Schedules
+    if (text.toLowerCase().includes('browse your recommended schedules')) {
+      const m = text.match(/(.*)browse\s+your\s+recommended\s+schedules(.*)/i);
+      const before = m?.[1] ?? '';
+      const after = m?.[2] ?? '';
+      return (
+        <>
+          {before}
+          Browse <span className="text-usc-red">Your</span> <span className="text-yellow-400">Recommended Schedules</span>
+          {after}
+        </>
+      );
+    }
+
     const replacements: Array<{ key: string; className: string }> = [
       { key: 'class code', className: 'text-yellow-400' },
       { key: 'real time', className: 'text-yellow-400' },
@@ -108,11 +126,14 @@ const HowToUse = () => {
       { key: 'save', className: 'text-yellow-400' },
       { key: 'compare', className: 'text-yellow-400' },
       { key: 'side-by-side', className: 'text-usc-red' },
+      // New highlights
+      { key: 'top schedules', className: 'text-yellow-400' },
+      { key: 'toggle preferences', className: 'text-usc-red' },
     ];
 
     // Find the first occurrence of any keyword and wrap it; keep it minimal
-  let replaced = false;
-  for (const { key, className } of replacements) {
+    let replaced = false;
+    for (const { key, className } of replacements) {
       const idx = text.toLowerCase().indexOf(key.toLowerCase());
       if (idx !== -1) {
         parts.push(text.slice(0, idx));
@@ -136,36 +157,55 @@ const HowToUse = () => {
       id="howto"
       className="relative h-screen bg-zinc-900 text-white overflow-hidden"
     >
-  <div className="container mx-auto px-4 h-full flex flex-col">
+      <div className="container mx-auto px-4 h-full flex flex-col">
         {/* Dynamic caption */}
-  <div className="max-w-4xl mx-auto mb-4 md:mb-6 text-center shrink-0">
+        <div className="max-w-4xl mx-auto mb-4 md:mb-6 text-center shrink-0">
           {displayCaption && (
             <h2 className="section-title text-3xl md:text-5xl font-bold tracking-tight">
               {renderCaption()}
             </h2>
           )}
         </div>
-  <div className="flex-1 min-h-0 flex items-start justify-center pt-4 md:pt-6">
-          {!showCompare && !showProfessors && (
+        <div className="flex-1 min-h-0 flex items-start justify-center pt-4 md:pt-6">
+          {!showCompare && !showProfessors && !showGenerate && !showResults && (
             <LandingPageAnimation
               onCaptionChange={setCaption}
               onComplete={() => {
-                // Wait briefly before starting next step
                 setTimeout(() => setShowCompare(true), 500);
               }}
             />
           )}
-          {showCompare && !showProfessors && (
+          {showCompare && !showProfessors && !showGenerate && !showResults && (
             <CompareSchedulesAnimation
               onCaptionChange={setCaption}
               onComplete={() => {
-                // minimal gap before professor compare
                 setTimeout(() => setShowProfessors(true), 200);
               }}
             />
           )}
-          {showProfessors && (
-            <CompareProfessorsAnimation onCaptionChange={setCaption} />
+          {showProfessors && !showGenerate && !showResults && (
+            <CompareProfessorsAnimation
+              onCaptionChange={setCaption}
+              onComplete={() => {
+                setTimeout(() => setShowGenerate(true), 300);
+              }}
+            />
+          )}
+          {showGenerate && !showResults && (
+            <GenerateSchedulesAnimation
+              onCaptionChange={setCaption}
+              onComplete={() => {
+                setTimeout(() => setShowResults(true), 250);
+              }}
+            />
+          )}
+          {showResults && (
+            <GeneratedResultsAnimation
+              onCaptionChange={setCaption}
+              onComplete={() => {
+                // Sequence ends here for now
+              }}
+            />
           )}
         </div>
       </div>
