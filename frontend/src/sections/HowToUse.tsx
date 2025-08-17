@@ -208,18 +208,9 @@ const HowToUse = () => {
       className="relative h-screen bg-zinc-900 text-white overflow-hidden"
     >
       <div className="container mx-auto px-4 h-full flex flex-col">
-        {/* Dynamic caption */}
-        <div className="max-w-4xl mx-auto mb-4 md:mb-6 text-center shrink-0">
-          {!showHero && displayCaption && (
-            <h2 className="section-title text-3xl md:text-5xl font-bold tracking-tight">
-              {renderCaption()}
-            </h2>
-          )}
-        </div>
-
         {/* Hero overlay inside same section footprint */}
         {showHero && (
-          <div ref={heroRef} className="flex-1 min-h-0 w-full">
+          <div ref={heroRef} className="flex-1 min-h-0 w-full -translate-y-4 md:-translate-y-6">
             <Hero
               buttonLabel="How it Works"
               onHowItWorks={() => {
@@ -230,54 +221,63 @@ const HowToUse = () => {
           </div>
         )}
 
-        {/* Animation flow area */}
+        {/* Caption + Animation translated down without affecting layout height */}
         {!showHero && (
-          <div className="flex-1 min-h-0 flex items-start justify-center pt-4 md:pt-6">
-            {!showCompare && !showProfessors && !showGenerate && !showResults && (
-              <LandingPageAnimation
-                onCaptionChange={setCaption}
-                onComplete={() => {
-                  setTimeout(() => setShowCompare(true), 500);
-                }}
-              />
-            )}
-            {showCompare && !showProfessors && !showGenerate && !showResults && (
-              <CompareSchedulesAnimation
-                onCaptionChange={setCaption}
-                onComplete={() => {
-                  setTimeout(() => setShowProfessors(true), 200);
-                }}
-              />
-            )}
-            {showProfessors && !showGenerate && !showResults && (
-              <CompareProfessorsAnimation
-                onCaptionChange={setCaption}
-                onComplete={() => {
-                  setTimeout(() => setShowGenerate(true), 300);
-                }}
-              />
-            )}
-            {showGenerate && !showResults && (
-              <GenerateSchedulesAnimation
-                onCaptionChange={setCaption}
-                onComplete={() => {
-                  setTimeout(() => setShowResults(true), 250);
-                }}
-              />
-            )}
-            {showResults && (
-              <GeneratedResultsAnimation
-                onCaptionChange={setCaption}
-                onComplete={() => {
-                  // Bring hero back and keep it
-                  setCaption('');
-                  setDisplayCaption('');
-                  setShowHero(true);
-                  // reset flow flags so replay will restart from the beginning
-                  resetFlow();
-                }}
-              />
-            )}
+          <div className="h-full flex flex-col translate-y-6 md:translate-y-10">
+            <div className="max-w-4xl mx-auto mb-4 md:mb-6 text-center shrink-0">
+              {displayCaption && (
+                <h2 className="section-title text-3xl md:text-5xl font-bold tracking-tight">
+                  {renderCaption()}
+                </h2>
+              )}
+            </div>
+            <div className="flex-1 min-h-0 flex items-start justify-center pt-4 md:pt-6">
+              {!showCompare && !showProfessors && !showGenerate && !showResults && (
+                <LandingPageAnimation
+                  onCaptionChange={setCaption}
+                  onComplete={() => {
+                    setTimeout(() => setShowCompare(true), 500);
+                  }}
+                />
+              )}
+              {showCompare && !showProfessors && !showGenerate && !showResults && (
+                <CompareSchedulesAnimation
+                  onCaptionChange={setCaption}
+                  onComplete={() => {
+                    setTimeout(() => setShowProfessors(true), 200);
+                  }}
+                />
+              )}
+              {showProfessors && !showGenerate && !showResults && (
+                <CompareProfessorsAnimation
+                  onCaptionChange={setCaption}
+                  onComplete={() => {
+                    setTimeout(() => setShowGenerate(true), 300);
+                  }}
+                />
+              )}
+              {showGenerate && !showResults && (
+                <GenerateSchedulesAnimation
+                  onCaptionChange={setCaption}
+                  onComplete={() => {
+                    setTimeout(() => setShowResults(true), 250);
+                  }}
+                />
+              )}
+              {showResults && (
+                <GeneratedResultsAnimation
+                  onCaptionChange={setCaption}
+                  onComplete={() => {
+                    // Bring hero back and keep it
+                    setCaption('');
+                    setDisplayCaption('');
+                    setShowHero(true);
+                    // reset flow flags so replay will restart from the beginning
+                    resetFlow();
+                  }}
+                />
+              )}
+            </div>
           </div>
         )}
       </div>

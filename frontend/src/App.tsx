@@ -1,12 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useState } from 'react'
 import Navbar from './components/Navbar'
-import Hero from './sections/Hero'
 import Scheduler from './sections/Scheduler'
 import HowToUse from "./sections/HowToUse";
 import Auth from "./sections/Auth";
 import Profile from "./sections/Profile";
-import HelmetCanvas from './components/HelmetCanvas';
 import Landing from './sections/Landing';
 import TestAPI from './components/TestAPI';
 import './index.css'
