@@ -83,14 +83,7 @@ const Hero: React.FC<HeroProps> = ({ onHowItWorks, buttonLabel }) => {
 
   return (
     <section className="relative h-screen flex items-center justify-center bg-dark-bg text-white overflow-hidden select-none">
-      {/* scroll prompt bottom‑left */}
-      <div className="absolute left-6 bottom-8 flex items-center space-x-2 text-gray-400 text-sm">
-        <svg width="12" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter">
-          <path ref={stemRef} d="M6 0v18" />
-          <path ref={headRef} d="M2 14l4 4 4-4" />
-        </svg>
-        <span>Scroll</span>
-      </div>
+  {/* scroll prompt removed per request */}
 
       <div ref={heroRef} className="text-center space-y-6 px-6">
         <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight">
