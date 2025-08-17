@@ -139,9 +139,10 @@ const HowToUse = () => {
     if (!displayCaption || showHero) return null; // hide while hero is visible
     const parts: React.ReactNode[] = [];
     const text = displayCaption;
+  const lc = text.toLowerCase();
 
-    // Special-case styling for compare step: "Compare" yellow, "side-by-side" red
-    if (text.toLowerCase().includes('compare schedules side-by-side')) {
+  // Special-case styling for compare step: "Compare" yellow, "side-by-side" red
+    if (lc.includes('compare schedules side-by-side')) {
       const before = text.split(/compare\s+schedules\s+side-by-side/i)[0] || '';
       const after = text.split(/compare\s+schedules\s+side-by-side/i)[1] || '';
       return (
@@ -156,18 +157,38 @@ const HowToUse = () => {
     }
 
     // Special case: Browse Your Recommended Schedules
-    if (text.toLowerCase().includes('browse your recommended schedules')) {
+    if (lc.includes('browse your recommended schedules')) {
       const m = text.match(/(.*)browse\s+your\s+recommended\s+schedules(.*)/i);
       const before = m?.[1] ?? '';
       const after = m?.[2] ?? '';
       return (
         <>
           {before}
-          Browse <span className="text-usc-red">Your</span> <span className="text-yellow-400">Recommended Schedules</span>
+          <span className="text-usc-red">Browse</span> Your <span className="text-yellow-400">Recommended Schedules</span>
           {after}
         </>
       );
     }
+
+    // Special case: Compare RateMyProfessor scores → Compare yellow, RateMyProfessor red, scores white
+    if (lc.includes('compare ratemyprofessor scores')) {
+      const m = text.match(/(.*)compare\s+ratemyprofessor\s+scores(.*)/i);
+      const before = m?.[1] ?? '';
+      const after = m?.[2] ?? '';
+      return (
+        <>
+          {before}
+          <span className="text-yellow-400">Compare</span> <span className="text-usc-red">RateMyProfessor</span> scores
+          {after}
+        </>
+      );
+    }
+
+    // Full-caption color overrides (no inner highlights)
+    if (lc.includes('ratemyprofessor')) {
+      return text; // whole caption colored red via h2 class
+    }
+    // For Toggle Preferences: only the phrase should be yellow, rest white
 
     const replacements: Array<{ key: string; className: string }> = [
       { key: 'class code', className: 'text-yellow-400' },
@@ -177,8 +198,8 @@ const HowToUse = () => {
       { key: 'compare', className: 'text-yellow-400' },
       { key: 'side-by-side', className: 'text-usc-red' },
       // New highlights
-      { key: 'top schedules', className: 'text-yellow-400' },
-      { key: 'toggle preferences', className: 'text-usc-red' },
+  { key: 'top schedules', className: 'text-yellow-400' },
+  { key: 'toggle preferences', className: 'text-yellow-400' },
     ];
 
     // Find the first occurrence of any keyword and wrap it; keep it minimal
