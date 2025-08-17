@@ -527,7 +527,7 @@ const LandingPageAnimation: React.FC<LandingPageAnimationProps> = ({ onCaptionCh
         </div>
         {/* Save Schedule Modal (styled to match existing) */}
         {showSaveModal && (
-          <div className="fixed inset-0 flex items-center justify-center z-50 -translate-y-6 md:-translate-y-10" data-anim="save-modal">
+          <div className="fixed inset-0 flex items-center justify-center z-50 -translate-y-8 md:-translate-y-12" data-anim="save-modal">
             <div className="bg-gray-900 p-6 rounded-lg w-full max-w-md">
               <h2 className="text-xl font-bold text-white mb-4">Save Schedule</h2>
               {!modalSuccess ? (

@@ -129,63 +129,61 @@ const CompareSchedulesAnimation: React.FC<CompareSchedulesAnimationProps> = ({ o
     // Build a dedicated blink timeline we can insert, ensuring the main TL waits for it
     const blinkTl = gsap.timeline();
     if (diffNodes.length) {
-      // ensure outline style is set to allow width/color animation
-      blinkTl.set(diffNodes, { outlineStyle: 'solid' });
+      // Evenly space 3 slower pulses across ~4.0s after fade-in
+  const pulseOn = 0.6;   // slower, steadier in
+  const pulseOff = 0.6;  // slower, steadier out
+  const totalPulse = (pulseOn + pulseOff) * 3; // 3.6s
+      const totalWindow = 4.0;
+  const gap = Math.max(0, (totalWindow - totalPulse) / 4); // small gaps before, between, after
 
-      const onProps = {
-        // strong yellow outline + glow
-        boxShadow: '0 0 0 6px rgba(255,199,0,0.95), 0 0 22px rgba(255,199,0,0.5)',
-        filter: 'drop-shadow(0 0 10px rgba(255,199,0,0.9)) drop-shadow(0 0 4px rgba(255,199,0,0.9))',
-        outlineWidth: 4,
-        outlineColor: 'rgba(255,199,0,1)',
-        outlineOffset: 2,
-        opacity: 1,
-        zIndex: 1000,
-        overflow: 'visible',
-        scale: 1.02,
-        duration: 0.45,
-        ease: 'sine.inOut',
-        overwrite: true as const,
-        force3D: true,
-        willChange: 'transform, box-shadow, filter, outline-color, outline-width, outline-offset',
-      } as const;
-      const offProps = {
-        // keep two shadow layers for smooth interpolation
-        boxShadow: '0 0 0 0 rgba(255,199,0,0), 0 0 0 rgba(255,199,0,0)',
-        filter: 'drop-shadow(0 0 0 rgba(0,0,0,0))',
-        outlineWidth: 0,
-        outlineColor: 'rgba(255,199,0,0)',
-        outlineOffset: 0,
-        opacity: 1,
-        zIndex: 1000,
-        overflow: 'visible',
-        scale: 1,
-        duration: 0.3,
-        ease: 'sine.inOut',
-        overwrite: true as const,
-        force3D: true,
-        willChange: 'transform, box-shadow, filter, outline-color, outline-width, outline-offset',
-      } as const;
-      // 3 on-peaks with off gaps between
+      // initial gap
+      if (gap > 0) blinkTl.to({}, { duration: gap });
+
       for (let i = 0; i < 3; i++) {
-        blinkTl.to(diffNodes, onProps);
-        blinkTl.to(diffNodes, offProps);
+        // add ring at pulse start
+        blinkTl.call(() => {
+          diffNodes.forEach((n) => n.classList.add('ring-2', 'ring-yellow-400', 'ring-opacity-100'));
+        });
+        // glow on (steady, smooth)
+        blinkTl.to(diffNodes, {
+          filter: 'drop-shadow(0 0 18px rgba(255,199,0,0.95)) drop-shadow(0 0 10px rgba(255,199,0,0.85))',
+          scale: 1.02,
+          duration: pulseOn,
+          ease: 'power1.inOut',
+          overwrite: true,
+          force3D: true,
+        });
+        // remove ring + glow off
+        blinkTl.call(() => {
+          diffNodes.forEach((n) => n.classList.remove('ring-2', 'ring-yellow-400', 'ring-opacity-100'));
+        });
+        blinkTl.to(diffNodes, {
+          filter: 'drop-shadow(0 0 0 rgba(0,0,0,0))',
+          scale: 1.0,
+          duration: pulseOff,
+          ease: 'power1.inOut',
+          overwrite: true,
+          force3D: true,
+        });
+        // gap between pulses (and an ending gap after the last)
+        if (gap > 0) blinkTl.to({}, { duration: gap });
       }
-      // Pad to keep the schedules visible ~4s after fade-in
-      const desiredVisibleSeconds = 4.0;
-      const extraHold = Math.max(0, desiredVisibleSeconds - blinkTl.duration());
-      if (extraHold > 0) blinkTl.to({}, { duration: extraHold });
-      // Clear temporary styles
-  blinkTl.set(diffNodes, { clearProps: 'boxShadow,filter,outlineColor,outlineWidth,outlineOffset,zIndex,overflow,transform,willChange,outlineStyle' });
+      // cleanup any remaining glow/ring
+      blinkTl.set(diffNodes, { filter: 'none' });
+      blinkTl.call(() => {
+        diffNodes.forEach((n) => n.classList.remove('ring-2', 'ring-yellow-400', 'ring-opacity-100'));
+      });
     } else {
-      // If we didn't find any differing nodes (fallback), still hold ~4s
-      blinkTl.to({}, { duration: 4.0 });
+      // Fallback hold to keep step duration similar
+      blinkTl.to({}, { duration: 1.0 });
     }
 
-  // Ensure outer container won't clip glows during blink
-  tl.set(containerRef.current, { overflow: 'visible' }, 0);
+  // Ensure outer container won't clip glows and sits above neighbors
+  tl.set(containerRef.current, { overflow: 'visible', zIndex: 5, position: 'relative' }, 0);
   // Insert the blink timeline slightly after fade-in so DOM is definitely ready
   tl.add(blinkTl, '+=0.1');
+  // Wait for the blink timeline to finish before proceeding to fade out
+  tl.addLabel('afterBlink');
 
   // Fade out UI; clear caption 0.3s before fade completes
   tl.to(containerRef.current, { autoAlpha: 0, duration: 0.6, ease: 'power2.out' });

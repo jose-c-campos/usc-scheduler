@@ -146,7 +146,7 @@ const GenerateSchedulesAnimation: React.FC<GenerateSchedulesAnimationProps> = ({
     tl.call(() => selectCode(3, 'BUAD 310'));
 
   // Switch caption to preferences and showcase toggles
-    tl.call(() => onCaptionChange?.('Toggle Preferences to your liking'));
+  tl.call(() => onCaptionChange?.('Toggle Preferences to your liking'));
     // Toggle some preferences slower with a bit more breathing room
     tl.call(() => updatePreference('timeOfDay', ['morning', 'afternoon']));
     tl.call(() => updatePreference('daysOff', ['Friday']), [], '+=0.4');
