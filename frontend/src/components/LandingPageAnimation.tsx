@@ -444,9 +444,9 @@ const LandingPageAnimation: React.FC<LandingPageAnimationProps> = ({ onCaptionCh
   // Keep success message visible briefly inside the modal
   tl.to({}, { duration: 1.5 });
 
-  // Fade out everything to blank background and tell parent to fade caption too
-  tl.call(() => onCaptionChange?.(''));
+  // Fade out UI and clear caption 0.3s before fade completes to sync disappearance
   tl.to(containerRef.current, { autoAlpha: 0, duration: 0.6, ease: 'power2.out' });
+  tl.call(() => onCaptionChange?.(''), [], '-=0.3');
 
   // Signal completion so parent can start next step
   tl.call(() => onComplete?.());
@@ -527,7 +527,7 @@ const LandingPageAnimation: React.FC<LandingPageAnimationProps> = ({ onCaptionCh
         </div>
         {/* Save Schedule Modal (styled to match existing) */}
         {showSaveModal && (
-          <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/70" data-anim="save-modal">
+          <div className="fixed inset-0 flex items-center justify-center z-50 -translate-y-6 md:-translate-y-10" data-anim="save-modal">
             <div className="bg-gray-900 p-6 rounded-lg w-full max-w-md">
               <h2 className="text-xl font-bold text-white mb-4">Save Schedule</h2>
               {!modalSuccess ? (

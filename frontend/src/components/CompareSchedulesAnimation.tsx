@@ -187,9 +187,9 @@ const CompareSchedulesAnimation: React.FC<CompareSchedulesAnimationProps> = ({ o
   // Insert the blink timeline slightly after fade-in so DOM is definitely ready
   tl.add(blinkTl, '+=0.1');
 
-  // After blinking completes, fade caption, then fade out to blank
-  tl.call(() => captionCbRef.current?.(''));
+  // Fade out UI; clear caption 0.3s before fade completes
   tl.to(containerRef.current, { autoAlpha: 0, duration: 0.6, ease: 'power2.out' });
+  tl.call(() => captionCbRef.current?.(''), [], '-=0.3');
 
     // Notify completion
     tl.call(() => completeCbRef.current?.());

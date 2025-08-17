@@ -225,11 +225,9 @@ const HowToUse = () => {
         {!showHero && (
           <div className="h-full flex flex-col translate-y-6 md:translate-y-10">
             <div className="max-w-4xl mx-auto mb-4 md:mb-6 text-center shrink-0">
-              {displayCaption && (
-                <h2 className="section-title text-3xl md:text-5xl font-bold tracking-tight">
-                  {renderCaption()}
-                </h2>
-              )}
+              <h2 className="section-title text-3xl md:text-5xl font-bold tracking-tight">
+                {displayCaption ? renderCaption() : '\u00A0'}
+              </h2>
             </div>
             <div className="flex-1 min-h-0 flex items-start justify-center pt-4 md:pt-6">
               {!showCompare && !showProfessors && !showGenerate && !showResults && (

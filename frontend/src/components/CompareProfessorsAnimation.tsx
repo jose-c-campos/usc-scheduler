@@ -79,9 +79,9 @@ const CompareProfessorsAnimation: React.FC<CompareProfessorsAnimationProps> = ({
       // Keep on screen ~3s
       tl.to({}, { duration: 3.0 });
 
-      // Fade out and clear caption
-      tl.call(() => captionCbRef.current?.(''));
-      tl.to(containerRef.current, { autoAlpha: 0, duration: 0.6, ease: 'power2.out' });
+  // Fade out UI and clear caption 0.3s before fade completes
+  tl.to(containerRef.current, { autoAlpha: 0, duration: 0.6, ease: 'power2.out' });
+  tl.call(() => captionCbRef.current?.(''), [], '-=0.3');
 
       tl.call(() => completeCbRef.current?.());
     }, containerRef);

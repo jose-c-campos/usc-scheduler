@@ -78,8 +78,8 @@ const GeneratedResultsAnimation: React.FC<GeneratedResultsAnimationProps> = ({ o
       tl.to({}, { duration: 5.0 });
     }
 
-    tl.call(() => onCaptionChange?.(''));
   tl.to(containerRef.current, { autoAlpha: 0, duration: 0.55, ease: 'power2.out' });
+  tl.call(() => onCaptionChange?.(''), [], '-=0.3');
     tl.call(() => onComplete?.());
 
   return () => { tl.kill(); };
