@@ -99,53 +99,97 @@ const CompareSchedulesAnimation: React.FC<CompareSchedulesAnimationProps> = ({ o
 
   // After visible, blink-glow the different courses on both schedules (all at once, 3 blinks)
     const targetCodes = new Set(['PHYS 135', 'BUAD 307', 'BISC 120', 'BUAD 310']);
-  let diffNodes: HTMLElement[] = [];
-  // Resolve differing blocks slightly after fade-in to ensure DOM is ready
-  tl.add(() => {
-      const root = containerRef.current!;
-      diffNodes = [];
-      root.querySelectorAll('span.font-bold').forEach((el) => {
-        const text = (el.textContent || '').trim();
-        if (targetCodes.has(text)) {
-          const block = (el as HTMLElement).closest('div.rounded-md');
-          if (block) diffNodes.push(block as HTMLElement);
-        }
-      });
-      // Create blink tween now that nodes are available: 3 visible peaks with yoyo + repeat: 2
-      if (diffNodes.length) {
-        // We want exactly 3 visible "ON" peaks. With yoyo, forward passes happen at iterations 0,2,4 → repeat: 4
-        const blinkHalfDuration = 0.5; // seconds per half-cycle
-        const blinkRepeats = 4;         // produces 3 visible peaks
-        const totalBlinkTime = (blinkRepeats + 1) * blinkHalfDuration; // 5 * 0.5 = 2.5s
-        tl.fromTo(
-          diffNodes,
-          { boxShadow: '0 0 0 0 rgba(255, 199, 0, 0)', scale: 1 },
-          {
-            boxShadow: '0 0 0 6px rgba(255,199,0,0.9), 0 0 18px rgba(255,199,0,0.4)',
-            scale: 1.045,
-            duration: blinkHalfDuration,
-            yoyo: true,
-            repeat: blinkRepeats,
-            ease: 'sine.inOut',
-            overwrite: true,
-            force3D: true,
-          }
-        );
-        // Hold on-screen so total visible time ≈ 4s after fade-in
-        const desiredVisibleSeconds = 4.0;
-        const extraHold = Math.max(0, desiredVisibleSeconds - totalBlinkTime);
-        if (extraHold > 0) {
-          tl.to({}, { duration: extraHold });
-        }
-        // Clear the temporary glow styles
-        tl.set(diffNodes, { clearProps: 'boxShadow,transform' });
-        tl.set(containerRef.current, { autoAlpha: 1 });
-      }
-  }, '+=0.1');
 
-    // After blinking completes, fade caption, then fade out to blank
-    tl.call(() => captionCbRef.current?.(''));
-    tl.to(containerRef.current, { autoAlpha: 0, duration: 0.6, ease: 'power2.out' });
+    const collectDiffNodes = (): HTMLElement[] => {
+      const root = containerRef.current!;
+      let nodes: HTMLElement[] = [];
+      // primary: robust by data attribute
+      root
+        .querySelectorAll<HTMLElement>('div.rounded-md[data-course-code]')
+        .forEach((block) => {
+          const code = block.getAttribute('data-course-code')?.trim() || '';
+          if (targetCodes.has(code)) nodes.push(block);
+        });
+
+      // fallback: older markup (span.font-bold with course code)
+      if (nodes.length === 0) {
+        root.querySelectorAll('span.font-bold').forEach((el) => {
+          const text = (el.textContent || '').trim();
+          if (targetCodes.has(text)) {
+            const block = (el as HTMLElement).closest('div.rounded-md') as HTMLElement | null;
+            if (block) nodes.push(block);
+          }
+        });
+      }
+      return nodes;
+    };
+
+    const diffNodes = collectDiffNodes();
+
+    // Build a dedicated blink timeline we can insert, ensuring the main TL waits for it
+    const blinkTl = gsap.timeline();
+    if (diffNodes.length) {
+      // ensure outline style is set to allow width/color animation
+      blinkTl.set(diffNodes, { outlineStyle: 'solid' });
+
+      const onProps = {
+        // strong yellow outline + glow
+        boxShadow: '0 0 0 6px rgba(255,199,0,0.95), 0 0 22px rgba(255,199,0,0.5)',
+        filter: 'drop-shadow(0 0 10px rgba(255,199,0,0.9)) drop-shadow(0 0 4px rgba(255,199,0,0.9))',
+        outlineWidth: 4,
+        outlineColor: 'rgba(255,199,0,1)',
+        outlineOffset: 2,
+        opacity: 1,
+        zIndex: 1000,
+        overflow: 'visible',
+        scale: 1.02,
+        duration: 0.45,
+        ease: 'sine.inOut',
+        overwrite: true as const,
+        force3D: true,
+        willChange: 'transform, box-shadow, filter, outline-color, outline-width, outline-offset',
+      } as const;
+      const offProps = {
+        // keep two shadow layers for smooth interpolation
+        boxShadow: '0 0 0 0 rgba(255,199,0,0), 0 0 0 rgba(255,199,0,0)',
+        filter: 'drop-shadow(0 0 0 rgba(0,0,0,0))',
+        outlineWidth: 0,
+        outlineColor: 'rgba(255,199,0,0)',
+        outlineOffset: 0,
+        opacity: 1,
+        zIndex: 1000,
+        overflow: 'visible',
+        scale: 1,
+        duration: 0.3,
+        ease: 'sine.inOut',
+        overwrite: true as const,
+        force3D: true,
+        willChange: 'transform, box-shadow, filter, outline-color, outline-width, outline-offset',
+      } as const;
+      // 3 on-peaks with off gaps between
+      for (let i = 0; i < 3; i++) {
+        blinkTl.to(diffNodes, onProps);
+        blinkTl.to(diffNodes, offProps);
+      }
+      // Pad to keep the schedules visible ~4s after fade-in
+      const desiredVisibleSeconds = 4.0;
+      const extraHold = Math.max(0, desiredVisibleSeconds - blinkTl.duration());
+      if (extraHold > 0) blinkTl.to({}, { duration: extraHold });
+      // Clear temporary styles
+  blinkTl.set(diffNodes, { clearProps: 'boxShadow,filter,outlineColor,outlineWidth,outlineOffset,zIndex,overflow,transform,willChange,outlineStyle' });
+    } else {
+      // If we didn't find any differing nodes (fallback), still hold ~4s
+      blinkTl.to({}, { duration: 4.0 });
+    }
+
+  // Ensure outer container won't clip glows during blink
+  tl.set(containerRef.current, { overflow: 'visible' }, 0);
+  // Insert the blink timeline slightly after fade-in so DOM is definitely ready
+  tl.add(blinkTl, '+=0.1');
+
+  // After blinking completes, fade caption, then fade out to blank
+  tl.call(() => captionCbRef.current?.(''));
+  tl.to(containerRef.current, { autoAlpha: 0, duration: 0.6, ease: 'power2.out' });
 
     // Notify completion
     tl.call(() => completeCbRef.current?.());
