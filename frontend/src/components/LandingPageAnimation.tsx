@@ -161,9 +161,10 @@ const ClassSpotInput: React.FC<{
 /* ───────────────────────── LandingPageAnimation ───────────────────────── */
 interface LandingPageAnimationProps {
   onCaptionChange?: (caption: string) => void;
+  onComplete?: () => void; // notify parent when this step fully fades out
 }
 
-const LandingPageAnimation: React.FC<LandingPageAnimationProps> = ({ onCaptionChange }) => {
+const LandingPageAnimation: React.FC<LandingPageAnimationProps> = ({ onCaptionChange, onComplete }) => {
   // Input values and dropdown visibility
   const [inputs, setInputs] = useState<string[]>(['', '', '', '']);
   const [showDropdown, setShowDropdown] = useState<boolean[]>([false, false, false, false]);
@@ -446,6 +447,9 @@ const LandingPageAnimation: React.FC<LandingPageAnimationProps> = ({ onCaptionCh
   // Fade out everything to blank background and tell parent to fade caption too
   tl.call(() => onCaptionChange?.(''));
   tl.to(containerRef.current, { autoAlpha: 0, duration: 0.6, ease: 'power2.out' });
+
+  // Signal completion so parent can start next step
+  tl.call(() => onComplete?.());
 
     tlRef.current = tl;
     return () => {
