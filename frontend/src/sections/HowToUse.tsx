@@ -1,6 +1,8 @@
 import { useRef, useEffect, useState } from 'react';
 // Using the new component with a different name
 import LandingPageAnimation from '../components/LandingPageAnimation';
+import CompareSchedulesAnimation from '../components/CompareSchedulesAnimation';
+import CompareProfessorsAnimation from '../components/CompareProfessorsAnimation';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -10,6 +12,8 @@ const HowToUse = () => {
   const sectionRef = useRef<HTMLElement | null>(null);
   const [caption, setCaption] = useState<string>('');
   const [displayCaption, setDisplayCaption] = useState<string>('');
+  const [showCompare, setShowCompare] = useState(false);
+  const [showProfessors, setShowProfessors] = useState(false);
   
   useEffect(() => {
     if (!sectionRef.current) return;
@@ -80,18 +84,35 @@ const HowToUse = () => {
     // light, tasteful highlights for key phrases
     if (!displayCaption) return null;
     const parts: React.ReactNode[] = [];
-    let text = displayCaption;
+    const text = displayCaption;
+
+    // Special-case styling for compare step: "Compare" yellow, "side-by-side" red
+    if (text.toLowerCase().includes('compare schedules side-by-side')) {
+      const before = text.split(/compare\s+schedules\s+side-by-side/i)[0] || '';
+      const after = text.split(/compare\s+schedules\s+side-by-side/i)[1] || '';
+      return (
+        <>
+          {before}
+          <span className="text-yellow-400">Compare</span>
+          {" schedules "}
+          <span className="text-usc-red">side-by-side</span>
+          {after}
+        </>
+      );
+    }
 
     const replacements: Array<{ key: string; className: string }> = [
       { key: 'class code', className: 'text-yellow-400' },
       { key: 'real time', className: 'text-yellow-400' },
       { key: ' red', className: 'text-usc-red' },
       { key: 'save', className: 'text-yellow-400' },
+      { key: 'compare', className: 'text-yellow-400' },
+      { key: 'side-by-side', className: 'text-usc-red' },
     ];
 
     // Find the first occurrence of any keyword and wrap it; keep it minimal
-    let replaced = false;
-    for (const { key, className } of replacements) {
+  let replaced = false;
+  for (const { key, className } of replacements) {
       const idx = text.toLowerCase().indexOf(key.toLowerCase());
       if (idx !== -1) {
         parts.push(text.slice(0, idx));
@@ -125,7 +146,29 @@ const HowToUse = () => {
           )}
         </div>
 
-        <LandingPageAnimation onCaptionChange={setCaption} />
+        {!showCompare && !showProfessors && (
+      <LandingPageAnimation
+            onCaptionChange={setCaption}
+            onComplete={() => {
+              // Wait 1s after fade to blank before starting next step
+        setTimeout(() => setShowCompare(true), 500);
+            }}
+          />
+        )}
+        {showCompare && !showProfessors && (
+          <CompareSchedulesAnimation
+            onCaptionChange={setCaption}
+            onComplete={() => {
+              // minimal gap before professor compare
+              setTimeout(() => setShowProfessors(true), 200);
+            }}
+          />
+        )}
+        {showProfessors && (
+          <CompareProfessorsAnimation
+            onCaptionChange={setCaption}
+          />
+        )}
       </div>
     </section>
   );
