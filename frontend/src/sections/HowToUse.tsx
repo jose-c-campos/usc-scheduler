@@ -7,6 +7,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import GenerateSchedulesAnimation from '../components/GenerateSchedulesAnimation';
 import GeneratedResultsAnimation from '../components/GeneratedResultsAnimation';
+import Hero from './Hero';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -18,9 +19,42 @@ const HowToUse = () => {
   const [showProfessors, setShowProfessors] = useState(false);
   const [showGenerate, setShowGenerate] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  
+
+  // New: hero gating + replay
+  const heroRef = useRef<HTMLDivElement | null>(null);
+  const [showHero, setShowHero] = useState(true);
+  const [hasAutoplayed, setHasAutoplayed] = useState(false);
+
+  // Convenience: reset all flow flags and caption before a new run
+  const resetFlow = () => {
+    setCaption('');
+    setDisplayCaption('');
+    setShowCompare(false);
+    setShowProfessors(false);
+    setShowGenerate(false);
+    setShowResults(false);
+  };
+
+  // Start the full sequence: fade out hero, then run the 4 steps
+  const startFlow = () => {
+    if (heroRef.current) {
+      const tl = gsap.timeline();
+      tl.to(heroRef.current, { autoAlpha: 0, y: -8, duration: 0.45, ease: 'power2.inOut' });
+      tl.call(() => {
+        setShowHero(false);
+        resetFlow();
+      });
+    } else {
+      setShowHero(false);
+      resetFlow();
+    }
+  };
+
+  // Animate hero in on mount and on re-show
   useEffect(() => {
     if (!sectionRef.current) return;
+
+    // Intro reveal animations for static title/description if present
     const hasTitle = !!document.querySelector('.section-title');
     if (hasTitle) {
       gsap.from('.section-title', {
@@ -51,6 +85,22 @@ const HowToUse = () => {
       });
     }
   }, []);
+
+  // Hero show/hide handling with autoplay on first load
+  useEffect(() => {
+    if (!heroRef.current || !showHero) return;
+    // Autoplay once after Hero has fully animated in + ~1s dwell
+    if (!hasAutoplayed) {
+      const tl = gsap.timeline();
+      // ~1.5–1.6s for Hero intro + 1s dwell → total ~2.6s before fade out
+      tl.to({}, { duration: 2.6 });
+      tl.call(() => {
+        setHasAutoplayed(true);
+        startFlow();
+      });
+      return () => { tl.kill(); };
+    }
+  }, [showHero, hasAutoplayed]);
 
   // Crossfade captions: fade out current, swap text, fade in new
   useEffect(() => {
@@ -86,7 +136,7 @@ const HowToUse = () => {
 
   const renderCaption = () => {
     // light, tasteful highlights for key phrases
-    if (!displayCaption) return null;
+    if (!displayCaption || showHero) return null; // hide while hero is visible
     const parts: React.ReactNode[] = [];
     const text = displayCaption;
 
@@ -160,54 +210,76 @@ const HowToUse = () => {
       <div className="container mx-auto px-4 h-full flex flex-col">
         {/* Dynamic caption */}
         <div className="max-w-4xl mx-auto mb-4 md:mb-6 text-center shrink-0">
-          {displayCaption && (
+          {!showHero && displayCaption && (
             <h2 className="section-title text-3xl md:text-5xl font-bold tracking-tight">
               {renderCaption()}
             </h2>
           )}
         </div>
-        <div className="flex-1 min-h-0 flex items-start justify-center pt-4 md:pt-6">
-          {!showCompare && !showProfessors && !showGenerate && !showResults && (
-            <LandingPageAnimation
-              onCaptionChange={setCaption}
-              onComplete={() => {
-                setTimeout(() => setShowCompare(true), 500);
+
+        {/* Hero overlay inside same section footprint */}
+        {showHero && (
+          <div ref={heroRef} className="flex-1 min-h-0 w-full">
+            <Hero
+              buttonLabel="How it Works"
+              onHowItWorks={() => {
+                setHasAutoplayed(true);
+                startFlow();
               }}
             />
-          )}
-          {showCompare && !showProfessors && !showGenerate && !showResults && (
-            <CompareSchedulesAnimation
-              onCaptionChange={setCaption}
-              onComplete={() => {
-                setTimeout(() => setShowProfessors(true), 200);
-              }}
-            />
-          )}
-          {showProfessors && !showGenerate && !showResults && (
-            <CompareProfessorsAnimation
-              onCaptionChange={setCaption}
-              onComplete={() => {
-                setTimeout(() => setShowGenerate(true), 300);
-              }}
-            />
-          )}
-          {showGenerate && !showResults && (
-            <GenerateSchedulesAnimation
-              onCaptionChange={setCaption}
-              onComplete={() => {
-                setTimeout(() => setShowResults(true), 250);
-              }}
-            />
-          )}
-          {showResults && (
-            <GeneratedResultsAnimation
-              onCaptionChange={setCaption}
-              onComplete={() => {
-                // Sequence ends here for now
-              }}
-            />
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* Animation flow area */}
+        {!showHero && (
+          <div className="flex-1 min-h-0 flex items-start justify-center pt-4 md:pt-6">
+            {!showCompare && !showProfessors && !showGenerate && !showResults && (
+              <LandingPageAnimation
+                onCaptionChange={setCaption}
+                onComplete={() => {
+                  setTimeout(() => setShowCompare(true), 500);
+                }}
+              />
+            )}
+            {showCompare && !showProfessors && !showGenerate && !showResults && (
+              <CompareSchedulesAnimation
+                onCaptionChange={setCaption}
+                onComplete={() => {
+                  setTimeout(() => setShowProfessors(true), 200);
+                }}
+              />
+            )}
+            {showProfessors && !showGenerate && !showResults && (
+              <CompareProfessorsAnimation
+                onCaptionChange={setCaption}
+                onComplete={() => {
+                  setTimeout(() => setShowGenerate(true), 300);
+                }}
+              />
+            )}
+            {showGenerate && !showResults && (
+              <GenerateSchedulesAnimation
+                onCaptionChange={setCaption}
+                onComplete={() => {
+                  setTimeout(() => setShowResults(true), 250);
+                }}
+              />
+            )}
+            {showResults && (
+              <GeneratedResultsAnimation
+                onCaptionChange={setCaption}
+                onComplete={() => {
+                  // Bring hero back and keep it
+                  setCaption('');
+                  setDisplayCaption('');
+                  setShowHero(true);
+                  // reset flow flags so replay will restart from the beginning
+                  resetFlow();
+                }}
+              />
+            )}
+          </div>
+        )}
       </div>
     </section>
   );

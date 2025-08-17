@@ -9,7 +9,12 @@ import gsap from 'gsap';
  *   so absolutely no residual pixels remain.
  */
 
-const Hero: React.FC = () => {
+interface HeroProps {
+  onHowItWorks?: () => void;
+  buttonLabel?: string;
+}
+
+const Hero: React.FC<HeroProps> = ({ onHowItWorks, buttonLabel }) => {
   const heroRef = useRef<HTMLDivElement>(null);
   const leadingWhiteRef = useRef<HTMLSpanElement>(null);
   const perfectRef = useRef<HTMLSpanElement>(null);
@@ -74,54 +79,6 @@ const Hero: React.FC = () => {
     }, heroRef);
 
     return () => ctx.revert();
-
-    tl.from([leadingWhiteRef.current, subRef.current, buttonRef.current], {
-      x: 150,
-      opacity: 0,
-      stagger: 0.1,
-      duration: 1,
-    })
-      .from(
-        perfectRef.current,
-        {
-          y: -90,
-          rotationX: 130,
-          opacity: 0,
-          duration: 0.9,
-          transformOrigin: '50% 0%',
-        },
-        '-=0.6'
-      )
-      .from(
-        uscRef.current,
-        {
-          y: 90,
-          opacity: 0,
-          duration: 0.8,
-        },
-        '-=0.4'
-      );
-
-    /* ---------------- ARROW DRAW ANIMATION ---------------- */
-    const stem = stemRef.current;
-    const head = headRef.current;
-    if (stem && head) {
-      const offsetExtra = 4; // extra px to push path fully off
-      const lenStem = stem.getTotalLength() + offsetExtra;
-      const lenHead = head.getTotalLength() + offsetExtra;
-
-      gsap.set(stem, { strokeDasharray: lenStem, strokeDashoffset: lenStem });
-      gsap.set(head, { strokeDasharray: lenHead, strokeDashoffset: lenHead });
-
-      gsap.timeline({ repeat: -1, repeatDelay: 1 })
-        .to(stem, { strokeDashoffset: 0, duration: 0.8, ease: 'power1.inOut' })
-        .to(head, { strokeDashoffset: 0, duration: 0.4, ease: 'power1.inOut' }, '-=0.2')
-        .to([head, stem], {
-          strokeDashoffset: (i: number, t: SVGPathElement) => (i === 0 ? lenHead : lenStem),
-          duration: 0.6,
-          ease: 'power1.in',
-        }, '+=0.6');
-    }
   }, []);
 
   return (
@@ -144,8 +101,16 @@ const Hero: React.FC = () => {
         <p ref={subRef} className="text-gray-100 text-lg md:text-xl">
           Generate conflict‑free timetables in under&nbsp;200&nbsp;ms.
         </p>
-        <button ref={buttonRef} className="mt-6 bg-[#990000] hover:bg-[#b31b1b] text-white transition-colors font-bold py-3 px-8 rounded-full text-lg">
-          Try it now
+        <button
+          ref={buttonRef}
+          className="mt-6 bg-[#990000] hover:bg-[#b31b1b] text-white transition-colors font-bold py-3 px-8 rounded-full text-lg"
+          onClick={(e) => {
+            if (!onHowItWorks) return;
+            e.preventDefault();
+            onHowItWorks();
+          }}
+        >
+          {buttonLabel ?? 'Try it now'}
         </button>
       </div>
     </section>
