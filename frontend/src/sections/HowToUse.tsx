@@ -134,41 +134,40 @@ const HowToUse = () => {
     <section
       ref={sectionRef}
       id="howto"
-      className="relative z-10 py-16 md:py-24 bg-zinc-900 text-white overflow-hidden"
+      className="relative h-screen bg-zinc-900 text-white overflow-hidden"
     >
-      <div className="container mx-auto px-4">
-        {/* Replaced big header with dynamic caption */}
-  <div className="max-w-4xl mx-auto mb-16 text-center">
+  <div className="container mx-auto px-4 h-full flex flex-col">
+        {/* Dynamic caption */}
+  <div className="max-w-4xl mx-auto mb-4 md:mb-6 text-center shrink-0">
           {displayCaption && (
             <h2 className="section-title text-3xl md:text-5xl font-bold tracking-tight">
               {renderCaption()}
             </h2>
           )}
         </div>
-
-        {!showCompare && !showProfessors && (
-      <LandingPageAnimation
-            onCaptionChange={setCaption}
-            onComplete={() => {
-              // Wait 1s after fade to blank before starting next step
-        setTimeout(() => setShowCompare(true), 500);
-            }}
-          />
-        )}
-        {showCompare && !showProfessors && (
-          <CompareSchedulesAnimation
-            onCaptionChange={setCaption}
-            onComplete={() => {
-              // minimal gap before professor compare
-              setTimeout(() => setShowProfessors(true), 200);
-            }}
-          />
-        )}
-        {showProfessors && (
-          <CompareProfessorsAnimation
-            onCaptionChange={setCaption}
-          />
-        )}
+  <div className="flex-1 min-h-0 flex items-start justify-center pt-4 md:pt-6">
+          {!showCompare && !showProfessors && (
+            <LandingPageAnimation
+              onCaptionChange={setCaption}
+              onComplete={() => {
+                // Wait briefly before starting next step
+                setTimeout(() => setShowCompare(true), 500);
+              }}
+            />
+          )}
+          {showCompare && !showProfessors && (
+            <CompareSchedulesAnimation
+              onCaptionChange={setCaption}
+              onComplete={() => {
+                // minimal gap before professor compare
+                setTimeout(() => setShowProfessors(true), 200);
+              }}
+            />
+          )}
+          {showProfessors && (
+            <CompareProfessorsAnimation onCaptionChange={setCaption} />
+          )}
+        </div>
       </div>
     </section>
   );

@@ -84,16 +84,16 @@ const CompareProfessorsAnimation: React.FC<CompareProfessorsAnimationProps> = ({
   }, [onCaptionChange, onComplete]);
 
   return (
-  <div ref={containerRef} className="w-full min-h-[360px] flex items-center justify-center relative z-10 opacity-0">
+    <div ref={containerRef} className="w-full min-h-[360px] flex items-center justify-center relative z-10 opacity-0">
       <div className="w-full flex items-center justify-center">
         <div className="flex flex-row items-center justify-center gap-6 md:gap-10">
           {professors.map((p) => (
             <div
               key={p.name}
               data-card
-              className="bg-white/10 rounded-lg p-4 shadow-md text-white w-40 md:w-52 aspect-square flex flex-col"
+              className="bg-white/10 rounded-lg p-5 shadow-md text-white w-48 md:w-64 aspect-square flex flex-col"
             >
-              <div className="font-semibold text-sm md:text-base mb-1 line-clamp-2">{p.name}</div>
+              <div className="font-semibold text-sm md:text-base mb-2 line-clamp-2">{p.name}</div>
               <div className="text-[10px] md:text-xs text-white/70 mb-2 truncate">{p.classCodes.join(', ')}</div>
 
               <div className="space-y-2 text-[10px] md:text-xs">

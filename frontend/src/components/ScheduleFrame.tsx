@@ -34,7 +34,6 @@ const END_HOUR      = 22; // 10 pm last visible hour
 const ROWS_PER_HOUR = 4;  // 60 / 15
 
 /** map abbreviations → css grid column (header row uses cols 2‑6) */
-const COL_MAP: Record<string, number> = { M: 2, T: 3, W: 4, Th: 5, F: 6 };
 
 
 const ScheduleFrame: React.FC<ScheduleFrameProps> = ({ classes }) => {
@@ -161,6 +160,7 @@ const ScheduleFrame: React.FC<ScheduleFrameProps> = ({ classes }) => {
                   gridRow: `${start} / span ${span}`,
                   zIndex: 10,
                 }}
+                data-course-code={cls.code}
               >
                 {/* course code */}
                 <span className="font-bold truncate text-[0.55rem] -mb-0.5">{cls.code}</span>
