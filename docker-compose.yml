@@ -1,0 +1,67 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: usc_scheduler_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./server/database/migrations/create_users_table.sql:/docker-entrypoint-initdb.d/001_auth.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - usc_net
+
+  api:
+    build:
+      context: .
+      dockerfile: ./server/Dockerfile
+    container_name: usc_scheduler_api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      USC_DB_HOST: db
+      USC_DB_PORT: 5432
+      USC_DB_NAME: ${POSTGRES_DB}
+      USC_DB_USER: ${POSTGRES_USER}
+      USC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+      SEMESTER: ${SEMESTER:-20253}
+    networks:
+      - usc_net
+
+  web:
+    build:
+      context: .
+      dockerfile: ./frontend/Dockerfile
+    container_name: usc_scheduler_web
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - usc_net
+
+volumes:
+  pgdata:
+
+networks:
+  usc_net:
+    driver: bridge

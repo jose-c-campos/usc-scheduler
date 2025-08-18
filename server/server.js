@@ -13,11 +13,10 @@ const scheduleRoutes = require('./routes/schedules');
 
 const app       = express();
 const PORT      = process.env.PORT || 3001;
-const SEMESTER  = '20253';                                              // ← adjust if needed
+const SEMESTER  = process.env.SEMESTER || '20253';                      // allow override via env
 const schedulerPath = path.resolve(__dirname, '../scheduler/build/scheduler');
 
-// Explicitly set development mode for local development
-process.env.NODE_ENV = process.env.NODE_ENV || 'development';
+// Do not force NODE_ENV here; respect container/platform setting
 
 /* ───────── middleware ───────── */
 // Robust CORS setup for both development and production
@@ -25,29 +24,26 @@ app.use(cors({
   origin: function(origin, callback) {
     // Allow requests with no origin (like mobile apps, curl requests)
     if (!origin) return callback(null, true);
-    
-    // Check if in development environment
-    const isDevelopment = process.env.NODE_ENV !== 'production';
-    
-    if (isDevelopment) {
+
+    const isProduction = process.env.NODE_ENV === 'production';
+    if (!isProduction) {
       // In development, allow any localhost origin
-      if (origin.match(/^https?:\/\/localhost:[0-9]+$/) || 
+      if (origin.match(/^https?:\/\/localhost:[0-9]+$/) ||
           origin.match(/^https?:\/\/127\.0\.0\.1:[0-9]+$/)) {
         return callback(null, true);
       }
-    } else {
-      // In production, allow only specific origins
-      // Update this with your actual production domain(s)
-      const allowedOrigins = [
-        'https://usc-scheduler.com',
-        'https://www.usc-scheduler.com'
-      ];
-      
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
     }
-    
+
+    // In production, allow list from env ALLOWED_ORIGINS (comma-separated)
+    const envOrigins = (process.env.ALLOWED_ORIGINS || '')
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    if (envOrigins.length > 0 && envOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
