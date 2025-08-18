@@ -12,8 +12,12 @@ COPY ./scheduler ./scheduler
 COPY ./server ./server
 
 # Build C++ scheduler
+# libpq headers are under /usr/include/postgresql on Debian/Ubuntu
 RUN mkdir -p /app/scheduler/build && \
-    g++ -O3 -std=c++17 /app/scheduler/*.cpp -lpq -pthread -o /app/scheduler/build/scheduler
+    g++ -O3 -std=c++17 /app/scheduler/*.cpp \
+       -I/usr/include/postgresql -L/usr/lib \
+       -lpq -pthread \
+       -o /app/scheduler/build/scheduler
 
 # Runtime stage
 FROM node:20-bookworm AS api
