@@ -6,7 +6,7 @@ import HowToUse from "./sections/HowToUse";
 import Auth from "./sections/Auth";
 import Profile from "./sections/Profile";
 import Landing from './sections/Landing';
-import TestAPI from './components/TestAPI';
+import TestAPI from './components/TestAPI.tsx';
 import './index.css'
 
 function App() {
