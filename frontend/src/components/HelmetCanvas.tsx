@@ -1,4 +1,5 @@
 import { Canvas } from '@react-three/fiber';
+import type { Group } from 'three';
 import { Suspense, useRef, useLayoutEffect } from 'react';
 import { OrbitControls, useGLTF } from '@react-three/drei';
 import gsap from 'gsap';
@@ -8,7 +9,7 @@ import helmetModel from '../assets/trojan_helmet/scene.gltf?url';
 gsap.registerPlugin(ScrollTrigger);
 
 const RotatingHelmet = () => {
-  const group = useRef<THREE.Group>(null);
+  const group = useRef<Group>(null);
   const { scene } = useGLTF(helmetModel);
 
   // Scroll‑controlled rotation
