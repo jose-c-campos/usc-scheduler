@@ -1,0 +1,35 @@
+# VCS
+.git
+.gitignore
+
+# Env/secrets
+.env
+.env.*
+
+# OS/editor
+.DS_Store
+*.swp
+*.tmp
+
+# Node
+**/node_modules
+**/npm-debug.log*
+**/yarn-debug.log*
+**/coverage
+**/.parcel-cache
+**/.vite
+
+# Build outputs (don’t send to Docker context)
+**/dist
+**/build
+scheduler/build
+
+# Local data/logs
+usc_sched.db
+logs
+*.log
+docker-data
+
+# IDE
+.vscode
+.idea
