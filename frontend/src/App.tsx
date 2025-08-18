@@ -6,7 +6,6 @@ import HowToUse from "./sections/HowToUse";
 import Auth from "./sections/Auth";
 import Profile from "./sections/Profile";
 import Landing from './sections/Landing';
-import TestAPI from './components/TestAPI.tsx';
 import './index.css'
 
 function App() {
@@ -22,7 +21,6 @@ function App() {
           <Route path="/howto" element={<HowToUse />} />
           <Route path="/login" element={<Auth />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/test" element={<TestAPI />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
