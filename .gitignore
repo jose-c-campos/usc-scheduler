@@ -84,3 +84,4 @@ docker-data/
 ########################
 # If you decide to track large binaries:
 # *.bin filter=lfs diff=lfs merge=lfs -text
+usc_sched.db
