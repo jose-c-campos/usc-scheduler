@@ -38,10 +38,10 @@ services:
   USC_DB_PASSWORD: ${USC_DB_PASSWORD:-REDACTED}
   # Optional: if your tables live outside the public schema, set a comma-separated list here
   USC_DB_SCHEMA: ${USC_DB_SCHEMA}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
-      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
-      SEMESTER: ${SEMESTER:-20253}
+  JWT_SECRET: ${JWT_SECRET}
+  JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+  ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+  SEMESTER: ${SEMESTER:-20253}
     networks:
       - usc_net
 
