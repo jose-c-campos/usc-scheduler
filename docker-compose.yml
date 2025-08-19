@@ -30,11 +30,14 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3001
-      USC_DB_HOST: db
-      USC_DB_PORT: 5432
-      USC_DB_NAME: ${POSTGRES_DB}
-      USC_DB_USER: ${POSTGRES_USER}
-      USC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+  # Point these at your existing database if you don't want to use the bundled "db" service
+  USC_DB_HOST: ${USC_DB_HOST:-db}
+  USC_DB_PORT: ${USC_DB_PORT:-5432}
+  USC_DB_NAME: ${USC_DB_NAME:-usc_sched}
+  USC_DB_USER: ${USC_DB_USER:-REDACTED}
+  USC_DB_PASSWORD: ${USC_DB_PASSWORD:-REDACTED}
+  # Optional: if your tables live outside the public schema, set a comma-separated list here
+  USC_DB_SCHEMA: ${USC_DB_SCHEMA}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}

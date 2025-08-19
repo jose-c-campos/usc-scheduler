@@ -76,6 +76,21 @@ const pool = new Pool({
   password: process.env.USC_DB_PASSWORD || 'REDACTED'
 });
 
+// If a custom schema is provided, set search_path when clients connect
+const customSchema = process.env.USC_DB_SCHEMA;
+if (customSchema) {
+  pool.on('connect', client => {
+    const schemas = String(customSchema)
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean)
+      .join(', ');
+    if (schemas) {
+      client.query(`SET search_path TO ${schemas}, public`).catch(() => {/* ignore */});
+    }
+  });
+}
+
 /* ───────── helpers ───────── */
 const formatProfessor = raw =>
   !raw ? 'TBA'
