@@ -161,6 +161,7 @@ const ScheduleFrame: React.FC<ScheduleFrameProps> = ({ classes }) => {
                   zIndex: 10,
                 }}
                 data-course-code={cls.code}
+                data-section-key={`${cls.code}__${(sec.type||'').toLowerCase()}__${sec.days.replace(/\s+/g,'') || 'days'}__${sec.time || 'time'}__${(sec.instructor||'').toLowerCase()}`}
               >
                 {/* course code */}
                 <span className="font-bold truncate text-[0.55rem] -mb-0.5">{cls.code}</span>
