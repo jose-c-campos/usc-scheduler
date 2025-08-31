@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ScheduleFrame from '../components/ScheduleFrame';
@@ -26,7 +26,13 @@ const Profile = () => {
   const [expandedScheduleIds, setExpandedScheduleIds] = useState<number[]>([]);
   const [expandingSchedule, setExpandingSchedule] = useState(false);
   const [professorData, setProfessorData] = useState<Record<number, any[]>>({});
+  // Selected schedules for comparison (order matters: [left, right])
+  const [compareSelection, setCompareSelection] = useState<number[]>([]);
+  const leftCompareRef = useRef<HTMLDivElement | null>(null);
+  const rightCompareRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
+  // Delete confirmation modal state
+  const [deleteTarget, setDeleteTarget] = useState<SavedSchedule | null>(null);
 
   useEffect(() => {
     // Redirect to login if not authenticated
@@ -55,15 +61,13 @@ const Profile = () => {
     fetchSavedSchedules();
   }, [isAuthenticated]);
 
-  const handleDeleteSchedule = async (scheduleId: number) => {
-    if (!window.confirm('Are you sure you want to delete this schedule?')) {
-      return;
-    }
-
+  const handleDeleteConfirmed = async () => {
+    if (!deleteTarget) return;
+    const scheduleId = deleteTarget.id;
     try {
       await api.delete(`/api/schedules/${scheduleId}`);
-      // Remove the deleted schedule from state
       setSavedSchedules(schedules => schedules.filter(s => s.id !== scheduleId));
+      setDeleteTarget(null);
     } catch (err) {
       console.error('Error deleting schedule:', err);
       setError('Failed to delete schedule');
@@ -73,6 +77,36 @@ const Profile = () => {
   const handleLoadSchedule = (schedule: SavedSchedule) => {
     // Navigate to scheduler with the schedule data
     navigate('/scheduler', { state: { loadedSchedule: schedule.schedule_data } });
+  };
+
+  /** Toggle compare selection for a schedule ID per custom rules:
+   *  - Click unselected (0 chosen) -> becomes left
+   *  - Click unselected (1 chosen) -> becomes right
+   *  - Click unselected (2 chosen) -> replaces right
+   *  - Click selected -> deselect it
+   */
+  const toggleCompare = async (scheduleId: number) => {
+    setCompareSelection(prev => {
+      // already selected => deselect
+      if (prev.includes(scheduleId)) {
+        return prev.filter(id => id !== scheduleId);
+      }
+      // not selected yet
+      if (prev.length === 0) return [scheduleId];
+      if (prev.length === 1) return [prev[0], scheduleId];
+      // length === 2 -> replace right (second)
+      return [prev[0], scheduleId];
+    });
+
+    // Ensure professor data preloaded for this schedule (non-blocking)
+    if (!professorData[scheduleId]) {
+      const schedule = savedSchedules.find(s => s.id === scheduleId);
+      if (schedule) {
+        getProfessorsFromSchedule(schedule.schedule_data).then(profs => {
+          setProfessorData(prev => ({ ...prev, [scheduleId]: profs }));
+        }).catch(() => {});
+      }
+    }
   };
 
   // Toggle accordion for a schedule
@@ -143,6 +177,83 @@ const Profile = () => {
       };
     });
   };
+
+  // Preload professor data when compare selection changes (only for newly added IDs)
+  useEffect(() => {
+    compareSelection.forEach(id => {
+      if (!professorData[id]) {
+        const schedule = savedSchedules.find(s => s.id === id);
+        if (schedule) {
+          getProfessorsFromSchedule(schedule.schedule_data).then(profs => {
+            setProfessorData(prev => ({ ...prev, [id]: profs }));
+          }).catch(() => {});
+        }
+      }
+    });
+  }, [compareSelection, professorData, savedSchedules]);
+
+  // Highlight unique sections between two compared schedules (section-level diff)
+  useEffect(() => {
+    // clear existing highlights
+    const clearHighlights = (root?: HTMLElement | null) => {
+      root?.querySelectorAll('.diff-highlight').forEach(el => {
+        el.classList.remove('diff-highlight', 'diff-animate');
+        // reset inline animation style if previously set
+        (el as HTMLElement).style.animation = '';
+      });
+    };
+    if (compareSelection.length !== 2) {
+      clearHighlights(leftCompareRef.current || undefined);
+      clearHighlights(rightCompareRef.current || undefined);
+      return;
+    }
+    const leftRoot = leftCompareRef.current;
+    const rightRoot = rightCompareRef.current;
+    if (!leftRoot || !rightRoot) return;
+
+    // collect section keys (fine-grained) else fallback to course-code
+    const collectSections = (root: HTMLElement) => {
+      const map = new Map<string, HTMLElement[]>();
+      root.querySelectorAll<HTMLElement>('[data-section-key]').forEach(el => {
+        const key = (el.getAttribute('data-section-key') || '').trim();
+        if (!key) return;
+        if (!map.has(key)) map.set(key, []);
+        map.get(key)!.push(el);
+      });
+      return map;
+    };
+    const leftSections = collectSections(leftRoot);
+    const rightSections = collectSections(rightRoot);
+
+    // determine unique section keys
+    const uniqueLeft: string[] = [];
+    const uniqueRight: string[] = [];
+    leftSections.forEach((_els, key) => { if (!rightSections.has(key)) uniqueLeft.push(key); });
+    rightSections.forEach((_els, key) => { if (!leftSections.has(key)) uniqueRight.push(key); });
+
+    // apply highlighting and synchronise animation by forcing reflow then setting same animation start
+    const apply = (keys: string[], map: Map<string, HTMLElement[]>) => {
+      keys.forEach(key => {
+        map.get(key)?.forEach(el => {
+          el.classList.add('diff-highlight');
+        });
+      });
+    };
+    apply(uniqueLeft, leftSections);
+    apply(uniqueRight, rightSections);
+
+    // Force reflow & then add animation class simultaneously so pulses align
+    const highlighted = [leftRoot, rightRoot].flatMap(r => Array.from(r.querySelectorAll('.diff-highlight')));
+    // remove existing animation classes if any (for consecutive comparisons)
+    highlighted.forEach(el => el.classList.remove('diff-animate'));
+    void document.body.offsetHeight; // reflow
+    highlighted.forEach(el => el.classList.add('diff-animate'));
+
+    return () => {
+      clearHighlights(leftRoot);
+      clearHighlights(rightRoot);
+    };
+  }, [compareSelection]);
 
   // Extract professor information from schedule
   const getProfessorsFromSchedule = async (scheduleData: any) => {
@@ -292,6 +403,13 @@ const Profile = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
+      {compareSelection.length > 0 && (
+        <style>{`
+          @keyframes diffGlowPulse { 0%,100% { box-shadow:0 0 0 rgba(255,199,0,0); } 50% { box-shadow:0 0 16px rgba(255,199,0,0.9), 0 0 6px rgba(255,199,0,0.85); } }
+          .diff-highlight { position:relative; }
+          .diff-highlight.diff-animate { animation: diffGlowPulse 1.6s ease-in-out infinite; }
+        `}</style>
+      )}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">My Profile</h1>
         <p className="text-white/70">
@@ -319,6 +437,67 @@ const Profile = () => {
         </div>
       </div>
 
+      {/* ─── Comparison Area (moved back above Saved Schedules) ─── */}
+      {compareSelection.length > 0 && (
+        <div className="mb-10 p-4 rounded-lg bg-white/5 border border-white/10">
+          <h2 className="text-xl font-semibold text-white mb-4">Compare Schedules</h2>
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Left schedule */}
+            {(() => {
+              const scheduleId = compareSelection[0];
+              const schedule = savedSchedules.find(s => s.id === scheduleId);
+              if (!schedule) return null;
+              const classes = formatScheduleForDisplay(schedule.schedule_data);
+              const profs = professorData[scheduleId] || [];
+              return (
+                <div ref={leftCompareRef} data-compare-slot="left" className="flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold text-white">{schedule.name}</h3>
+                      <p className="text-xs text-white/50">{new Date(schedule.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <div className="text-xs px-2 py-1 rounded bg-gray-700 text-white/70">Left</div>
+                  </div>
+                  <ScheduleFrame classes={classes} />
+                  <ProfessorFrame professors={profs} />
+                </div>
+              );
+            })()}
+            {/* Right schedule or placeholder */}
+            {(() => {
+              const scheduleId = compareSelection[1];
+              if (!scheduleId) {
+                return (
+                  <div className="rounded-lg border border-dashed border-white/15 min-h-[480px] flex items-center justify-center text-white/40 text-sm">
+                    Select another schedule to compare
+                  </div>
+                );
+              }
+              const schedule = savedSchedules.find(s => s.id === scheduleId);
+              if (!schedule) return null;
+              const classes = formatScheduleForDisplay(schedule.schedule_data);
+              const profs = professorData[scheduleId] || [];
+              return (
+                <div ref={rightCompareRef} data-compare-slot="right" className="flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold text-white">{schedule.name}</h3>
+                      <p className="text-xs text-white/50">{new Date(schedule.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <div className="text-xs px-2 py-1 rounded bg-gray-700 text-white/70">Right</div>
+                  </div>
+                  <ScheduleFrame classes={classes} />
+                  <ProfessorFrame professors={profs} />
+                </div>
+              );
+            })()}
+          </div>
+          {compareSelection.length === 2 && (
+            <div className="mt-3 text-[11px] text-white/40">Unique classes glow (present in only one schedule).</div>
+          )}
+        </div>
+      )}
+
       <div className="rounded-lg p-6">
         <h2 className="text-xl font-semibold text-white mb-4">Saved Schedules</h2>
         
@@ -344,8 +523,10 @@ const Profile = () => {
           </div>
         ) : (
           <div className="space-y-4 w-full max-w-7xl mx-auto">
-            {savedSchedules.map((schedule) => (
-              <div key={schedule.id} className="rounded-lg overflow-hidden hover:border-usc-red/50 transition-colors w-full mb-4 bg-white/5">
+            {savedSchedules.map((schedule) => {
+              const isCompared = compareSelection.includes(schedule.id);
+              return (
+              <div key={schedule.id} className={`rounded-lg overflow-hidden transition-colors w-full mb-4 bg-white/5 ${isCompared ? 'ring-1 ring-yellow-400/40' : ''}`}>
                 <div 
                   className="p-4 cursor-pointer flex items-center"
                   onClick={() => toggleScheduleExpand(schedule.id)}
@@ -378,10 +559,21 @@ const Profile = () => {
                       Created on {new Date(schedule.created_at).toLocaleDateString()}
                     </p>
                   </div>
+                  {/* Compare button */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleDeleteSchedule(schedule.id);
+                      toggleCompare(schedule.id);
+                    }}
+                    aria-pressed={isCompared}
+                    className={`ml-2 px-3 py-1 text-sm rounded transition-colors border border-white/30 ${isCompared ? 'bg-transparent text-white/70 hover:text-white' : 'bg-yellow-400 text-black hover:bg-yellow-300'} `}
+                  >
+                    {isCompared ? 'Selected' : 'Compare'}
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteTarget(schedule);
                     }}
                     className="ml-2 px-3 py-1 bg-transparent border border-white/30 text-white text-sm rounded hover:border-red-500 hover:text-red-500 transition-colors"
                   >
@@ -417,7 +609,7 @@ const Profile = () => {
                       <div className="text-center text-white/60 py-8">
                         <p className="mb-3">No schedule data available or format is incompatible.</p>
                         <button
-                          onClick={() => handleDeleteSchedule(schedule.id)}
+                          onClick={() => setDeleteTarget(schedule)}
                           className="px-3 py-1 bg-transparent border border-white/30 text-white text-sm rounded hover:border-red-500 hover:text-red-500 transition-colors"
                         >
                           Delete Invalid Schedule
@@ -427,10 +619,38 @@ const Profile = () => {
                   </div>
                 )}
               </div>
-            ))}
+            )})}
           </div>
         )}
       </div>
+      {/* Delete confirmation modal */}
+      {deleteTarget && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/70">
+          <div className="bg-gray-900 p-6 rounded-lg w-full max-w-md">
+            <h2 className="text-xl font-bold text-white mb-4">Delete Schedule</h2>
+            <p className="text-white/80 mb-6">Are you sure you want to delete <span className="text-usc-red font-semibold">{deleteTarget.name}</span>? This action cannot be undone.</p>
+            {error && (
+              <div className="mb-4 p-3 bg-red-800/30 border border-red-600 text-white rounded-lg">
+                {error}
+              </div>
+            )}
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="px-4 py-2 border border-white/30 text-white rounded-lg hover:border-white/50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConfirmed}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
