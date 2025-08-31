@@ -51,12 +51,43 @@ const ScheduleFrame: React.FC<ScheduleFrameProps> = ({ classes }) => {
   /* ─────────────────── helpers ─────────────────── */
 
   function tokensFromDays(raw: string): string[] {
-  return raw
-    .replace(/[{}]/g, '')           // strip { }
-    .replace(/-/g, ',')             // just in case we get "Mon-Wed"
-    .split(/[, ]+/)                 // split on comma OR space(s)
-    .filter(Boolean);               // drop empties
-}
+    if (!raw) return [];
+    const cleaned = raw
+      .replace(/[{}]/g, '')
+      .replace(/-/g, ',')
+      .trim();
+
+    const rough = cleaned.split(/[, ]+/).filter(Boolean);
+    const out: string[] = [];
+
+    rough.forEach(tok => {
+      // Directly handle common compact letter groups (MWF, TR, MTWRF variants)
+      const upper = tok.toUpperCase();
+      if (upper === 'MWF') { out.push('Mon', 'Wed', 'Fri'); return; }
+      if (upper === 'TR')  { out.push('Tue', 'Thu'); return; }
+      if (upper === 'MTWRF' || upper === 'MTWRF') { out.push('Mon','Tue','Wed','Thu','Fri'); return; }
+
+      // Expand concatenated full-name patterns like MonWedFri / MonWed / TueThu / WedFri
+      const fullMatches = tok.match(/(Mon|Tue|Wed|Thu|Fri)/gi);
+      if (fullMatches && fullMatches.length > 1) {
+        fullMatches.forEach(m => out.push(capitalizeDay(m)));
+        return;
+      }
+
+      out.push(tok);
+    });
+
+    // De-duplicate while preserving order
+    const seen = new Set<string>();
+    return out.filter(d => {
+      if (seen.has(d)) return false; seen.add(d); return true;
+    });
+  }
+
+  function capitalizeDay(d: string): string {
+    // normalise first letter upper rest lower for Mon/Tue/Wed/Thu/Fri
+    return d.charAt(0).toUpperCase() + d.slice(1).toLowerCase();
+  }
 
   /** map a single token to a canonical one‑letter / two‑letter code */
   function normaliseToken(tok: string): string {
@@ -108,6 +139,83 @@ const ScheduleFrame: React.FC<ScheduleFrameProps> = ({ classes }) => {
 
   const totalRows = (END_HOUR - START_HOUR + 1) * ROWS_PER_HOUR;
 
+  /* ─────────────────── conflict layout preprocessing ─────────────────── */
+  type Block = {
+    key: string;
+    code: string;
+    section: any;
+    color: string;
+    dayCol: number; // css grid column (2‑6)
+    startRow: number;
+    span: number;
+    slot?: number;           // horizontal slot index among overlapping set
+    maxConcurrent?: number;  // maximum simultaneous overlaps this block participates in
+  };
+
+  const blocks: Block[] = [];
+
+  classes.forEach((cls, cIdx) => {
+    cls.sections.forEach((sec, sIdx) => {
+      // Skip TBA time sections (per requirement)
+      if (!sec.time || /tba/i.test(sec.time)) return;
+      const cols = getDayColumns(sec.days);
+      if (!cols.length) return; // no valid day columns after parsing
+      const { start, span } = getTimePosition(sec.time);
+      cols.forEach((col, dIdx) => {
+        blocks.push({
+          key: `${cIdx}-${sIdx}-${dIdx}`,
+          code: cls.code,
+          section: sec,
+          color: CLASS_COLORS[cIdx % CLASS_COLORS.length],
+          dayCol: col,
+          startRow: start,
+          span,
+        });
+      });
+    });
+  });
+
+  // group blocks by day column
+  const byDay: Record<number, Block[]> = {};
+  blocks.forEach(b => { (byDay[b.dayCol] ||= []).push(b); });
+
+  Object.values(byDay).forEach(dayBlocks => {
+    // sort by start then end
+    dayBlocks.sort((a,b) => a.startRow === b.startRow ? (a.startRow + a.span) - (b.startRow + b.span) : a.startRow - b.startRow);
+    // active intervals with their slot
+    const active: Block[] = [];
+    // assign slots greedily
+    dayBlocks.forEach(block => {
+      // drop finished (endRow = startRow + span)
+      for (let i = active.length - 1; i >= 0; i--) {
+        const act = active[i];
+        const actEnd = act.startRow + act.span; // exclusive
+        if (actEnd <= block.startRow) active.splice(i,1);
+      }
+      const usedSlots = new Set(active.map(a => a.slot!));
+      let slot = 0; while (usedSlots.has(slot)) slot++;
+      block.slot = slot;
+      active.push(block);
+    });
+    // compute row concurrency counts
+    const rowCounts: Record<number, number> = {};
+    dayBlocks.forEach(b => {
+      const end = b.startRow + b.span;
+      for (let r = b.startRow; r < end; r++) {
+        rowCounts[r] = (rowCounts[r] || 0) + 1;
+      }
+    });
+    // compute each block's max concurrency across its rows
+    dayBlocks.forEach(b => {
+      let maxC = 1;
+      const end = b.startRow + b.span;
+      for (let r = b.startRow; r < end; r++) {
+        maxC = Math.max(maxC, rowCounts[r] || 1);
+      }
+      b.maxConcurrent = maxC;
+    });
+  });
+
   return (
     <div className="bg-white/10 rounded-lg p-1 overflow-x-auto">
       <div
@@ -141,52 +249,60 @@ const ScheduleFrame: React.FC<ScheduleFrameProps> = ({ classes }) => {
           </React.Fragment>
         ))}
 
-        {/* class blocks */}
-        {classes.map((cls, idx) =>
-          cls.sections.map((sec, sIdx) => {
-            const cols = getDayColumns(sec.days);
-            const { start, span } = getTimePosition(sec.time);
-            return cols.map((col, dIdx) => (
-              <div
-                key={`${idx}-${sIdx}-${dIdx}`}
-                className={`${CLASS_COLORS[idx % CLASS_COLORS.length]} rounded-md text-gray-800 p-0.5 flex flex-col text-[0.6rem] shadow overflow-hidden truncate ${
-                  sec.seats_registered !== undefined && 
-                  sec.seats_total !== undefined && 
-                  sec.seats_registered >= sec.seats_total ? 
-                  'ring-2 ring-red-600 ring-opacity-80' : ''
-                }`}
-                style={{
-                  gridColumn: col,
-                  gridRow: `${start} / span ${span}`,
-                  zIndex: 10,
-                }}
-                data-course-code={cls.code}
-                data-section-key={`${cls.code}__${(sec.type||'').toLowerCase()}__${sec.days.replace(/\s+/g,'') || 'days'}__${sec.time || 'time'}__${(sec.instructor||'').toLowerCase()}`}
-              >
-                {/* course code */}
-                <span className="font-bold truncate text-[0.55rem] -mb-0.5">{cls.code}</span>
-
-                {/* section type + seat counts */}
-                <div className="truncate text-[0.5rem] -mb-0.5">
-                  {sec.type && sec.type.charAt(0).toUpperCase() + sec.type.slice(1).toLowerCase()}{' '}
-                  {sec.seats_registered !== undefined && sec.seats_total !== undefined && (
-                    <span
-                      className={
-                        sec.seats_registered >= sec.seats_total ? 'font-bold text-red-700' : ''
-                      }
-                    >
-                      {sec.seats_registered}/{sec.seats_total}
-                    </span>
-                  )}
-                </div>
-                {/* instructor name */}
-                {sec.instructor && (
-                  <div className="truncate text-[0.5rem]">{sec.instructor}</div>
+        {/* class blocks with conflict-aware widths */}
+        {blocks.map(b => {
+          const sec = b.section;
+          const conflict = (b.maxConcurrent || 1) > 1;
+          const widthPct = 100 / (b.maxConcurrent || 1);
+          const leftPct = (b.slot || 0) * widthPct;
+          return (
+            <div
+              key={b.key}
+              className={`${b.color} rounded-md text-gray-800 p-0.5 flex flex-col shadow overflow-hidden truncate ${
+                conflict ? 'ring-1 ring-black/20' : ''
+              } ${
+                sec.seats_registered !== undefined &&
+                sec.seats_total !== undefined &&
+                sec.seats_registered >= sec.seats_total
+                  ? 'ring-2 ring-red-600 ring-opacity-80'
+                  : ''
+              }`}
+              style={{
+                gridColumn: b.dayCol,
+                gridRow: `${b.startRow} / span ${b.span}`,
+                zIndex: 10 + (b.slot || 0),
+                position: 'relative',
+                width: conflict ? `${widthPct}%` : '100%',
+                left: conflict ? `${leftPct}%` : undefined,
+                fontSize: conflict ? '0.55rem' : '0.6rem'
+              }}
+              data-course-code={b.code}
+              data-section-key={`${b.code}__${(sec.type||'').toLowerCase()}__${sec.days.replace(/\s+/g,'') || 'days'}__${sec.time || 'time'}__${(sec.instructor||'').toLowerCase()}`}
+              title={`${b.code} ${sec.type || ''} ${sec.time}`}
+            >
+              <span className={`font-bold truncate ${conflict ? 'text-[0.5rem]' : 'text-[0.55rem]'} -mb-0.5`}>
+                {b.code}
+              </span>
+              <div className={`truncate ${conflict ? 'text-[0.45rem]' : 'text-[0.5rem]'} -mb-0.5`}>
+                {sec.type && sec.type.charAt(0).toUpperCase() + sec.type.slice(1).toLowerCase()}{' '}
+                {sec.seats_registered !== undefined && sec.seats_total !== undefined && (
+                  <span
+                    className={
+                      sec.seats_registered >= sec.seats_total ? 'font-bold text-red-700' : ''
+                    }
+                  >
+                    {sec.seats_registered}/{sec.seats_total}
+                  </span>
                 )}
               </div>
-            ));
-          })
-        )}
+              {sec.instructor && (
+                <div className={`truncate ${conflict ? 'text-[0.45rem]' : 'text-[0.5rem]'}`}>
+                  {sec.instructor}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
