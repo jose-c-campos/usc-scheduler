@@ -36,14 +36,22 @@ const SaveScheduleModal: React.FC<SaveScheduleModalProps> = ({
   onSave
 }) => (
   <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/70">
-    <div className="bg-gray-900 p-6 rounded-lg w-full max-w-md">
-      <h2 className="text-xl font-bold text-white mb-4">Save Schedule</h2>
+    <div className="relative bg-gray-900 p-6 rounded-lg w-full max-w-md">
+      {/* Close (X) button */}
+      <button
+        aria-label="Close"
+        onClick={(e) => { e.preventDefault(); onClose(); }}
+        className="absolute top-2 right-2 text-white/70 hover:text-white px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-usc-red"
+      >
+        ×
+      </button>
+      <h2 className="text-xl font-bold text-white mb-4 pr-6">Save Schedule</h2>
 
       {!isAuthenticated ? (
         <div className="mb-4 p-4 bg-blue-800/30 border border-blue-600 text-white rounded-lg">
           <p className="mb-2">You need to log in to save schedules.</p>
           <a
-            href="/auth"
+            href="/login"
             className="inline-block px-4 py-2 bg-usc-red text-white rounded-lg hover:bg-red-800"
           >
             Log In / Sign Up
