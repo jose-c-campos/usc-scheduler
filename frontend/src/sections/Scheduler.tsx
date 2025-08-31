@@ -10,6 +10,101 @@ import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
 /* -------------------------------------------------------------------------- *
+ *  Extracted modal component (defined OUTSIDE Scheduler) so it does not get
+ *  re-created each render. Previously it was defined inside the Scheduler
+ *  component body which meant a new function identity every render; React then
+ *  unmounted & remounted the modal subtree on every keystroke, causing the
+ *  input to lose focus after each character. Moving it out stabilizes focus.
+ * -------------------------------------------------------------------------- */
+interface SaveScheduleModalProps {
+  isAuthenticated: boolean;
+  scheduleName: string;
+  saveError: string;
+  saveSuccess: string;
+  onChangeName: (v: string) => void;
+  onClose: () => void;
+  onSave: () => void;
+}
+
+const SaveScheduleModal: React.FC<SaveScheduleModalProps> = ({
+  isAuthenticated,
+  scheduleName,
+  saveError,
+  saveSuccess,
+  onChangeName,
+  onClose,
+  onSave
+}) => (
+  <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/70">
+    <div className="bg-gray-900 p-6 rounded-lg w-full max-w-md">
+      <h2 className="text-xl font-bold text-white mb-4">Save Schedule</h2>
+
+      {!isAuthenticated ? (
+        <div className="mb-4 p-4 bg-blue-800/30 border border-blue-600 text-white rounded-lg">
+          <p className="mb-2">You need to log in to save schedules.</p>
+          <a
+            href="/auth"
+            className="inline-block px-4 py-2 bg-usc-red text-white rounded-lg hover:bg-red-800"
+          >
+            Log In / Sign Up
+          </a>
+        </div>
+      ) : (
+        <>
+          {saveError && (
+            <div className="mb-4 p-3 bg-red-800/30 border border-red-600 text-white rounded-lg">
+              {saveError}
+            </div>
+          )}
+
+            {saveSuccess && (
+              <div className="mb-4 p-3 bg-green-800/30 border border-green-600 text-white rounded-lg">
+                {saveSuccess}
+              </div>
+            )}
+
+          <div className="mb-4">
+            <label htmlFor="schedule-name" className="block text-white mb-2">
+              Schedule Name
+            </label>
+            <input
+              type="text"
+              id="schedule-name"
+              value={scheduleName}
+              onChange={(e) => onChangeName(e.target.value)}
+              placeholder="My Fall 2025 Schedule"
+              className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-usc-red"
+              autoFocus
+            />
+          </div>
+
+          <div className="flex justify-end space-x-3">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                onClose();
+              }}
+              className="px-4 py-2 border border-white/30 text-white rounded-lg hover:border-white/50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                onSave();
+              }}
+              className="px-4 py-2 bg-usc-red text-white rounded-lg hover:bg-red-800"
+            >
+              Save
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  </div>
+);
+
+/* -------------------------------------------------------------------------- *
  *  Scheduler page – fully self‑contained version
  *  ‑ Handles: class‑spot inputs, preferences, SSE schedule generation stream,
  *             rendering of results + professor cards
@@ -200,77 +295,7 @@ const Scheduler: React.FC = () => {
     }
   };
   
-  // Save schedule modal component
-  const SaveScheduleModal = () => (
-    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/70">
-      <div className="bg-gray-900 p-6 rounded-lg w-full max-w-md">
-        <h2 className="text-xl font-bold text-white mb-4">Save Schedule</h2>
-        
-        {!isAuthenticated ? (
-          <div className="mb-4 p-4 bg-blue-800/30 border border-blue-600 text-white rounded-lg">
-            <p className="mb-2">You need to log in to save schedules.</p>
-            <a 
-              href="/auth" 
-              className="inline-block px-4 py-2 bg-usc-red text-white rounded-lg hover:bg-red-800"
-            >
-              Log In / Sign Up
-            </a>
-          </div>
-        ) : (
-          <>
-            {saveError && (
-              <div className="mb-4 p-3 bg-red-800/30 border border-red-600 text-white rounded-lg">
-                {saveError}
-              </div>
-            )}
-            
-            {saveSuccess && (
-              <div className="mb-4 p-3 bg-green-800/30 border border-green-600 text-white rounded-lg">
-                {saveSuccess}
-              </div>
-            )}
-            
-            <div className="mb-4">
-              <label htmlFor="schedule-name" className="block text-white mb-2">
-                Schedule Name
-              </label>
-              <input
-                type="text"
-                id="schedule-name"
-                value={scheduleName}
-                onChange={(e) => setScheduleName(e.target.value)}
-                placeholder="My Fall 2025 Schedule"
-                className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-usc-red"
-              />
-            </div>
-            
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  setSaveModalOpen(false);
-                  setSaveError('');
-                  setSaveSuccess('');
-                }}
-                className="px-4 py-2 border border-white/30 text-white rounded-lg hover:border-white/50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleSaveSchedule();
-                }}
-                className="px-4 py-2 bg-usc-red text-white rounded-lg hover:bg-red-800"
-              >
-                Save
-              </button>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
+  // (previous inline SaveScheduleModal removed – now external component above)
   const addClassSpot = () => {
     const newId = classSpots.length > 0 ? Math.max(...classSpots.map(s => s.id)) + 1 : 1;
     setClassSpots([...classSpots, { id: newId, classes: [{ classCode: '', selectedSections: {} }] }]);
@@ -557,7 +582,21 @@ const Scheduler: React.FC = () => {
       )}
       
       {/* Save Schedule Modal */}
-      {saveModalOpen && <SaveScheduleModal />}
+      {saveModalOpen && (
+        <SaveScheduleModal
+          isAuthenticated={isAuthenticated}
+          scheduleName={scheduleName}
+            saveError={saveError}
+            saveSuccess={saveSuccess}
+          onChangeName={setScheduleName}
+          onClose={() => {
+            setSaveModalOpen(false);
+            setSaveError('');
+            setSaveSuccess('');
+          }}
+          onSave={handleSaveSchedule}
+        />
+      )}
     </div>
   );
 };
