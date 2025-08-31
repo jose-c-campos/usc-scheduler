@@ -348,14 +348,14 @@ const ClassSpot = ({ index, classes, onUpdate, onRemove, onSectionsLoaded }: Cla
         </div>
       ))}
 
-      {/* + Add another class */}
+  {/* + Add alternative class */}
       <div className="mt-1 mb-8">
         {classes.length > 0 && (
           <button
             className="flex items-center text-white/60 hover:text-white text-xs"
             onClick={addClassInput}
           >
-            <FaPlus className="mr-1" /> Add another class
+            <FaPlus className="mr-1" /> Add alternative class (substitute)
           </button>
         )}
       </div>

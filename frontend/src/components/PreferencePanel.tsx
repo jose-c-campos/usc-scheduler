@@ -41,6 +41,28 @@ const PreferencePanel = ({ preferences, updatePreference }: PreferencePanelProps
   };
   return (
     <div className="space-y-8">
+      {/* Availability – moved to top */}
+      <div>
+        <h3 className="font-bold text-white mb-2">Availability</h3>
+        <div className="flex flex-col gap-2">
+          <label className="flex items-center gap-3 text-sm text-zinc-200 cursor-pointer">
+            <span
+              className={`w-5 h-5 flex items-center justify-center border-2 rounded bg-transparent transition-colors
+                ${preferences.excludeFullSections ? "border-usc-red bg-usc-red" : "border-zinc-400"}
+              `}
+              onClick={() => updatePreference("excludeFullSections", !preferences.excludeFullSections)}
+              tabIndex={0}
+              role="checkbox"
+              aria-checked={preferences.excludeFullSections}
+            >
+              {preferences.excludeFullSections && <FaCheck className="text-white text-xs" />}
+            </span>
+            {/* Label wording updated */}
+            Only Show Open Sections
+          </label>
+        </div>
+      </div>
+
       {/* Time of Day */}
       <div>
         <h3 className="font-bold text-white mb-2">Time of Day <span className="text-xs font-normal text-zinc-400">(Choose up to 2)</span></h3>
@@ -87,7 +109,7 @@ const PreferencePanel = ({ preferences, updatePreference }: PreferencePanelProps
         </div>
       </div>
 
-      {/* Class Length */}
+  {/* Class Length (click again to clear) */}
       <div>
         <h3 className="font-bold text-white mb-2">Class Length</h3>
         <div className="flex flex-col gap-2">
@@ -97,7 +119,7 @@ const PreferencePanel = ({ preferences, updatePreference }: PreferencePanelProps
                 className={`w-5 h-5 flex items-center justify-center border-2 rounded-full bg-transparent transition-colors
                   ${preferences.classLength === option.id ? "border-usc-red bg-usc-red" : "border-zinc-400"}
                 `}
-                onClick={() => updatePreference("classLength", option.id)}
+        onClick={() => updatePreference("classLength", preferences.classLength === option.id ? '' : option.id)}
                 tabIndex={0}
                 role="radio"
                 aria-checked={preferences.classLength === option.id}
@@ -145,26 +167,6 @@ const PreferencePanel = ({ preferences, updatePreference }: PreferencePanelProps
         </div>
       </div>
 
-      {/* New preference: Exclude Full Sections */}
-      <div>
-        <h3 className="font-bold text-white mb-2">Availability</h3>
-        <div className="flex flex-col gap-2">
-          <label className="flex items-center gap-3 text-sm text-zinc-200 cursor-pointer">
-            <span
-              className={`w-5 h-5 flex items-center justify-center border-2 rounded bg-transparent transition-colors
-                ${preferences.excludeFullSections ? "border-usc-red bg-usc-red" : "border-zinc-400"}
-              `}
-              onClick={() => updatePreference("excludeFullSections", !preferences.excludeFullSections)}
-              tabIndex={0}
-              role="checkbox"
-              aria-checked={preferences.excludeFullSections}
-            >
-              {preferences.excludeFullSections && <FaCheck className="text-white text-xs" />}
-            </span>
-            Only Show Available Sections
-          </label>
-        </div>
-      </div>
     </div>
   );
 };
