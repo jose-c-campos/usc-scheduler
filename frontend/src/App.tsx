@@ -20,6 +20,7 @@ function App() {
           <Route path="/scheduler" element={<Scheduler />} />
           <Route path="/howto" element={<HowToUse />} />
           <Route path="/login" element={<Auth />} />
+          <Route path="/reset-password" element={<Auth />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
 const crypto = require('crypto');
+const { sendPasswordResetEmail } = require('../services/mailer');
 
 // Initialize database connection pool (reusing your existing config)
 const pool = new Pool({
@@ -172,9 +173,8 @@ router.post('/forgot-password', async (req, res) => {
     const resetToken = crypto.randomBytes(32).toString('hex');
     const userId = user.rows[0].id;
     
-    // Set token expiration (1 hour from now)
-    const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 1);
+  // Set token expiration (15 minutes from now)
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
     
     console.log('Current time:', new Date());
     console.log('Expiration time:', expiresAt);
@@ -191,21 +191,18 @@ router.post('/forgot-password', async (req, res) => {
       [userId, resetToken, expiresAt]
     );
     
-    // For debugging purposes, let's check if the token was saved
-    const checkToken = await pool.query(
-      'SELECT * FROM password_reset_tokens WHERE user_id = $1',
-      [userId]
-    );
-    console.log('Saved token:', checkToken.rows[0]);
-    
-    // In a real application, you would send an email with a link containing the token
-    // For demo purposes, we'll just return the token in the response
-    console.log(`Password reset token for ${email}: ${resetToken}`);
-    
+    // Build reset link and send email (do not reveal account existence)
+    const appUrl = process.env.APP_URL || 'http://localhost:5173';
+    const resetLink = `${appUrl.replace(/\/$/, '')}/reset-password?token=${encodeURIComponent(resetToken)}`;
+
+    try {
+      await sendPasswordResetEmail(email, resetLink);
+    } catch (mailErr) {
+      console.warn('sendPasswordResetEmail failed (continuing generic response):', mailErr.message);
+    }
+
     res.status(200).json({ 
-      message: 'If a user with that email exists, a password reset link has been sent',
-      // Remove token in production
-      token: resetToken // This is just for testing purposes
+      message: 'If a user with that email exists, a password reset link has been sent'
     });
     
   } catch (error) {

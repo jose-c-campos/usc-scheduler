@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -28,6 +28,24 @@ const Auth = () => {
   // Reset password form state
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  // On mount, if there's a token in the URL, go straight to reset form
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    if (token) {
+      setResetToken(token);
+      setIsResetPassword(true);
+      setIsForgotPassword(false);
+      setIsLogin(false);
+    }
+  }, []);
+
+  // Password visibility toggles
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,22 +92,7 @@ const Auth = () => {
     
     try {
       await forgotPassword(forgotPasswordEmail);
-      setSuccess('Password reset instructions have been sent to your email');
-      
-      // For demo purposes, we'll automatically advance to the reset password form
-      // with a timeout to simulate receiving the email
-      setTimeout(() => {
-        // In a real app, the token would come from the URL in an email link
-        // For demo, we'd get the token from the query parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
-        
-        if (token) {
-          setResetToken(token);
-          setIsResetPassword(true);
-          setIsForgotPassword(false);
-        }
-      }, 3000);
+  setSuccess('If an account exists, a password reset link has been sent to your email');
       
     } catch (err: any) {
       setError(authError || 'Failed to process password reset request.');
@@ -188,14 +191,24 @@ const Auth = () => {
               <label htmlFor="password" className="block text-white mb-2">
                 Password
               </label>
-              <input
-                type="password"
-                id="password"
-                value={loginPassword}
-                onChange={(e) => setLoginPassword(e.target.value)}
-                required
-                className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-usc-red"
-              />
+              <div className="relative">
+                <input
+                  type={showLoginPassword ? 'text' : 'password'}
+                  id="password"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  required
+                  className="w-full p-3 pr-16 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-usc-red"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowLoginPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-white/70 hover:text-white"
+                  aria-label={showLoginPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showLoginPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
             </div>
             <div className="flex justify-end">
               <button
@@ -259,14 +272,24 @@ const Auth = () => {
               <label htmlFor="signup-password" className="block text-white mb-2">
                 Password
               </label>
-              <input
-                type="password"
-                id="signup-password"
-                value={signupPassword}
-                onChange={(e) => setSignupPassword(e.target.value)}
-                required
-                className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-usc-red"
-              />
+              <div className="relative">
+                <input
+                  type={showSignupPassword ? 'text' : 'password'}
+                  id="signup-password"
+                  value={signupPassword}
+                  onChange={(e) => setSignupPassword(e.target.value)}
+                  required
+                  className="w-full p-3 pr-16 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-usc-red"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowSignupPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-white/70 hover:text-white"
+                  aria-label={showSignupPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showSignupPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
               <p className="mt-1 text-xs text-white/60">
                 Must be at least 8 characters
               </p>
@@ -275,14 +298,24 @@ const Auth = () => {
               <label htmlFor="confirm-password" className="block text-white mb-2">
                 Confirm Password
               </label>
-              <input
-                type="password"
-                id="confirm-password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-usc-red"
-              />
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  id="confirm-password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  className="w-full p-3 pr-16 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-usc-red"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-white/70 hover:text-white"
+                  aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showConfirmPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
             </div>
             <button
               type="submit"
@@ -360,14 +393,24 @@ const Auth = () => {
                 <label htmlFor="new-password" className="block text-white mb-2">
                   New Password
                 </label>
-                <input
-                  type="password"
-                  id="new-password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  required
-                  className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-usc-red"
-                />
+                <div className="relative">
+                  <input
+                    type={showNewPassword ? 'text' : 'password'}
+                    id="new-password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                    className="w-full p-3 pr-16 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-usc-red"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-white/70 hover:text-white"
+                    aria-label={showNewPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showNewPassword ? 'Hide' : 'Show'}
+                  </button>
+                </div>
                 <p className="mt-1 text-xs text-white/60">
                   Must be at least 8 characters
                 </p>
@@ -376,14 +419,24 @@ const Auth = () => {
                 <label htmlFor="confirm-new-password" className="block text-white mb-2">
                   Confirm New Password
                 </label>
-                <input
-                  type="password"
-                  id="confirm-new-password"
-                  value={confirmNewPassword}
-                  onChange={(e) => setConfirmNewPassword(e.target.value)}
-                  required
-                  className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-usc-red"
-                />
+                <div className="relative">
+                  <input
+                    type={showConfirmNewPassword ? 'text' : 'password'}
+                    id="confirm-new-password"
+                    value={confirmNewPassword}
+                    onChange={(e) => setConfirmNewPassword(e.target.value)}
+                    required
+                    className="w-full p-3 pr-16 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-usc-red"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmNewPassword((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-white/70 hover:text-white"
+                    aria-label={showConfirmNewPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showConfirmNewPassword ? 'Hide' : 'Show'}
+                  </button>
+                </div>
               </div>
               <button
                 type="submit"
@@ -393,11 +446,14 @@ const Auth = () => {
                 {loading ? 'Resetting...' : 'Reset Password'}
               </button>
               <div className="text-center text-white/70">
-                <button
+        <button
                   type="button"
                   onClick={() => {
-                    setIsResetPassword(false);
-                    setIsLogin(true);
+          setIsResetPassword(false);
+          setIsLogin(true);
+          setResetToken('');
+          setError('');
+          setSuccess('');
                   }}
                   className="text-usc-red hover:underline"
                 >
