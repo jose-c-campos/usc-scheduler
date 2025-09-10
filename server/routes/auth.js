@@ -10,11 +10,15 @@ const { sendPasswordResetEmail } = require('../services/mailer');
 // Initialize database connection pool (reusing your existing config)
 const pool = new Pool({
   host:     process.env.USC_DB_HOST     || 'localhost', // Docker container is mapped to localhost
-  port:     process.env.USC_DB_PORT     || 5432,
+  port:     Number(process.env.USC_DB_PORT) || 5432,
   database: process.env.USC_DB_NAME     || 'usc_sched',
-  user:     process.env.USC_DB_USER     || 'REDACTED',
-  password: process.env.USC_DB_PASSWORD || 'REDACTED'
+  user:     process.env.USC_DB_USER,
+  password: process.env.USC_DB_PASSWORD
 });
+
+if (!process.env.USC_DB_USER || !process.env.USC_DB_PASSWORD) {
+  console.warn('USC_DB_USER/USC_DB_PASSWORD not set. API auth routes DB access may fail.');
+}
 
 // Environment variables for JWT
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key'; // IMPORTANT: Set this in production

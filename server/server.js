@@ -70,11 +70,16 @@ app.get('/api/schedules-test', (req, res) => {
 /* ───────── Postgres pool ───────── */
 const pool = new Pool({
   host:     process.env.USC_DB_HOST     || 'localhost', // Docker container is mapped to localhost
-  port:     process.env.USC_DB_PORT     || 5432,
+  port:     Number(process.env.USC_DB_PORT) || 5432,
   database: process.env.USC_DB_NAME     || 'usc_sched',
-  user:     process.env.USC_DB_USER     || 'REDACTED',
-  password: process.env.USC_DB_PASSWORD || 'REDACTED'
+  user:     process.env.USC_DB_USER,     // required via env
+  password: process.env.USC_DB_PASSWORD  // required via env
 });
+
+// Validate presence of required credentials early
+if (!process.env.USC_DB_USER || !process.env.USC_DB_PASSWORD) {
+  console.error('Database credentials missing: ensure USC_DB_USER and USC_DB_PASSWORD are set');
+}
 
 // If a custom schema is provided, set search_path when clients connect
 const customSchema = process.env.USC_DB_SCHEMA;

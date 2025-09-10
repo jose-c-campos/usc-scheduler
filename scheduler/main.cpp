@@ -299,10 +299,10 @@ int main(int argc, char* argv[]) {
     try {
         std::vector<std::vector<std::string>> class_spots;
         UserPreferences prefs;
-        std::string db_name = "usc_sched";
-        std::string db_user = "REDACTED";
-        std::string db_password = "REDACTED";
-        std::string db_host = "localhost";
+    std::string db_name = "usc_sched";
+    std::string db_user = "";
+    std::string db_password = "";
+    std::string db_host = "localhost";
         int db_port = 5432;
         std::string semester = "20253";
         try {
@@ -331,8 +331,9 @@ int main(int argc, char* argv[]) {
         std::shared_ptr<DatabaseConnection> db;
         try {
             if (db_name.empty()) db_name = "usc_sched";
-            if (db_user.empty()) db_user = "REDACTED";
-            if (db_password.empty()) db_password = "REDACTED";
+            if (db_user.empty() || db_password.empty()) {
+                throw std::runtime_error("USC_DB_USER/USC_DB_PASSWORD must be provided via env or CLI args");
+            }
             if (db_host.empty()) db_host = "localhost";
             if (semester.empty()) semester = "20253";
             db = std::make_shared<DatabaseConnection>(

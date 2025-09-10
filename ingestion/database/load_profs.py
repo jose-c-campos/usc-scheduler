@@ -4,12 +4,15 @@ from pathlib import Path
 import subprocess
 
 def get_db_conn():
-    return psycopg2.connect(
-        dbname="usc_sched",
-        user="REDACTED",
-        password="REDACTED",
-        host="localhost"
-    )
+    import os
+    dbname = os.getenv("USC_DB_NAME", "usc_sched")
+    user = os.getenv("USC_DB_USER")
+    password = os.getenv("USC_DB_PASSWORD")
+    host = os.getenv("USC_DB_HOST", "localhost")
+    port = int(os.getenv("USC_DB_PORT", "5432"))
+    if not user or not password:
+        raise RuntimeError("Missing USC_DB_USER/USC_DB_PASSWORD in environment for ingestion script")
+    return psycopg2.connect(dbname=dbname, user=user, password=password, host=host, port=port)
 
 def get_prof_data(name):
     """Call the Node.js CLI to get RMP data for a professor."""

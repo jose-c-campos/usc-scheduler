@@ -151,12 +151,15 @@ def main():
     if not semester:
         raise ValueError("Could not extract semester code from filename.")
 
-    conn = psycopg2.connect(
-        dbname="usc_sched",
-        user="REDACTED",
-        password="REDACTED",
-        host="localhost"
-    )
+    import os
+    dbname = os.getenv("USC_DB_NAME", "usc_sched")
+    user = os.getenv("USC_DB_USER")
+    password = os.getenv("USC_DB_PASSWORD")
+    host = os.getenv("USC_DB_HOST", "localhost")
+    port = int(os.getenv("USC_DB_PORT", "5432"))
+    if not user or not password:
+        raise RuntimeError("Missing USC_DB_USER/USC_DB_PASSWORD in environment for ingestion script")
+    conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host, port=port)
     cur = conn.cursor()
 
     print(f"Loading data for semester {semester}...")
