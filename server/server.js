@@ -467,28 +467,32 @@ app.post('/api/generate-schedules', async (req, res) => {
 });
 
 /* --------------------------------------------------------------------- */
-app.listen(PORT, () => {
-  console.log(`=================================================================`);
-  console.log(`✅ Server listening on http://localhost:${PORT}`);
-  console.log(`=================================================================`);
-  console.log('Available routes:');
-  console.log(`- GET /api/test                     (test server connection)`);
-  console.log(`- GET /api/available-classes        (get list of classes)`);
-  console.log(`- GET /api/class-sections/:code     (get sections for a class)`);
-  console.log(`- GET /api/professor-ratings        (get professor ratings)`);
-  console.log(`- GET /api/generate-schedules-stream (generate schedules via SSE)`);
-  console.log(`- POST /api/auth/signup             (create a new user account)`);
-  console.log(`- POST /api/auth/login              (login with email/password)`);
-  console.log(`- GET /api/auth/profile             (get user profile, requires token)`);
-  console.log(`- POST /api/auth/forgot-password    (request a password reset)`);
-  console.log(`- POST /api/auth/reset-password     (reset password with token)`);
-  console.log(`- GET /api/schedules/user           (get user's saved schedules, requires token)`);
-  console.log(`- POST /api/schedules               (save a new schedule, requires token)`);
-  console.log(`- GET /api/schedules/:id            (get a specific schedule, requires token)`);
-  console.log(`- PUT /api/schedules/:id            (update a saved schedule, requires token)`);
-  console.log(`- DELETE /api/schedules/:id         (delete a saved schedule, requires token)`);
-  console.log(`=================================================================`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`=================================================================`);
+    console.log(`✅ Server listening on http://localhost:${PORT}`);
+    console.log(`=================================================================`);
+    console.log('Available routes:');
+    console.log(`- GET /api/test                     (test server connection)`);
+    console.log(`- GET /api/available-classes        (get list of classes)`);
+    console.log(`- GET /api/class-sections/:code     (get sections for a class)`);
+    console.log(`- GET /api/professor-ratings        (get professor ratings)`);
+    console.log(`- GET /api/generate-schedules-stream (generate schedules via SSE)`);
+    console.log(`- POST /api/auth/signup             (create a new user account)`);
+    console.log(`- POST /api/auth/login              (login with email/password)`);
+    console.log(`- GET /api/auth/profile             (get user profile, requires token)`);
+    console.log(`- POST /api/auth/forgot-password    (request a password reset)`);
+    console.log(`- POST /api/auth/reset-password     (reset password with token)`);
+    console.log(`- GET /api/schedules/user           (get user's saved schedules, requires token)`);
+    console.log(`- POST /api/schedules               (save a new schedule, requires token)`);
+    console.log(`- GET /api/schedules/:id            (get a specific schedule, requires token)`);
+    console.log(`- PUT /api/schedules/:id            (update a saved schedule, requires token)`);
+    console.log(`- DELETE /api/schedules/:id         (delete a saved schedule, requires token)`);
+    console.log(`=================================================================`);
+  });
+}
+
+module.exports = { app, pool };
 /* ────────────────────────────────────────────────────────────────────── */
 
 /* ---------- helpers for the SSE route ---------- */
