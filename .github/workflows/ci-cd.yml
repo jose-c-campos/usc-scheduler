@@ -1,0 +1,142 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  # ── Job 1: Frontend TypeScript check, lint, and production build ────────────
+  frontend-checks:
+    name: Frontend — TypeScript, Lint, Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: frontend
+
+      - name: TypeScript type check
+        run: npm run typecheck
+        working-directory: frontend
+
+      - name: ESLint
+        run: npm run lint
+        working-directory: frontend
+
+      - name: Production build
+        run: npm run build
+        working-directory: frontend
+
+  # ── Job 2: Python ETL pytest suite (uses in-memory SQLite, no secrets) ──────
+  python-tests:
+    name: Python ETL Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: ingestion/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+        working-directory: ingestion
+
+      - name: Run pytest
+        run: python -m pytest app/tests/ -v
+        working-directory: ingestion
+
+  # ── Job 3: C++ compilation via Docker builder stage (tests production path) ─
+  cpp-compile:
+    name: C++ Compilation Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build C++ scheduler (builder stage only)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: server/Dockerfile
+          target: builder
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ── Job 4: Node.js API integration tests against a live CI Postgres ─────────
+  api-tests:
+    name: API Integration Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: usc_sched_test
+          POSTGRES_USER: ci_user
+          POSTGRES_PASSWORD: ci_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: server
+
+      - name: Load database schema
+        run: psql -h localhost -U ci_user -d usc_sched_test -f server/database/migrations/create_users_table.sql
+        env:
+          PGPASSWORD: ci_password
+
+      - name: Run API tests
+        run: npm test
+        working-directory: server
+        env:
+          USC_DB_HOST: localhost
+          USC_DB_PORT: '5432'
+          USC_DB_NAME: usc_sched_test
+          USC_DB_USER: ci_user
+          USC_DB_PASSWORD: ci_password
+          JWT_SECRET: ci-test-jwt-secret
+          NODE_ENV: test
+
+  # ── Job 5: Deploy to AWS Lightsail (only runs if all 4 jobs above pass) ──────
+  deploy:
+    name: Deploy to AWS Lightsail
+    needs: [frontend-checks, python-tests, cpp-compile, api-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH deploy
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.LIGHTSAIL_HOST }}
+          username: ${{ secrets.LIGHTSAIL_USER }}
+          key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/apps/usc-scheduler
+            git pull origin main
+            docker compose up --build -d --remove-orphans
