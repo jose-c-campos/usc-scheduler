@@ -54,7 +54,7 @@ const Auth = () => {
     try {
       await login(loginEmail, loginPassword);
       navigate('/scheduler');
-    } catch (err: any) {
+    } catch {
       setError(authError || 'Login failed. Please try again.');
     }
   };
@@ -79,7 +79,7 @@ const Auth = () => {
     try {
       await signup(signupName, signupEmail, signupPassword);
       navigate('/scheduler');
-    } catch (err: any) {
+    } catch {
       setError(authError || 'Signup failed. Please try again.');
     }
   };
@@ -94,7 +94,7 @@ const Auth = () => {
       await forgotPassword(forgotPasswordEmail);
   setSuccess('If an account exists, a password reset link has been sent to your email');
       
-    } catch (err: any) {
+    } catch {
       setError(authError || 'Failed to process password reset request.');
     }
   };
@@ -127,7 +127,7 @@ const Auth = () => {
         setIsLogin(true);
       }, 2000);
       
-    } catch (err: any) {
+    } catch {
       setError(authError || 'Failed to reset password.');
     }
   };

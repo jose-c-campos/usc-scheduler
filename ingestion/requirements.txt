@@ -1,7 +1,26 @@
-fastapi
-sqlalchemy
-pydantic
-pytest
-aiosqlite
-selenium>=4.20          # browser automation
-webdriver-manager~=4.0  # auto-downloads the right ChromeDriver
+# Pinned deliberately. This file is installed from scratch by CI on every run
+# (.github/workflows/ci-cd.yml -> python-tests), so unpinned entries mean CI can
+# break with no code change when an upstream package publishes a new release.
+# When bumping, install into a clean venv and run: python -m pytest app/tests/ -v
+
+# ── Web framework (ingestion/app/main.py, app/api/) ─────────────────────────
+fastapi==0.115.14
+starlette==0.46.2
+pydantic==2.11.7
+
+# ── ORM + async driver (app/core/database.py, app/models/) ──────────────────
+sqlalchemy==2.0.41
+aiosqlite==0.21.0
+
+# ── Postgres driver (ingestion/database/load_courses.py, load_profs.py) ─────
+psycopg2-binary==2.9.10
+
+# ── Scrapers (app/scrapers/) ────────────────────────────────────────────────
+selenium==4.33.0
+webdriver-manager==4.1.2
+beautifulsoup4==4.13.4
+requests==2.32.4
+
+# ── Tests ───────────────────────────────────────────────────────────────────
+pytest==8.4.1
+httpx==0.28.1   # required by fastapi.testclient.TestClient (app/tests/test_api_schedules.py)

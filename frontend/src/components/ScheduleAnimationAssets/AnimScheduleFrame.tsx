@@ -69,7 +69,7 @@ const AnimScheduleFrame: React.FC<AnimScheduleFrameProps> = ({ classes, minHeigh
     const parse = (s: string) => {
       const m = s.trim().match(/(\d+):(\d+)\s*(am|pm)/i);
       if (!m) return null;
-      let h = (+m[1] % 12) + (m[3].toLowerCase() === 'pm' ? 12 : 0);
+      const h = (+m[1] % 12) + (m[3].toLowerCase() === 'pm' ? 12 : 0);
       return { h, m: +m[2] };
     };
     const s = parse(startStr);

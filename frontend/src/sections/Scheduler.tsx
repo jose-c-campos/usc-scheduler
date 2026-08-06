@@ -158,7 +158,6 @@ const Scheduler: React.FC = () => {
   const [scheduleName, setScheduleName] = useState('');
   const [saveError, setSaveError] = useState('');
   const [saveSuccess, setSaveSuccess] = useState('');
-  const [selectedScheduleIndex, setSelectedScheduleIndex] = useState(0);
   
   // Get auth context
   const { isAuthenticated } = useAuth();
@@ -463,7 +462,7 @@ const Scheduler: React.FC = () => {
                   <p className="text-xl font-semibold">Building all possible schedules…</p>
                   {buildStats.total > 0 && (
                     <p className="text-sm mt-2 text-white/70">
-                      {buildStats.total.toLocaleString()} built in {buildStats.ms} ms&nbsp;
+                      {buildStats.total.toLocaleString()} built in {buildStats.ms}&#8239;ms&nbsp;
                       ({Math.round(buildStats.total / Math.max(buildStats.ms, 1))}/ms)
                     </p>
                   )}
@@ -474,7 +473,7 @@ const Scheduler: React.FC = () => {
                 <>
                   <p className="text-xl font-semibold">Finding the optimal schedules…</p>
                   {scoreMs > 0 && (
-                    <p className="text-sm mt-2 text-white/70">Scored in {scoreMs} ms</p>
+                    <p className="text-sm mt-2 text-white/70">Scored in {scoreMs}&#8239;ms</p>
                   )}
                 </>
               )}

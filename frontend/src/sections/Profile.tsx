@@ -74,11 +74,6 @@ const Profile = () => {
     }
   };
 
-  const handleLoadSchedule = (schedule: SavedSchedule) => {
-    // Navigate to scheduler with the schedule data
-    navigate('/scheduler', { state: { loadedSchedule: schedule.schedule_data } });
-  };
-
   /** Toggle compare selection for a schedule ID per custom rules:
    *  - Click unselected (0 chosen) -> becomes left
    *  - Click unselected (1 chosen) -> becomes right
