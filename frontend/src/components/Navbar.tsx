@@ -10,7 +10,7 @@ interface NavbarProps {
 const Navbar = ({ activeSection, setActiveSection }: NavbarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   
   // Define nav links based on authentication status
   const navLinks = [

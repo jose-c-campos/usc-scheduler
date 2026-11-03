@@ -13,6 +13,13 @@ Thumbs.db
 .venv/
 
 ########################
+#  Python build cruft  #
+########################
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+########################
 #  Environment/Secrets #
 ########################
 .env
@@ -85,3 +92,9 @@ docker-data/
 # If you decide to track large binaries:
 # *.bin filter=lfs diff=lfs merge=lfs -text
 usc_sched.db
+
+########################
+#  Claude agent context #
+########################
+claude/
+.claude/settings.local.json

@@ -102,7 +102,7 @@ const CompareSchedulesAnimation: React.FC<CompareSchedulesAnimationProps> = ({ o
 
     const collectDiffNodes = (): HTMLElement[] => {
       const root = containerRef.current!;
-      let nodes: HTMLElement[] = [];
+      const nodes: HTMLElement[] = [];
       // primary: robust by data attribute
       root
         .querySelectorAll<HTMLElement>('div.rounded-md[data-course-code]')

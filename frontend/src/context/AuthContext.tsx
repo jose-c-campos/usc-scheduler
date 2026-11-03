@@ -42,7 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const response = await axios.get('/api/auth/profile');
           setUser(response.data.user);
           setIsAuthenticated(true);
-        } catch (err) {
+        } catch {
           // Token invalid or expired
           localStorage.removeItem('token');
           localStorage.removeItem('user');
@@ -164,7 +164,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-// Custom hook to use the auth context
+// Custom hook to use the auth context.
+// Exported alongside AuthProvider from the same file, which costs this file
+// its Fast Refresh support. Splitting the hook out would touch every consumer
+// for a dev-only ergonomic gain, so it stays here deliberately.
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {

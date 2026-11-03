@@ -5,7 +5,7 @@ interface ScheduleFrameProps {
     code: string;
     sections: Array<{
       type: string;
-      days: string;   // "{Tue,Thu}, Tue, Thu" etc – raw from backend
+      days: string;   // "{Tue,Thu}, Tue, Thu" etc – raw from backend
       time: string;   // "12:30 pm-1:50 pm" or "TBA"
       instructor: string;
       seats_registered?: number;
@@ -28,10 +28,10 @@ const CLASS_COLORS = [
 
 /* -------------------------------------------------------------------------- */
 
-const ROW_PX        = 6;  // each grid row = 15 minutes → 6 px tall
-const START_HOUR    = 6;  // 6 am first visible hour
-const END_HOUR      = 22; // 10 pm last visible hour
-const ROWS_PER_HOUR = 4;  // 60 / 15
+const ROW_PX        = 6;  // each grid row = 15 minutes → 6 px tall
+const START_HOUR    = 6;  // 6 am first visible hour
+const END_HOUR      = 22; // 10 pm last visible hour
+const ROWS_PER_HOUR = 4;  // 60 / 15
 
 /** map abbreviations → css grid column (header row uses cols 2‑6) */
 
@@ -119,7 +119,7 @@ const ScheduleFrame: React.FC<ScheduleFrameProps> = ({ classes }) => {
     const parse = (s: string) => {
       const m = s.trim().match(/(\d+):(\d+)\s*(am|pm)/i);
       if (!m) return null;
-      let h = (+m[1] % 12) + (m[3].toLowerCase() === 'pm' ? 12 : 0);
+      const h = (+m[1] % 12) + (m[3].toLowerCase() === 'pm' ? 12 : 0);
       return { h, m: +m[2] };
     };
 

@@ -5,7 +5,7 @@ import gsap from 'gsap';
  * Hero – final version (arrow fix)
  * -----------------------------------------------------------
  * • Text animations as before.
- * • Scroll arrow now uses `strokeLinecap="butt"` and resets with +4 px offset
+ * • Scroll arrow now uses `strokeLinecap="butt"` and resets with +4 px offset
  *   so absolutely no residual pixels remain.
  */
 

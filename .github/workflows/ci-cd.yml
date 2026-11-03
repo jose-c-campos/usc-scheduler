@@ -3,6 +3,12 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [main]
+  # Run the checks on PRs too, so a broken build is caught *before* it lands on
+  # main. Without this, the only feedback arrives post-merge — which is how a
+  # never-passing python-tests job went unnoticed for three months.
+  # The deploy job below is guarded so pull requests never deploy.
+  pull_request:
+    branches: [main]
 
 jobs:
   # ── Job 1: Frontend TypeScript check, lint, and production build ────────────
@@ -10,9 +16,9 @@ jobs:
     name: Frontend — TypeScript, Lint, Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '20'
           cache: 'npm'
@@ -39,9 +45,9 @@ jobs:
     name: Python ETL Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -60,13 +66,13 @@ jobs:
     name: C++ Compilation Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Build C++ scheduler (builder stage only)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: server/Dockerfile
@@ -95,9 +101,9 @@ jobs:
           - 5432:5432
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '20'
           cache: 'npm'
@@ -128,6 +134,8 @@ jobs:
   deploy:
     name: Deploy to AWS Lightsail
     needs: [frontend-checks, python-tests, cpp-compile, api-tests]
+    # Only ever deploy from a real push to main — never from a pull request.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: SSH deploy
