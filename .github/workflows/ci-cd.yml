@@ -144,7 +144,33 @@ jobs:
           host: ${{ secrets.LIGHTSAIL_HOST }}
           username: ${{ secrets.LIGHTSAIL_USER }}
           key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+          # Abort the remote script on the first failing command. Without this the
+          # block ran to completion regardless: on 2026-11-03 `git pull` failed with
+          # "Permission denied (publickey)" (the box's deploy key was not registered
+          # on the repo), the next line rebuilt the images from the stale checkout
+          # already on disk, and the job reported success. A deploy that cannot
+          # deploy but still goes green is the same class of hidden failure as the
+          # never-passing python-tests job.
+          script_stop: true
           script: |
+            set -euo pipefail
             cd /home/ubuntu/apps/usc-scheduler
             git pull origin main
             docker compose up --build -d --remove-orphans
+
+            # Prove the stack actually came back. The host nginx terminates TLS and
+            # proxies to the web container on 127.0.0.1:8080; check the SPA and the
+            # API through that same path.
+            for i in $(seq 1 20); do
+              if curl -fsS -o /dev/null http://127.0.0.1:8080/ \
+                 && curl -fsS -o /dev/null http://127.0.0.1:8080/api/test; then
+                echo "health check passed after $((i * 3))s"
+                exit 0
+              fi
+              sleep 3
+            done
+
+            echo "health check FAILED: SPA or API not responding 60s after deploy" >&2
+            docker compose ps
+            docker compose logs --tail 50 api web
+            exit 1
