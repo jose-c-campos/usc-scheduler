@@ -67,17 +67,6 @@ services:
     networks:
       - usc_net
 
-  certbot:
-    image: certbot/certbot:latest
-    container_name: usc_scheduler_certbot
-    volumes:
-      - certbot-web:/var/www/certbot
-      - letsencrypt:/etc/letsencrypt
-    entrypoint: /bin/sh
-    command: -c "trap 'exit 0' TERM; while :; do sleep 12h & wait $!; certbot renew --webroot -w /var/www/certbot --quiet; done"
-    networks:
-      - usc_net
-
 volumes:
   pgdata:
   certbot-web:
