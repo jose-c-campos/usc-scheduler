@@ -1,10 +1,49 @@
+import argparse
 import json
+import os
 import psycopg2
 import re
 
 def extract_semester_from_filename(filename):
     match = re.search(r'(\d{5,6})', filename)
     return match.group(1) if match else None
+
+def resolve_semester(json_file, semester_arg=None):
+    """Work out which USC term code to load the catalog under.
+
+    The term code comes from --semester if given, otherwise from the JSON's
+    *basename* (usc_<term>_courses.json). The directory is never searched: a
+    path like runs/20261104/usc_20261_courses.json would otherwise match
+    '202611', and the courses would load under a semester the API never asks
+    for, which fails silently. If --semester and the filename disagree, that is
+    an error, not a tie-break.
+    """
+    from_filename = extract_semester_from_filename(os.path.basename(json_file))
+    if semester_arg and from_filename and semester_arg != from_filename:
+        raise ValueError(
+            f"--semester {semester_arg} disagrees with the term code in the filename "
+            f"({from_filename}): {json_file}"
+        )
+    semester = semester_arg or from_filename
+    if not semester:
+        raise ValueError(
+            f"Could not determine the semester for {json_file}: pass --semester, "
+            f"or name the file usc_<term>_courses.json"
+        )
+    if not re.fullmatch(r'\d{5}', semester):
+        raise ValueError(f"Semester must be a 5-digit USC term code like 20261, got {semester!r}")
+    return semester
+
+def parse_args(argv=None):
+    ap = argparse.ArgumentParser(
+        description="Upsert a scraped USC course catalog into the courses and sections tables."
+    )
+    ap.add_argument('--json-file', required=True,
+                    help='path to usc_<term>_courses.json (output of the section scraper)')
+    ap.add_argument('--semester',
+                    help='USC term code, e.g. 20261. Defaults to the code in the JSON filename; '
+                         'if both are present they must agree.')
+    return ap.parse_args(argv)
 
 def parse_schedule(schedule):
     if not schedule or schedule.strip().upper() == "TBA":
@@ -145,13 +184,11 @@ def link_parent_sections(cur, course_id, section_links):
             WHERE course_id = %s AND section_number = %s
         """, (course_id, parent_section_number, course_id, child_section_number))
 
-def main():
-    json_file = '../app/scraped_data/usc_20253_courses.json'
-    semester = extract_semester_from_filename(json_file)
-    if not semester:
-        raise ValueError("Could not extract semester code from filename.")
+def main(argv=None):
+    args = parse_args(argv)
+    json_file = args.json_file
+    semester = resolve_semester(json_file, args.semester)
 
-    import os
     dbname = os.getenv("USC_DB_NAME", "usc_sched")
     user = os.getenv("USC_DB_USER")
     password = os.getenv("USC_DB_PASSWORD")
@@ -162,7 +199,7 @@ def main():
     conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host, port=port)
     cur = conn.cursor()
 
-    print(f"Loading data for semester {semester}...")
+    print(f"Loading data for semester {semester} from {json_file} into {dbname}@{host}:{port}...")
     with open(json_file, 'r') as f:
         data = json.load(f)
 

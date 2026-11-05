@@ -1,3 +1,4 @@
+import argparse
 import json
 import psycopg2
 from pathlib import Path
@@ -171,9 +172,22 @@ def update_professor(cur, name, prof_data):
     
     return professor_id
 
-def main():
-    # Load all instructors from your courses JSON
-    json_file = Path(__file__).parent.parent.parent / "usc_20253_courses.json"
+def parse_args(argv=None):
+    ap = argparse.ArgumentParser(
+        description="Look up every instructor in a scraped course catalog on RateMyProfessors "
+                    "and upsert professors, reviews and prof_course_ratings."
+    )
+    ap.add_argument('--json-file', required=True,
+                    help='path to usc_<term>_courses.json. Pass the SAME file given to '
+                         'load_courses.py, or instructors in the loaded catalog get no ratings.')
+    return ap.parse_args(argv)
+
+def main(argv=None):
+    args = parse_args(argv)
+    # Load all instructors from the courses JSON. Professors are not
+    # semester-scoped, so no term code is needed here.
+    json_file = Path(args.json_file)
+    print(f"Reading instructors from {json_file}")
     with open(json_file, "r") as f:
         data = json.load(f)
 

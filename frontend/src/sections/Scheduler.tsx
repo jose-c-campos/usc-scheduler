@@ -8,6 +8,7 @@ import ProfessorFrame from '../components/ProfessorFrame';
 import SchedulePreview from '../components/SchedulePreview';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import { fetchActiveSemester, formatSemester, useActiveSemester } from '../lib/semester';
 
 /* -------------------------------------------------------------------------- *
  *  Extracted modal component (defined OUTSIDE Scheduler) so it does not get
@@ -21,6 +22,7 @@ interface SaveScheduleModalProps {
   scheduleName: string;
   saveError: string;
   saveSuccess: string;
+  namePlaceholder: string;
   onChangeName: (v: string) => void;
   onClose: () => void;
   onSave: () => void;
@@ -31,6 +33,7 @@ const SaveScheduleModal: React.FC<SaveScheduleModalProps> = ({
   scheduleName,
   saveError,
   saveSuccess,
+  namePlaceholder,
   onChangeName,
   onClose,
   onSave
@@ -80,7 +83,7 @@ const SaveScheduleModal: React.FC<SaveScheduleModalProps> = ({
               id="schedule-name"
               value={scheduleName}
               onChange={(e) => onChangeName(e.target.value)}
-              placeholder="My Fall 2025 Schedule"
+              placeholder={namePlaceholder}
               className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-usc-red"
               autoFocus
             />
@@ -162,6 +165,9 @@ const Scheduler: React.FC = () => {
   // Get auth context
   const { isAuthenticated } = useAuth();
   const location = useLocation();
+
+  // Display only (the modal placeholder). The save path fetches its own copy.
+  const activeSemester = useActiveSemester();
   
   // Check if we have a loaded schedule from profile page
   useEffect(() => {
@@ -199,7 +205,20 @@ const Scheduler: React.FC = () => {
     // Clear previous messages
     setSaveError('');
     setSaveSuccess('');
-    
+
+    // The semester comes from the API (SEMESTER env var), never a frontend
+    // default. This is the cached page-load request, so it's normally instant.
+    // If it can't be determined we refuse to save rather than guess. A wrong
+    // semester on a saved schedule fails silently, and nothing would flag it.
+    let semester: string;
+    try {
+      semester = await fetchActiveSemester();
+    } catch (err) {
+      console.error('Error determining active semester:', err);
+      setSaveError("Couldn't determine the current semester, so the schedule wasn't saved. Please try again.");
+      return;
+    }
+
     try {
       // Get all class selections that have a class code and at least one selected section
       const validClassSelections = getAllClassSelections().filter(
@@ -282,7 +301,7 @@ const Scheduler: React.FC = () => {
       
       await api.post('/api/schedules', {
         name: scheduleName,
-        semester: '20253', // Use the current semester
+        semester,
         schedule_data: scheduleData
       });
       
@@ -595,6 +614,7 @@ const Scheduler: React.FC = () => {
           scheduleName={scheduleName}
             saveError={saveError}
             saveSuccess={saveSuccess}
+          namePlaceholder={activeSemester ? `My ${formatSemester(activeSemester)} Schedule` : 'My Schedule'}
           onChangeName={setScheduleName}
           onClose={() => {
             setSaveModalOpen(false);
