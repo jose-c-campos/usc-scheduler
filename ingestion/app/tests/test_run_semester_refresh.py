@@ -181,7 +181,8 @@ def test_probe_command_fails_loudly_when_usc_does(tmp_path):
 
 # ─── snapshots ───────────────────────────────────────────────────────────────
 
-@pytest.mark.parametrize("new,prev,trips", [(900, 1000, False), (899, 1000, True), (10, None, False), (5, 0, False)])
+@pytest.mark.parametrize("new,prev,trips", [(950, 1000, False), (949, 1000, True), (1200, 1000, False),
+                                            (10, None, False), (5, 0, False)])
 def test_shrink_guard(new, prev, trips):
     assert (rsr.shrink_problem(new, prev) is not None) == trips
 

@@ -53,7 +53,7 @@ DEFAULT_RUNS_DIR = INGESTION_DIR / "runs"
 
 EXIT_OK, EXIT_FAILED, EXIT_CONFIG, EXIT_LOCKED = 0, 1, 2, 3
 KEEP_RUNS_PER_TERM = 8
-SHRINK_LIMIT = 0.90  # a new catalog with < 90% of the last good snapshot's sections isn't loaded
+SHRINK_LIMIT = 0.95  # a new catalog with < 95% of the last good snapshot's sections isn't loaded (user, 2026-11-13)
 TIMEOUTS = {  # seconds; a hung step must not hold the lock forever
     "programs": 5 * 60,
     "sections": 60 * 60,
