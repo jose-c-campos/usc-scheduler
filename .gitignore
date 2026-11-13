@@ -48,6 +48,8 @@ ingestion/app/scrapers/csci_25.html
 ingestion/app/scrapers/programs_20253.html
 # "Save Page As" asset folders that sit next to the reference .html files above
 ingestion/app/**/*_files/
+# run_semester_refresh.py output: scraped catalogs, logs, probe state (~4 MB per term per run)
+ingestion/runs/
 server/test.js
 start_dev.sh
 .yarn/cache/

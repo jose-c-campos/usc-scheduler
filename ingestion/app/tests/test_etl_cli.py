@@ -64,4 +64,5 @@ def test_load_courses_semester_is_optional():
 
 
 def test_load_profs_args():
-    assert load_profs.parse_args(["--json-file", "f.json"]).json_file == "f.json"
+    # A list since Phase 3: the orchestrator passes every loaded term's catalog at once.
+    assert load_profs.parse_args(["--json-file", "f.json"]).json_file == ["f.json"]

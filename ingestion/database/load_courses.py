@@ -43,6 +43,10 @@ def parse_args(argv=None):
     ap.add_argument('--semester',
                     help='USC term code, e.g. 20261. Defaults to the code in the JSON filename; '
                          'if both are present they must agree.')
+    ap.add_argument('--prune', action='store_true',
+                    help="delete this semester's sections and courses that are not in the JSON "
+                         "(cancelled or removed by USC). Use only with a complete catalog: the "
+                         "refresh orchestrator passes it after its guards.")
     return ap.parse_args(argv)
 
 def parse_schedule(schedule):
@@ -99,12 +103,11 @@ def validate_section_data(section_data):
     return True
 
 def upsert_section(cur, course_id, section_data):
-    """Insert or update a section"""
-    # Add validation check
+    """Insert or update a section. Returns (id, section_number), or None if it's invalid."""
     if not validate_section_data(section_data):
         print(f"Skipping invalid section: {section_data.get('sectionNumber', 'unknown')}")
-        return
-    
+        return None
+
     section_number = section_data.get('sectionNumber')
     
     # Parse units
@@ -178,16 +181,97 @@ def link_parent_sections(cur, course_id, section_links):
     for child_section_number, parent_section_number in section_links:
         cur.execute("""
             UPDATE sections SET parent_section_id = (
-                SELECT id FROM sections 
+                SELECT id FROM sections
                 WHERE course_id = %s AND section_number = %s
             )
             WHERE course_id = %s AND section_number = %s
         """, (course_id, parent_section_number, course_id, child_section_number))
 
+def clear_parent_links(cur, course_id):
+    """Forget a course's parent links so they're re-derived from this load.
+
+    Without this, a lab whose parent changed (or went away) since the last load
+    would keep its old parent: link_parent_sections only ever sets links.
+    """
+    cur.execute("UPDATE sections SET parent_section_id = NULL WHERE course_id = %s", (course_id,))
+
+def prune_course_sections(cur, course_id, keep_section_numbers):
+    """Delete a course's sections that aren't in this load. Returns how many.
+
+    Call after clear_parent_links, so no remaining section points at a deleted one.
+    """
+    cur.execute(
+        "DELETE FROM sections WHERE course_id = %s AND NOT (section_number = ANY(%s))",
+        (course_id, list(keep_section_numbers)),
+    )
+    return cur.rowcount
+
+def prune_stale_courses(cur, semester, keep_codes):
+    """Delete this semester's courses (and their sections) that aren't in this load.
+
+    Returns (courses deleted, sections deleted). Other semesters are never touched.
+    """
+    cur.execute(
+        "SELECT id FROM courses WHERE semester = %s AND NOT (code = ANY(%s))",
+        (semester, list(keep_codes)),
+    )
+    stale = [row[0] for row in cur.fetchall()]
+    if not stale:
+        return 0, 0
+    cur.execute("UPDATE sections SET parent_section_id = NULL WHERE course_id = ANY(%s)", (stale,))
+    cur.execute("DELETE FROM sections WHERE course_id = ANY(%s)", (stale,))
+    sections_deleted = cur.rowcount
+    cur.execute("DELETE FROM courses WHERE id = ANY(%s)", (stale,))
+    return cur.rowcount, sections_deleted
+
+def load_catalog(cur, data, semester, prune=False, log=print):
+    """Upsert every course and section in `data` (the scraper's JSON) for one semester.
+
+    Doesn't commit: the caller commits once, so a failure anywhere loads nothing.
+    Returns counts for the final report.
+    """
+    stats = {"courses": 0, "sections": 0, "invalid_sections_skipped": 0, "parent_links": 0,
+             "sections_pruned": 0, "courses_pruned": 0, "course_sections_pruned": 0}
+    for code, course in data.items():
+        title = course.get('title', '')
+        course_id = upsert_course(cur, code, title, semester)
+        stats["courses"] += 1
+
+        section_links = []  # (child number, parent number)
+        loaded_numbers = []
+        for section in course.get('sections', []):
+            result = upsert_section(cur, course_id, section)
+            if result is None:
+                stats["invalid_sections_skipped"] += 1
+                continue
+            _, section_number = result
+            loaded_numbers.append(section_number)
+            if section.get('parent_section_number'):
+                section_links.append((section_number, section.get('parent_section_number')))
+        stats["sections"] += len(loaded_numbers)
+
+        clear_parent_links(cur, course_id)
+        if prune:
+            stats["sections_pruned"] += prune_course_sections(cur, course_id, loaded_numbers)
+        if section_links:
+            link_parent_sections(cur, course_id, section_links)
+        stats["parent_links"] += len(section_links)
+
+        log(f"Processed {code}: {title} with {len(section_links)} linked sections")
+
+    if prune:
+        stats["courses_pruned"], stats["course_sections_pruned"] = prune_stale_courses(cur, semester, data.keys())
+    return stats
+
 def main(argv=None):
     args = parse_args(argv)
     json_file = args.json_file
     semester = resolve_semester(json_file, args.semester)
+    with open(json_file, 'r') as f:
+        data = json.load(f)
+    if args.prune and not data:
+        # An empty catalog with --prune would delete the whole semester.
+        raise ValueError(f"{json_file} has no courses; refusing to prune semester {semester}")
 
     dbname = os.getenv("USC_DB_NAME", "usc_sched")
     user = os.getenv("USC_DB_USER")
@@ -199,34 +283,13 @@ def main(argv=None):
     conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host, port=port)
     cur = conn.cursor()
 
-    print(f"Loading data for semester {semester} from {json_file} into {dbname}@{host}:{port}...")
-    with open(json_file, 'r') as f:
-        data = json.load(f)
-
-    for code, course in data.items():
-        title = course.get('title', '')
-        # Upsert course and get ID
-        course_id = upsert_course(cur, code, title, semester)
-        
-        # Track section links (child_number -> parent_number)
-        section_links = []
-        
-        # First pass: Insert all sections
-        for section in course.get('sections', []):
-            section_id, section_number = upsert_section(cur, course_id, section)
-            
-            # If this section has a parent, store the relationship for later
-            if section.get('parent_section_number'):
-                section_links.append((section_number, section.get('parent_section_number')))
-        
-        # Second pass: Link parent-child relationships
-        if section_links:
-            link_parent_sections(cur, course_id, section_links)
-            
-        print(f"Processed {code}: {title} with {len(section_links)} linked sections")
-
+    print(f"Loading data for semester {semester} from {json_file} into {dbname}@{host}:{port}"
+          f"{' (pruning sections/courses not in the file)' if args.prune else ''}...")
+    stats = load_catalog(cur, data, semester, prune=args.prune)
     conn.commit()
-    print("Data load complete!")
+    print("Data load complete! " + ", ".join(f"{k}={v}" for k, v in stats.items()))
+    if stats["invalid_sections_skipped"]:
+        print(f"⚠ {stats['invalid_sections_skipped']} invalid section(s) skipped (see 'Skipping invalid section' above)")
     cur.close()
     conn.close()
 
