@@ -213,7 +213,7 @@ def crawl(program_urls: Dict[str, str], delay: float=0.75) -> Dict[str, dict]:
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--programs-json", required=True, help="file produced by usc_programs.py")
+    ap.add_argument("--programs-json", required=True, help="programs_<term>.json (from scrape_programs.py)")
     ap.add_argument("--delay", type=float, default=0.75, help="seconds between requests")
     ap.add_argument("--term", required=True)
     args = ap.parse_args()
@@ -223,8 +223,9 @@ if __name__ == "__main__":
 
     data = crawl(pages, args.delay)
     
-    # Create scraped_data directory if it doesn't exist
-    scraped_data_dir = Path("backend/app/scraped_data")
+    # ingestion/app/scraped_data, wherever this is run from. (It used to write
+    # to a cwd-relative backend/app/scraped_data, left over from a rename.)
+    scraped_data_dir = Path(__file__).resolve().parents[1] / "scraped_data"
     scraped_data_dir.mkdir(parents=True, exist_ok=True)
     
     out = scraped_data_dir / f"usc_{args.term}_courses.json"

@@ -46,6 +46,8 @@ ingestion/app/math126.html
 ingestion/app/scrapers/acmd_html.html
 ingestion/app/scrapers/csci_25.html
 ingestion/app/scrapers/programs_20253.html
+# "Save Page As" asset folders that sit next to the reference .html files above
+ingestion/app/**/*_files/
 server/test.js
 start_dev.sh
 .yarn/cache/
