@@ -37,7 +37,24 @@ EDGE_CASE_KINDS = {
         "A section meets at different times on different days. Only the first meeting "
         "was kept, because the schedule column holds one time range."
     ),
+    "mixed_lecture_types": (
+        "The course has more than one lecture-like type (e.g. 'Lecture' and "
+        "'Lecture/Discussion'), usually alternative formats. The C++ engine requires one "
+        "section of every type, so it combines the formats: generated schedules carry an "
+        "extra class, or some formats are never offered."
+    ),
+    "compound_lecture_unlocked": (
+        "A section's link letter belongs to a compound lecture type ('Lecture/Lab', "
+        "'Lecture/Discussion') and the course has several lecture letters. Only plain "
+        "'Lecture' sections act as parents, so this section isn't locked and may be paired "
+        "with the wrong lecture."
+    ),
 }
+
+
+def is_lecture_like(rnr_mode: str) -> bool:
+    """What the C++ engine anchors on: any type containing 'Lecture'."""
+    return "Lecture" in rnr_mode
 
 
 # ─── field formatting (the strings load_courses.py parses) ───────────────────
@@ -200,6 +217,23 @@ def map_course(api_course: dict, stats: dict | None = None) -> tuple[str, dict, 
                 groups[s["linkCode"]].append(s["sisSectionId"])
         detail = "; ".join(f"{k}: lectures {', '.join(v)}" for k, v in sorted(groups.items()))
         edge_cases.append({"code": code, "kind": "shared_letter_multi_group", "note": detail})
+
+    lecture_types = defaultdict(int)
+    for s in live:
+        if is_lecture_like(s["rnrMode"]):
+            lecture_types[s["rnrMode"]] += 1
+    if len(lecture_types) > 1:
+        edge_cases.append({"code": code, "kind": "mixed_lecture_types",
+                           "note": ", ".join(f"{t} ×{n}" for t, n in sorted(lecture_types.items()))})
+
+    lecture_letters = {s["linkCode"] for s in live if s.get("linkCode") and is_lecture_like(s["rnrMode"])}
+    compound_letters = {s["linkCode"] for s in live
+                        if s.get("linkCode") and is_lecture_like(s["rnrMode"]) and s["rnrMode"] != "Lecture"}
+    unlocked = [s for s in live if not is_lecture_like(s["rnrMode"]) and s.get("linkCode") in compound_letters
+                and parents[s["sisSectionId"]] is None]
+    if unlocked and len(lecture_letters) > 1:
+        edge_cases.append({"code": code, "kind": "compound_lecture_unlocked", "note": "sections " + ", ".join(
+            f"{s['sisSectionId']} ({s['rnrMode']} {s['linkCode']})" for s in unlocked)})
 
     sections = []
     for s in live:

@@ -196,6 +196,35 @@ def test_multiple_meeting_times_are_reported():
     assert "17508" in edges[0]["note"]
 
 
+def synthetic(code, *sections):
+    """A minimal API course: sections as (id, type, link letter)."""
+    return {"fullCourseName": code, "name": "t",
+            "sections": [{"sisSectionId": i, "rnrMode": t, "linkCode": l} for i, t, l in sections]}
+
+
+def test_mixed_lecture_types_are_reported():
+    # Spring 2027 BUAD 307: standalone Lecture/Discussion sections next to Lecture + Discussion bundles.
+    _, _, edges = map_course(synthetic("BUAD 307", ("14851", "Lecture/Discussion", None),
+                                       ("14800", "Lecture", "J"), ("14802", "Discussion", "J")))
+    assert edges == [{"code": "BUAD 307", "kind": "mixed_lecture_types",
+                      "note": "Lecture ×1, Lecture/Discussion ×1"}]
+
+
+def test_compound_lecture_letters_leave_children_unlocked_and_are_reported():
+    _, c, edges = map_course(synthetic("X 1", ("1", "Lecture/Lab", "A"), ("2", "Lab", "A"),
+                                       ("3", "Lecture/Lab", "B"), ("4", "Lab", "B")))
+    assert all(s["parent_section_number"] is None for s in c["sections"])  # the gap itself
+    assert [e["kind"] for e in edges] == ["compound_lecture_unlocked"]
+    assert edges[0]["note"] == "sections 2 (Lab A), 4 (Lab B)"
+
+
+def test_one_compound_letter_is_any_combination_and_not_reported():
+    # Spring 2027 CHEM 115B / TAC 115: every lecture-like section shares one letter.
+    _, _, edges = map_course(synthetic("TAC 115", ("1", "Lecture/Lab", "A"), ("2", "Lecture/Lab", "A"),
+                                       ("3", "Quiz", "A"), ("4", "Lecture/Lab", None)))
+    assert edges == []
+
+
 def test_schema_change_fails_loudly():
     raw = course("20271", "CSCI 590")
     del raw["fullCourseName"]
