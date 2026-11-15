@@ -5,6 +5,7 @@
     python run_semester_refresh.py refresh --terms 20263,20271
     python run_semester_refresh.py refresh --no-db          # scrape + guards only
     python run_semester_refresh.py refresh --only CSCI --skip-profs   # cheap smoke run, never prunes
+    python run_semester_refresh.py notify --test           # check the Discord webhook
 
 `refresh` runs, for each term: Stage 1 (scrape_programs) → Stage 2
 (scrape_sections) → a shrink guard → load_courses.py --prune → move the term's
@@ -17,16 +18,23 @@ Terms come from --terms, else $ACTIVE_SEMESTERS (comma list), else $SEMESTER.
 Only terms USC lists as Active are refreshed (archived terms lose sections, and
 the load prunes), unless --allow-inactive.
 
-Exit codes (cron alerts on non-zero):
+Exit codes:
     0  everything succeeded
-    1  a term or the profs step failed (other terms may have loaded; see the summary)
+    1  a term or the profs step failed (other terms may have loaded; see the summary), or a crash
     2  configuration or preflight error; nothing ran
-    3  another run holds the lock
+    3  another run holds the lock (no summary, no alert: the other run reports)
+
+Alerts (notify_discord.py): a run whose summary has events (a new USC term, or any
+failure) posts one Discord message to $DISCORD_WEBHOOK_URL. A successful run
+sends nothing and only appends its line to logs/history.log. Unset → alerts are
+off (with a warning). --no-notify silences a manual run. Delivery never changes
+the exit code.
 
 Output lives under --runs-dir (default $REFRESH_RUNS_DIR, else ingestion/runs/):
     state.json                  probe state (Active terms seen before)
-    logs/<stamp>.log            every step's output for one invocation
-    logs/<stamp>.json           the run summary
+    logs/history.log            one line per run: what happened, and whether an alert went out
+    logs/<stamp>.log            every step's output for one refresh
+    logs/<stamp>.json           the run summary (refresh and probe), with its events
     <term>/<stamp>/             programs_<term>.json, usc_<term>_courses.json, its .summary.json
     <term>/latest -> <stamp>    the last snapshot that loaded (or passed the guards, with --no-db)
 """
@@ -41,9 +49,11 @@ import re
 import shutil
 import subprocess
 import sys
+import traceback
 from datetime import datetime, timezone
 from pathlib import Path
 
+import notify_discord
 from app.scrapers.scrape_programs import write_json_atomically
 from app.scrapers.usc_api import UscApi, UscApiError, normalize_term
 
@@ -279,7 +289,7 @@ def refresh_term(term: str, runs_dir: Path, stamp: str, runner, *,
     return result
 
 
-# ─── commands ────────────────────────────────────────────────────────────────
+# ─── lock and paths ──────────────────────────────────────────────────────────
 
 @contextlib.contextmanager
 def run_lock(runs_dir: Path):
@@ -301,39 +311,141 @@ def resolve_runs_dir(arg: str | None, env) -> Path:
     return Path(arg or env.get("REFRESH_RUNS_DIR") or DEFAULT_RUNS_DIR)
 
 
-def cmd_probe(args, env, api, now: datetime) -> int:
+# ─── summaries, alerts, history ──────────────────────────────────────────────
+
+def new_summary(command: str, now: datetime, **fields) -> dict:
+    return {"command": command, "started": now.isoformat(timespec="seconds"), **fields, "events": []}
+
+
+def history_line(stamp: str, summary: dict) -> str:
+    """One line per run for logs/history.log, e.g.
+    20261115T030000Z  refresh  exit 0  12m31s  20263 ok 9110 sections (+12) · profs ok  notify quiet
+    """
+    clip = notify_discord.clip
+    details = []
+    for term, res in (summary.get("terms") or {}).items():
+        details.append(f"{term} ok {notify_discord.sections_text(res)}".rstrip() if res.get("status") == "ok"
+                       else f"{term} FAILED at {res.get('failed_step')}")
+    if "profs" in summary:
+        details.append(f"profs {summary['profs'].get('status')}")
+    probe = summary.get("probe") or {}
+    if "error" in probe:
+        details.append(f"probe FAILED: {clip(probe['error'], 80)}")
+    elif summary.get("command") == "probe" and probe:
+        details.append(f"active {','.join(probe.get('active') or []) or 'none'}")
+    for e in summary.get("events") or []:
+        if e.get("event") == "new_term":
+            details.append(f"NEW TERM {e.get('term')}")
+        elif e.get("event") == "config_failed":
+            details.append(f"CONFIG FAILED: {clip('; '.join(e.get('problems') or []), 80)}")
+        elif e.get("event") == "crashed":
+            details.append(f"CRASHED: {clip(e.get('error'), 80)}")
+    return "  ".join([stamp, summary.get("command", "?"), f"exit {summary.get('exit_code')}",
+                      notify_discord.duration(summary) or "-", " · ".join(details) or "-",
+                      f"notify {(summary.get('notify') or {}).get('status', '?')}"])
+
+
+def _save(path: Path, summary: dict) -> bool:
     try:
-        terms, _ = configured_terms(args.terms, env)
-    except ValueError as e:
-        print(f"✖ {e}", file=sys.stderr)
-        return EXIT_CONFIG
+        path.parent.mkdir(parents=True, exist_ok=True)
+        write_json_atomically(path, summary)
+        return True
+    except (OSError, TypeError, ValueError) as e:
+        print(f"✖ couldn't write the run summary {path}: {e}", file=sys.stderr)
+        return False
+
+
+def finish(summary: dict, runs_dir: Path, stamp: str, *, no_notify: bool, notifier) -> None:
+    """Save the summary, send the alert it needs (if any), append to history.log.
+
+    Never raises: the run's result is already decided, and reporting it must not change it.
+    """
+    summary.setdefault("finished", utc_now().isoformat(timespec="seconds"))
+    path = runs_dir / "logs" / f"{stamp}.json"
+    saved = _save(path, summary)  # first, so a hung or killed delivery still leaves the summary
+    summary["notify"] = {"status": "off"} if no_notify else notifier(summary, summary_path=path if saved else None)
+    status = summary["notify"]["status"]
+    if status == "sent":
+        print("✔ Discord alert sent")
+    elif status == "failed":
+        print(f"✖ Discord alert NOT delivered: {summary['notify']['error']}", file=sys.stderr)
+    elif status == "disabled":
+        print(f"⚠ alerts are off: {notify_discord.ENV_VAR} is not set", file=sys.stderr)
+    if saved:
+        _save(path, summary)
+    try:
+        with open(runs_dir / "logs" / "history.log", "a") as f:
+            f.write(history_line(stamp, summary) + "\n")
+    except Exception as e:  # noqa: BLE001: history is a convenience; never fail the run over it
+        print(f"✖ couldn't append to history.log: {e}", file=sys.stderr)
+
+
+def config_failed(command: str, problems: list[str], runs_dir: Path, now: datetime, args, notifier) -> int:
+    """Exit 2: nothing ran. Under cron this is usually an environment that didn't load, so say so loudly."""
+    for p in problems:
+        print(f"✖ {p}", file=sys.stderr)
+    summary = new_summary(command, now)
+    summary["events"].append({"event": "config_failed", "problems": problems})
+    summary["exit_code"] = EXIT_CONFIG
+    finish(summary, runs_dir, now.strftime(STAMP_FORMAT), no_notify=args.no_notify, notifier=notifier)
+    return EXIT_CONFIG
+
+
+def report_crash(args, env, now: datetime, notifier, error: Exception) -> None:
+    """An uncaught exception: still leave a summary and send an alert. The caller re-raises."""
+    try:
+        summary = new_summary(args.command, now)
+        summary["events"].append({"event": "crashed", "error": f"{type(error).__name__}: {error}",
+                                  "traceback": traceback.format_exc()})
+        summary["exit_code"] = EXIT_FAILED
+        finish(summary, resolve_runs_dir(args.runs_dir, env), now.strftime(STAMP_FORMAT),
+               no_notify=args.no_notify, notifier=notifier)
+    except Exception as e:  # noqa: BLE001: reporting must not mask the original error
+        print(f"✖ couldn't report the crash: {type(e).__name__}: {e}", file=sys.stderr)
+
+
+# ─── commands ────────────────────────────────────────────────────────────────
+
+def cmd_probe(args, env, api, now: datetime, notifier) -> int:
     runs_dir = resolve_runs_dir(args.runs_dir, env)
+    try:
+        terms, source = configured_terms(args.terms, env)
+    except ValueError as e:
+        return config_failed("probe", [str(e)], runs_dir, now, args, notifier)
     with run_lock(runs_dir) as locked:
         if not locked:
             print(f"✖ another run holds {runs_dir / '.lock'}", file=sys.stderr)
             return EXIT_LOCKED
+        # Written even when nothing is new: the nightly probe is what sees a new term first,
+        # and it records the term in state.json, so no later run would report it.
+        summary = new_summary("probe", now, terms_source=source)
         try:
             result = run_probe(api, runs_dir, terms, now)
         except UscApiError as e:
+            summary["probe"] = {"error": str(e)}
+            summary["events"].append({"event": "probe_failed", "error": str(e)})
             print(f"✖ probe failed: {e}", file=sys.stderr)
-            return EXIT_FAILED
-    print("\n".join(describe_probe(result)))
-    return EXIT_OK
+            code = EXIT_FAILED
+        else:
+            summary["probe"] = result
+            summary["events"] += [{"event": "new_term", "term": t} for t in result["new_terms"]]
+            print("\n".join(describe_probe(result)))
+            code = EXIT_OK
+        summary["exit_code"] = code
+        finish(summary, runs_dir, now.strftime(STAMP_FORMAT), no_notify=args.no_notify, notifier=notifier)
+        return code
 
 
-def cmd_refresh(args, env, api, runner_factory, now: datetime) -> int:
+def cmd_refresh(args, env, api, runner_factory, now: datetime, notifier) -> int:
+    runs_dir = resolve_runs_dir(args.runs_dir, env)
     try:
         terms, source = configured_terms(args.terms, env)
     except ValueError as e:
-        print(f"✖ {e}", file=sys.stderr)
-        return EXIT_CONFIG
+        return config_failed("refresh", [str(e)], runs_dir, now, args, notifier)
     problems = preflight(args.no_db, args.skip_profs, env)
     if problems:
-        for p in problems:
-            print(f"✖ {p}", file=sys.stderr)
-        return EXIT_CONFIG
+        return config_failed("refresh", problems, runs_dir, now, args, notifier)
 
-    runs_dir = resolve_runs_dir(args.runs_dir, env)
     with run_lock(runs_dir) as locked:
         if not locked:
             print(f"✖ another run holds {runs_dir / '.lock'}", file=sys.stderr)
@@ -343,20 +455,19 @@ def cmd_refresh(args, env, api, runner_factory, now: datetime) -> int:
         log_path = runs_dir / "logs" / f"{stamp}.log"
         summary_path = runs_dir / "logs" / f"{stamp}.json"
         runner = runner_factory(log_path)
-        summary = {"started": now.isoformat(timespec="seconds"), "terms_source": source,
-                   "options": {k: getattr(args, k)
-                               for k in ("no_db", "skip_profs", "allow_inactive", "allow_shrink", "only")},
-                   "log": str(log_path), "terms": {}, "profs": {"status": "skipped"}, "events": []}
+        summary = new_summary("refresh", now, terms_source=source,
+                              options={k: getattr(args, k)
+                                       for k in ("no_db", "skip_profs", "allow_inactive", "allow_shrink", "only")},
+                              log=str(log_path), terms={}, profs={"status": "skipped"})
         print(f"Refreshing {', '.join(terms)} (from {source}); log: {log_path}")
 
         try:
             probe_result = run_probe(api, runs_dir, terms, now)
         except UscApiError as e:
-            summary.update(probe={"error": str(e)}, exit_code=EXIT_FAILED,
-                           finished=utc_now().isoformat(timespec="seconds"))
+            summary.update(probe={"error": str(e)}, exit_code=EXIT_FAILED)
             summary["events"].append({"event": "probe_failed", "error": str(e)})
-            write_json_atomically(summary_path, summary)
             print(f"✖ probe failed, nothing refreshed: {e}", file=sys.stderr)
+            finish(summary, runs_dir, stamp, no_notify=args.no_notify, notifier=notifier)
             return EXIT_FAILED
         summary["probe"] = probe_result
         summary["events"] += [{"event": "new_term", "term": t} for t in probe_result["new_terms"]]
@@ -403,13 +514,44 @@ def cmd_refresh(args, env, api, runner_factory, now: datetime) -> int:
 
         failed = any(r["status"] != "ok" for r in summary["terms"].values()) or summary["profs"]["status"] == "failed"
         code = EXIT_FAILED if failed else EXIT_OK
-        summary.update(exit_code=code, finished=utc_now().isoformat(timespec="seconds"))
-        write_json_atomically(summary_path, summary)
+        summary["exit_code"] = code
         print(f"{'✖' if failed else '✔'} done (exit {code}); summary: {summary_path}")
+        finish(summary, runs_dir, stamp, no_notify=args.no_notify, notifier=notifier)
         return code
 
 
-def main(argv=None, *, env=None, api=None, runner_factory=StepRunner, now=None) -> int:
+def cmd_notify(args, env, now: datetime, transport: dict) -> int:
+    """`notify --test` checks the webhook; `notify --summary PATH` (re)sends or previews a run's alert."""
+    if args.test:
+        content = notify_discord.setup_check_message(now=now)
+    else:
+        path = Path(args.summary)
+        try:
+            summary = json.loads(path.read_text())
+        except (OSError, ValueError) as e:
+            print(f"✖ can't read {path}: {e}", file=sys.stderr)
+            return EXIT_CONFIG
+        content = notify_discord.build_message(summary, summary_path=path)
+        if content is None:
+            print("nothing to send: that run has no events (a success, or a probe with nothing new)")
+            return EXIT_OK
+    if args.dry_run:
+        print(content)
+        return EXIT_OK
+    url = notify_discord.webhook_url(env)
+    if not url:
+        print(f"✖ {notify_discord.ENV_VAR} is not set (see notify_discord.py for the setup steps)", file=sys.stderr)
+        return EXIT_CONFIG
+    try:
+        notify_discord.send(url, content, **transport)
+    except notify_discord.NotifyError as e:
+        print(f"✖ not delivered: {notify_discord.redact(e, url)}", file=sys.stderr)
+        return EXIT_FAILED
+    print("✔ test message delivered: check the channel" if args.test else "✔ alert sent")
+    return EXIT_OK
+
+
+def main(argv=None, *, env=None, api=None, runner_factory=StepRunner, now=None, post=None, sleep=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0],
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="command", required=True)
@@ -418,6 +560,8 @@ def main(argv=None, *, env=None, api=None, runner_factory=StepRunner, now=None) 
         p = sub.add_parser(name, help=help_)
         p.add_argument("--terms", help="comma-separated term codes (default: $ACTIVE_SEMESTERS, else $SEMESTER)")
         p.add_argument("--runs-dir", help="output root (default: $REFRESH_RUNS_DIR, else ingestion/runs)")
+        p.add_argument("--no-notify", action="store_true",
+                       help=f"don't send a Discord alert for this run, even if ${notify_discord.ENV_VAR} is set")
         if name == "refresh":
             p.add_argument("--no-db", action="store_true", help="scrape and check only; don't load anything")
             p.add_argument("--skip-profs", action="store_true", help="don't run load_profs.py")
@@ -427,13 +571,29 @@ def main(argv=None, *, env=None, api=None, runner_factory=StepRunner, now=None) 
                            help=f"load even if a catalog has < {SHRINK_LIMIT:.0%} of the last snapshot's sections")
             p.add_argument("--only", help="smoke run: only these program codes (e.g. CHEM,CSCI). Loads "
                                           "without pruning and never moves `latest`")
+    n = sub.add_parser("notify", help="check the Discord webhook, or (re)send a run's alert")
+    which = n.add_mutually_exclusive_group(required=True)
+    which.add_argument("--test", action="store_true", help=f"send a test message to ${notify_discord.ENV_VAR}")
+    which.add_argument("--summary", help="a run summary (logs/<stamp>.json) whose alert to send")
+    n.add_argument("--dry-run", action="store_true", help="print the message instead of sending it")
     args = ap.parse_args(argv)
     env = os.environ if env is None else env
-    api = api or UscApi()
     now = now or utc_now()
-    if args.command == "probe":
-        return cmd_probe(args, env, api, now)
-    return cmd_refresh(args, env, api, runner_factory, now)
+    transport = {k: v for k, v in (("post", post), ("sleep", sleep)) if v is not None}  # tests inject fakes
+    if args.command == "notify":
+        return cmd_notify(args, env, now, transport)
+
+    def notifier(summary, summary_path=None):
+        return notify_discord.notify(summary, env, summary_path=summary_path, **transport)
+
+    try:
+        api = api or UscApi()
+        if args.command == "probe":
+            return cmd_probe(args, env, api, now, notifier)
+        return cmd_refresh(args, env, api, runner_factory, now, notifier)
+    except Exception as e:
+        report_crash(args, env, now, notifier, e)
+        raise
 
 
 if __name__ == "__main__":
