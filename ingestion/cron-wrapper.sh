@@ -50,6 +50,8 @@ without it, failed runs would go unreported. Add the line to that file (setup st
 
 # The standard dirs go last, so an explicit PATH (tests, a manual run) wins.
 export PATH="${PATH:+$PATH:}/usr/local/bin:/usr/bin:/bin"
+# Unbuffered, so cron.log shows the run as it happens and keeps its last lines if it's killed.
+export PYTHONUNBUFFERED=1
 
 db_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}' "$DB_CONTAINER" \
         2>/dev/null || true)

@@ -25,6 +25,7 @@ echo "cwd: $(pwd)"
 echo "USC_DB_HOST=${USC_DB_HOST-<unset>}"
 echo "ACTIVE_SEMESTERS=${ACTIVE_SEMESTERS-<unset>}"
 echo "hook: ${DISCORD_WEBHOOK_URL:+set}"
+echo "PYTHONUNBUFFERED=${PYTHONUNBUFFERED-<unset>}"
 exit ${FAKE_EXIT:-0}
 """
 # `docker inspect -f <template> <name>`: prints the IP (with the template's trailing space), or fails.
@@ -85,6 +86,7 @@ def test_it_loads_env_points_at_the_db_container_and_runs_the_orchestrator(box):
     assert out[1].endswith("/repo/ingestion")
     assert "USC_DB_HOST=172.18.0.2" in out  # overrides .env's "db", which the host can't resolve
     assert "ACTIVE_SEMESTERS=20263,20271" in out and "hook: set" in out
+    assert "PYTHONUNBUFFERED=1" in out  # cron.log shows the run as it happens
     assert "cron-wrapper: run_semester_refresh.py refresh --skip-profs" in p.stderr
 
 
