@@ -1,8 +1,10 @@
-"""Discord alerts for run_semester_refresh.py: one message per run that needs a person.
+"""Discord alerts for run_semester_refresh.py: one message per run.
 
-Quiet by default. A run with no events (a success) sends nothing; it only goes to
-logs/history.log. A message goes out for a new USC term and for every failure:
-term_failed, profs_failed, probe_failed, config_failed, crashed.
+A message goes out for a new USC term, for every failure (term_failed,
+profs_failed, probe_failed, config_failed, crashed), and, since 2026-11-15 (user
+decision), as a ✅ for a successful `refresh` or `profs`. That ✅ doubles as a
+heartbeat: if it stops coming, cron or the wrapper is broken. A probe with
+nothing new stays quiet; every run still goes to logs/history.log.
 
 The webhook URL comes from $DISCORD_WEBHOOK_URL. It's a secret (anyone who has it
 can post to the channel), so it never appears in output, logs or summaries:
@@ -17,6 +19,7 @@ Setup (once; a webhook is not a bot: no developer portal, no token, nothing to h
     3. Put DISCORD_WEBHOOK_URL=<the URL> in the box's .env (never commit it). If it
        leaks: delete the webhook in the same menu and make a new one.
     4. cd ingestion && python run_semester_refresh.py notify --test
+       (on the box, through cron's own entry point: ingestion/cron-wrapper.sh notify --test)
 """
 from __future__ import annotations
 
@@ -36,6 +39,7 @@ ATTEMPTS = 3
 MAX_RETRY_AFTER = 30     # seconds; a longer 429 wait isn't worth holding cron for
 SEASONS = {"1": "Spring", "2": "Summer", "3": "Fall"}  # as in frontend/src/lib/semester.ts
 LOOPBACK = {"127.0.0.1", "localhost", "::1"}          # plain http is allowed only here (tests)
+SUCCESS_REPORTED = ("refresh", "profs")              # commands whose success posts a ✅ (a probe's doesn't)
 _MARKDOWN = re.compile(r"([\\*_~`|])")  # what formats mid-line; our lines never start with free text
 
 
@@ -113,14 +117,43 @@ def new_term_note(term: str, summary: dict) -> str:
     return "Already configured: the next refresh scrapes it."
 
 
+def success_lines(summary: dict) -> list[str]:
+    """The ✅ part of the message for a `refresh` or `profs` that succeeded."""
+    if summary.get("command") == "profs":
+        sources = ", ".join(term_label(t) for t in summary.get("catalogs") or {}) or "no catalog"
+        lines = [f"✅ **USC professor ratings refreshed** from {sources}"]
+        missing = summary.get("missing_terms") or []
+        if missing:
+            lines.append(f"• skipped, no catalog yet: {', '.join(term_label(t) for t in missing)}")
+        return lines
+    options = summary.get("options") or {}
+    if options.get("no_db"):
+        head = "✅ **USC refresh ok** (scrape and checks only: nothing was loaded)"
+    elif options.get("only"):
+        head = f"✅ **USC refresh ok** (partial run, only {md(options['only'])}: loaded without pruning)"
+    else:
+        head = "✅ **USC refresh ok**"
+    lines = [head]
+    lines += [f"• {term_label(t)}: {sections_text(r)}" for t, r in (summary.get("terms") or {}).items()
+              if r.get("status") == "ok"]
+    if (summary.get("profs") or {}).get("status") == "ok":
+        lines.append("• professor ratings refreshed")
+    return lines
+
+
 def build_message(summary: dict, *, summary_path=None, host: str | None = None) -> str | None:
-    """The Discord message for a run summary, or None when there's nothing to report."""
+    """The Discord message for a run summary, or None when there's nothing to report.
+
+    The first line is what a phone notification shows, so it's the most urgent
+    thing in the run: a failure (🔴), else a new term (🆕), else the success (✅).
+    """
     events = summary.get("events") or []
-    if not events:
-        return None
     command = summary.get("command", "refresh")
     new_terms = [e.get("term") for e in events if e.get("event") == "new_term"]
     failures = [e for e in events if e.get("event") != "new_term"]
+    success = not failures and summary.get("exit_code") == 0 and command in SUCCESS_REPORTED
+    if not failures and not new_terms and not success:
+        return None
 
     lines = []
     if failures:
@@ -135,6 +168,8 @@ def build_message(summary: dict, *, summary_path=None, host: str | None = None) 
     if failures:
         lines += [f"• {term_label(t)} ok: {sections_text(r)}" for t, r in (summary.get("terms") or {}).items()
                   if r.get("status") == "ok"]
+    elif success:
+        lines += success_lines(summary)
 
     footer = [f"{command} on {md(host or socket.gethostname())}"]
     options = summary.get("options") or {}
@@ -252,4 +287,5 @@ def setup_check_message(host: str | None = None, now: datetime | None = None) ->
     now = now or datetime.now(timezone.utc)
     return (f"✅ **USC Scheduler refresh alerts work.** Test from {md(host or socket.gethostname())} at "
             f"{now.isoformat(timespec='seconds')}.\n"
-            "Alerts come here when USC opens a new term and when a run fails. Successful runs stay quiet.")
+            "Messages come here when USC opens a new term, when a run fails, and as a ✅ after each "
+            "successful refresh. If the ✅ stops coming, check cron on the box.")

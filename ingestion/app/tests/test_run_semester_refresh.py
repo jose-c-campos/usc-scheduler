@@ -441,3 +441,108 @@ def test_load_profs_takes_several_catalogs_and_dedupes_instructors():
                                                   (10, 9, True, 1)])
 def test_load_profs_exit_code(total, ok, fatal, code):
     assert load_profs.exit_code(total, ok, fatal) == code
+
+
+# ─── Phase 5: the DB preflight ───────────────────────────────────────────────
+
+def test_preflight_opens_one_db_connection_with_the_loaders_defaults(db_connects):
+    assert rsr.preflight(False, True, DB_ENV) == []
+    assert db_connects == [{"dbname": "usc_sched", "user": "u", "password": "p", "host": "localhost",
+                            "port": 5432, "connect_timeout": rsr.DB_CONNECT_TIMEOUT}]
+    db_connects.clear()
+    env = {**DB_ENV, "USC_DB_HOST": "172.18.0.2", "USC_DB_PORT": "5433", "USC_DB_NAME": "other"}
+    assert rsr.preflight(False, True, env) == []
+    assert db_connects[0]["host"] == "172.18.0.2" and db_connects[0]["port"] == 5433
+    assert db_connects[0]["dbname"] == "other"
+
+
+def test_no_db_and_missing_credentials_never_connect(db_connects):
+    assert rsr.preflight(True, False, {}) == []
+    assert len(rsr.preflight(False, True, {})) == 1  # just the missing credentials
+    assert db_connects == []
+
+
+def test_an_unreachable_db_is_a_config_error_before_any_usc_request(tmp_path, db_connects):
+    db_connects.error = Exception('connection to server at "172.18.0.2", port 5432 failed: Connection refused\n'
+                                  '\tIs the server running on that host and accepting TCP/IP connections?')
+    code, runner, api = refresh(tmp_path, "--skip-profs", env={"USC_DB_HOST": "172.18.0.2"})
+    assert code == 2 and api.calls == 0 and runner.calls == []
+    [event] = last_summary(tmp_path)["events"]
+    assert event == {"event": "config_failed", "problems": [
+        "can't connect to Postgres at 172.18.0.2:5432: connection to server at \"172.18.0.2\", port 5432 "
+        "failed: Connection refused"]}
+
+
+def test_a_db_error_never_carries_the_password(db_connects):
+    db_connects.error = Exception("bad things with p4ssw0rd-xyz in them")
+    [problem] = rsr.preflight(False, True, {**DB_ENV, "USC_DB_PASSWORD": "p4ssw0rd-xyz"})
+    assert "p4ssw0rd-xyz" not in problem and "<redacted>" in problem
+
+
+def test_a_bad_port_is_reported_not_a_crash():
+    [problem] = rsr.preflight(False, True, {**DB_ENV, "USC_DB_PORT": "five"})
+    assert problem.startswith("can't connect to Postgres at localhost:five")
+
+
+# ─── Phase 5: the profs command ──────────────────────────────────────────────
+
+def profs(tmp_path, *extra, runner=None, env=None, now=LATER):
+    runner, api = runner or FakeRunner(), FakeApi()
+    argv = ["profs", "--runs-dir", str(tmp_path), "--terms", "20263,20271", *extra]
+    code = rsr.main(argv, env={**DB_ENV, **(env or {})}, api=api, runner_factory=runner.factory, now=now)
+    assert api.calls == 0  # profs never asks USC anything
+    return code, runner
+
+
+def test_profs_runs_load_profs_over_each_terms_latest_catalog(tmp_path):
+    refresh(tmp_path, "--skip-profs")
+    code, runner = profs(tmp_path)
+    assert code == 0 and runner.steps() == ["load_profs"]
+    [(_, argv)] = runner.calls
+    stamp = NOW.strftime(rsr.STAMP_FORMAT)
+    expected = [str((tmp_path / t / stamp / f"usc_{t}_courses.json").resolve()) for t in ("20263", "20271")]
+    assert argv[argv.index("--json-file") + 1:] == expected
+    summary = last_summary(tmp_path)
+    assert summary["command"] == "profs" and summary["exit_code"] == 0 and summary["events"] == []
+    assert summary["profs"] == {"status": "ok", "exit_code": 0} and summary["missing_terms"] == []
+    assert list(summary["catalogs"]) == ["20263", "20271"]
+    assert runner.log_path == tmp_path / "logs" / f"{LATER.strftime(rsr.STAMP_FORMAT)}.log"
+
+
+def test_profs_skips_a_term_with_no_catalog_and_names_it(tmp_path):
+    rsr.main(["refresh", "--runs-dir", str(tmp_path), "--terms", "20271", "--skip-profs"], env=DB_ENV,
+             api=FakeApi(), runner_factory=FakeRunner().factory, now=NOW)
+    code, runner = profs(tmp_path)
+    assert code == 0
+    [(_, argv)] = runner.calls
+    assert [a for a in argv if a.endswith("_courses.json")] == [
+        str((tmp_path / "20271" / NOW.strftime(rsr.STAMP_FORMAT) / "usc_20271_courses.json").resolve())]
+    assert last_summary(tmp_path)["missing_terms"] == ["20263"]
+
+
+def test_profs_with_no_catalog_at_all_is_a_config_error(tmp_path):
+    code, runner = profs(tmp_path)
+    assert code == 2 and runner.calls == []
+    [event] = last_summary(tmp_path)["events"]
+    assert event["event"] == "config_failed" and "run `refresh` first" in event["problems"][-1]
+
+
+def test_profs_needs_node_and_the_rmp_cli(tmp_path, monkeypatch):
+    refresh(tmp_path, "--skip-profs")
+    monkeypatch.setattr(rsr.shutil, "which", lambda name: None)
+    code, runner = profs(tmp_path)
+    assert code == 2 and runner.calls == []
+    assert "`node` is not on PATH" in last_summary(tmp_path)["events"][0]["problems"][0]
+
+
+def test_profs_failure_exits_1_with_an_event(tmp_path):
+    refresh(tmp_path, "--skip-profs")
+    code, _ = profs(tmp_path, runner=FakeRunner(fail={"load_profs"}))
+    assert code == 1 and last_summary(tmp_path)["events"] == [{"event": "profs_failed", "exit_code": 1}]
+
+
+def test_profs_respects_the_lock(tmp_path):
+    refresh(tmp_path, "--skip-profs")
+    with rsr.run_lock(tmp_path):
+        code, runner = profs(tmp_path)
+    assert code == 3 and runner.calls == []

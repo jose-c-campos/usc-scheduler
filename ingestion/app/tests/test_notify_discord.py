@@ -108,8 +108,56 @@ def test_term_labels_match_the_frontend(code, label):
     assert nd.term_label(code) == label
 
 
-def test_a_run_with_no_events_is_quiet():
-    assert nd.build_message({"command": "refresh", "exit_code": 0, "events": []}) is None
+def test_a_probe_with_nothing_new_is_quiet():
+    assert nd.build_message({"command": "probe", "exit_code": 0, "events": [], "probe": {"active": ["20271"]}}) is None
+    assert nd.build_message({"events": []}) is None  # no exit code: nothing to call a success
+
+
+def ok_refresh_summary(**options):
+    return {"command": "refresh", "exit_code": 0, "started": "2026-11-16T10:00:00+00:00",
+            "finished": "2026-11-16T10:25:10+00:00", "log": "/srv/runs/logs/20261116T100000Z.log",
+            "options": {"no_db": False, "skip_profs": True, "only": None, **options},
+            "terms": {"20263": {"status": "ok", "sections": 9110, "prev_sections": 9098},
+                      "20271": {"status": "ok", "sections": 9582, "prev_sections": None}},
+            "profs": {"status": "skipped", "reason": "--skip-profs"}, "events": []}
+
+
+def test_a_successful_refresh_posts_a_check_mark_with_the_counts():
+    """User, 2026-11-15: successes alert too (Phase 4 decision 2 changed)."""
+    text = nd.build_message(ok_refresh_summary(), summary_path="/srv/runs/logs/20261116T100000Z.json", host="box")
+    lines = text.splitlines()
+    assert lines[:3] == ["✅ **USC refresh ok**",
+                         "• 20263 (Fall 2026): 9110 sections (+12)",
+                         "• 20271 (Spring 2027): 9582 sections (no previous snapshot)"]
+    assert "refresh on box · --skip-profs · 25m10s" in text and "professor ratings" not in text
+    assert "`/srv/runs/logs/20261116T100000Z.json`" in text
+
+
+def test_a_success_says_when_nothing_was_loaded_or_the_run_was_partial():
+    assert nd.build_message(ok_refresh_summary(no_db=True)).splitlines()[0] == \
+        "✅ **USC refresh ok** (scrape and checks only: nothing was loaded)"
+    assert nd.build_message(ok_refresh_summary(only="CHEM,CSCI")).splitlines()[0] == \
+        "✅ **USC refresh ok** (partial run, only CHEM,CSCI: loaded without pruning)"
+    with_profs = ok_refresh_summary(skip_profs=False)
+    with_profs["profs"] = {"status": "ok", "exit_code": 0}
+    assert "• professor ratings refreshed" in nd.build_message(with_profs).splitlines()
+
+
+def test_a_successful_profs_run_names_its_catalogs():
+    summary = {"command": "profs", "exit_code": 0, "catalogs": {"20271": "/x/usc_20271_courses.json"},
+               "missing_terms": ["20263"], "profs": {"status": "ok", "exit_code": 0}, "events": []}
+    lines = nd.build_message(summary, host="box").splitlines()
+    assert lines[0] == "✅ **USC professor ratings refreshed** from 20271 (Spring 2027)"
+    assert lines[1] == "• skipped, no catalog yet: 20263 (Fall 2026)"
+
+
+def test_a_new_term_leads_a_successful_refresh():
+    summary = ok_refresh_summary()
+    summary["events"] = [{"event": "new_term", "term": "20271"}]
+    summary["probe"] = {"active_not_configured": []}
+    lines = nd.build_message(summary, host="box").splitlines()
+    assert lines[0].startswith("🆕") and "✅ **USC refresh ok**" in lines
+    assert lines.index("✅ **USC refresh ok**") > lines.index("Configured, and refreshed in this run.")
 
 
 def test_failure_message_leads_with_the_failure_and_lists_what_loaded():
@@ -260,15 +308,46 @@ def test_notify_statuses_without_a_url_and_with_nothing_to_say():
 
 # ─── the orchestrator: when it alerts ────────────────────────────────────────
 
-def test_a_successful_refresh_sends_nothing_and_goes_to_history(tmp_path):
+def test_a_successful_refresh_sends_one_check_mark_and_goes_to_history(tmp_path):
     code, post = refresh(tmp_path)
-    assert code == 0 and post.calls == []
+    assert code == 0 and len(post.calls) == 1
+    assert post.messages[0].startswith("✅ **USC refresh ok**\n• 20263 (Fall 2026): 100 sections")
     summary = summary_at(tmp_path)
-    assert summary["command"] == "refresh" and summary["notify"] == {"status": "quiet"}
+    assert summary["command"] == "refresh" and summary["notify"] == {"status": "sent"}
     [line] = history(tmp_path)
     assert line.startswith(f"{NOW.strftime(rsr.STAMP_FORMAT)}  refresh  exit 0  ")
     assert "20263 ok 100 sections (no previous snapshot) · 20271 ok 100 sections" in line
-    assert line.endswith("notify quiet")
+    assert line.endswith("notify sent")
+
+
+def test_profs_runs_alert_on_success_and_on_failure(tmp_path, monkeypatch):
+    cli = tmp_path / "rmp" / "prof_lookup_cli.js"
+    cli.parent.mkdir()
+    cli.write_text("")
+    monkeypatch.setattr(rsr, "RMP_CLI", cli)
+    monkeypatch.setattr(rsr.shutil, "which", lambda name: f"/usr/bin/{name}")
+    runs = tmp_path / "runs"
+    refresh(runs)
+    argv = ["profs", "--runs-dir", str(runs), "--terms", "20263,20271"]
+    code, post = run(argv, {**DB_ENV, **HOOK_ENV}, now=LATER)
+    assert code == 0 and post.messages[0].startswith(
+        "✅ **USC professor ratings refreshed** from 20263 (Fall 2026), 20271 (Spring 2027)")
+    line = history(runs)[-1]
+    assert "  profs  exit 0  " in line and "catalogs 20263,20271 · profs ok" in line and line.endswith("notify sent")
+
+    code, post = run(argv, {**DB_ENV, **HOOK_ENV}, runner=FakeRunner(fail={"load_profs"}),
+                     now=datetime(2026, 11, 21, 3, 0, tzinfo=timezone.utc))
+    assert code == 1 and post.messages[0].startswith("🔴 **USC profs failed** (exit 1)")
+    assert "professor ratings failed (load_profs.py exit 1)" in post.messages[0]
+
+
+def test_an_unreachable_db_alerts_before_the_scrape(tmp_path, db_connects):
+    db_connects.error = Exception('connection to server at "172.18.0.2", port 5432 failed: Connection refused')
+    api = FakeApi()
+    code, post = refresh(tmp_path, env={"USC_DB_HOST": "172.18.0.2"}, api=api)
+    assert code == 2 and api.calls == 0 and len(post.calls) == 1
+    assert post.messages[0].startswith("🔴 **USC refresh failed** (exit 2)")
+    assert "can't connect to Postgres at 172.18.0.2:5432" in post.messages[0]
 
 
 def test_a_failed_term_sends_one_alert(tmp_path):
@@ -311,7 +390,8 @@ def test_a_new_term_seen_by_the_probe_is_not_lost(tmp_path):
     assert len(post.calls) == 1
     _, post = refresh(tmp_path, api=FakeApi(["20263", "20271", "20272"]),
                       now=datetime(2026, 11, 21, tzinfo=timezone.utc))
-    assert post.calls == []  # already reported, by the probe
+    assert len(post.calls) == 1 and post.messages[0].startswith("✅")  # its success, and only that:
+    assert "New USC term" not in post.messages[0]                       # the probe already reported 20272
 
 
 @pytest.mark.parametrize("command", ["probe", "refresh"])
@@ -404,6 +484,6 @@ def test_notify_summary_previews_or_resends_a_runs_alert(tmp_path, capsys):
     code, post = run(["notify", "--summary", str(path)], HOOK_ENV)
     assert code == 0 and len(post.calls) == 1
 
-    path.write_text(json.dumps({"command": "refresh", "exit_code": 0, "events": []}))
+    path.write_text(json.dumps({"command": "probe", "exit_code": 0, "events": []}))
     code, post = run(["notify", "--summary", str(path)], HOOK_ENV)
     assert code == 0 and post.calls == [] and "nothing to send" in capsys.readouterr().out

@@ -5,14 +5,18 @@
     python run_semester_refresh.py refresh --terms 20263,20271
     python run_semester_refresh.py refresh --no-db          # scrape + guards only
     python run_semester_refresh.py refresh --only CSCI --skip-profs   # cheap smoke run, never prunes
+    python run_semester_refresh.py profs                   # professor ratings only, from each term's latest catalog
     python run_semester_refresh.py notify --test           # check the Discord webhook
+
+On the Lightsail box, cron runs these through cron-wrapper.sh, which loads .env.
 
 `refresh` runs, for each term: Stage 1 (scrape_programs) → Stage 2
 (scrape_sections) → a shrink guard → load_courses.py --prune → move the term's
-`latest` link. Then load_profs.py once over every loaded catalog. `probe` asks
-USC which terms are live (one request) and reports a term the first time it
-appears. Neither ever changes SEMESTER or restarts anything: switching the live
-term stays a deliberate manual step.
+`latest` link. Then load_profs.py once over every loaded catalog. `profs` runs
+only that last step, over each configured term's `latest` catalog, with no
+request to USC. `probe` asks USC which terms are live (one request) and reports
+a term the first time it appears. None of them ever changes SEMESTER or restarts
+anything: switching the live term stays a deliberate manual step.
 
 Terms come from --terms, else $ACTIVE_SEMESTERS (comma list), else $SEMESTER.
 Only terms USC lists as Active are refreshed (archived terms lose sections, and
@@ -21,14 +25,14 @@ the load prunes), unless --allow-inactive.
 Exit codes:
     0  everything succeeded
     1  a term or the profs step failed (other terms may have loaded; see the summary), or a crash
-    2  configuration or preflight error; nothing ran
+    2  configuration or preflight error (including a DB that doesn't answer); nothing ran
     3  another run holds the lock (no summary, no alert: the other run reports)
 
-Alerts (notify_discord.py): a run whose summary has events (a new USC term, or any
-failure) posts one Discord message to $DISCORD_WEBHOOK_URL. A successful run
-sends nothing and only appends its line to logs/history.log. Unset → alerts are
-off (with a warning). --no-notify silences a manual run. Delivery never changes
-the exit code.
+Alerts (notify_discord.py) post one Discord message per run to $DISCORD_WEBHOOK_URL:
+for a new USC term, for any failure, and a ✅ for a successful `refresh` or
+`profs` (user, 2026-11-15). A probe with nothing new stays quiet. Every run
+appends one line to logs/history.log. Unset → alerts are off (with a warning).
+--no-notify silences a manual run. Delivery never changes the exit code.
 
 Output lives under --runs-dir (default $REFRESH_RUNS_DIR, else ingestion/runs/):
     state.json                  probe state (Active terms seen before)
@@ -72,6 +76,7 @@ TIMEOUTS = {  # seconds; a hung step must not hold the lock forever
 }
 STAMP_FORMAT = "%Y%m%dT%H%M%SZ"
 _STAMP = re.compile(r"^\d{8}T\d{6}Z$")
+DB_CONNECT_TIMEOUT = 5  # seconds; preflight's one connection
 
 
 # ─── configuration ───────────────────────────────────────────────────────────
@@ -93,7 +98,36 @@ def configured_terms(arg: str | None, env) -> tuple[list[str], str]:
     raise ValueError("no terms configured: pass --terms, or set ACTIVE_SEMESTERS or SEMESTER")
 
 
-def preflight(no_db: bool, skip_profs: bool, env, which=None, rmp_cli: Path | None = None) -> list[str]:
+def connect_db(**kwargs):
+    """psycopg2.connect, imported only when needed. Tests replace this."""
+    import psycopg2
+    return psycopg2.connect(**kwargs)
+
+
+def db_problem(env, connect=None) -> str | None:
+    """Can the loaders reach Postgres with these settings? Opens one connection and closes it.
+
+    Same defaults as load_courses.py and load_profs.py. Under cron the DB is a likely thing to be
+    unreachable (the container is down, or its IP moved), and finding out now beats a
+    25-minute scrape that fails at load.
+    """
+    connect = connect or connect_db
+    host, port = env.get("USC_DB_HOST") or "localhost", env.get("USC_DB_PORT") or "5432"
+    password = env.get("USC_DB_PASSWORD") or ""
+    try:
+        conn = connect(dbname=env.get("USC_DB_NAME") or "usc_sched", user=env.get("USC_DB_USER"),
+                       password=password, host=host, port=int(port), connect_timeout=DB_CONNECT_TIMEOUT)
+        conn.close()
+    except Exception as e:  # noqa: BLE001: any failure here is a problem to report, not a crash
+        detail = (str(e).strip().splitlines() or [type(e).__name__])[0].strip()
+        if len(password) >= 4:  # psycopg2 doesn't echo it; this is a backstop (a 1-letter one would mangle text)
+            detail = detail.replace(password, "<redacted>")
+        return f"can't connect to Postgres at {host}:{port}: {detail}"
+    return None
+
+
+def preflight(no_db: bool, skip_profs: bool, env, which=None, rmp_cli: Path | None = None,
+              connect=None) -> list[str]:
     """Problems that would make the run fail later. Checked before any request is made."""
     which = which or shutil.which
     rmp_cli = rmp_cli or RMP_CLI
@@ -102,13 +136,17 @@ def preflight(no_db: bool, skip_profs: bool, env, which=None, rmp_cli: Path | No
         missing = [v for v in ("USC_DB_USER", "USC_DB_PASSWORD") if not env.get(v)]
         if missing:
             problems.append(f"missing {', '.join(missing)} (the loaders read the DB target from the environment)")
+        else:
+            problem = db_problem(env, connect)
+            if problem:
+                problems.append(problem)
         if not skip_profs:
             if not which("node"):
-                problems.append("`node` is not on PATH (load_profs.py runs the RateMyProfessors CLI); "
-                                "or pass --skip-profs")
+                problems.append("`node` is not on PATH (load_profs.py runs the RateMyProfessors CLI; "
+                                "refresh can skip that step with --skip-profs)")
             if not rmp_cli.exists():
                 problems.append(f"{rmp_cli} is missing: run `npm ci && npm run build` in rate_my_prof/ "
-                                "(dist/ is gitignored); or pass --skip-profs")
+                                "(dist/ is gitignored; refresh can skip that step with --skip-profs)")
     return problems
 
 
@@ -323,6 +361,10 @@ def history_line(stamp: str, summary: dict) -> str:
     """
     clip = notify_discord.clip
     details = []
+    if summary.get("command") == "profs":
+        details.append(f"catalogs {','.join(summary.get('catalogs') or {}) or 'none'}")
+        if summary.get("missing_terms"):
+            details.append(f"no catalog {','.join(summary['missing_terms'])}")
     for term, res in (summary.get("terms") or {}).items():
         details.append(f"{term} ok {notify_discord.sections_text(res)}".rstrip() if res.get("status") == "ok"
                        else f"{term} FAILED at {res.get('failed_step')}")
@@ -520,6 +562,55 @@ def cmd_refresh(args, env, api, runner_factory, now: datetime, notifier) -> int:
         return code
 
 
+def cmd_profs(args, env, runner_factory, now: datetime, notifier) -> int:
+    """load_profs.py over each configured term's `latest` catalog: ratings without a re-scrape.
+
+    Professors aren't per semester, so the union of the terms' instructors is what to look up.
+    A term with no `latest` catalog yet is skipped and named; none at all is a config error.
+    """
+    runs_dir = resolve_runs_dir(args.runs_dir, env)
+    try:
+        terms, source = configured_terms(args.terms, env)
+    except ValueError as e:
+        return config_failed("profs", [str(e)], runs_dir, now, args, notifier)
+    found = {}
+    for term in terms:
+        catalog = runs_dir / term / "latest" / f"usc_{term}_courses.json"
+        if catalog.exists():
+            found[term] = str(catalog.resolve())  # the snapshot itself, so the summary says which one
+    missing = [t for t in terms if t not in found]
+    problems = preflight(False, False, env)
+    if not found:
+        problems.append(f"no catalog for {', '.join(terms)} under {runs_dir}: run `refresh` first")
+    if problems:
+        return config_failed("profs", problems, runs_dir, now, args, notifier)
+
+    with run_lock(runs_dir) as locked:
+        if not locked:
+            print(f"✖ another run holds {runs_dir / '.lock'}", file=sys.stderr)
+            return EXIT_LOCKED
+        stamp = now.strftime(STAMP_FORMAT)
+        log_path = runs_dir / "logs" / f"{stamp}.log"
+        summary_path = runs_dir / "logs" / f"{stamp}.json"
+        runner = runner_factory(log_path)
+        summary = new_summary("profs", now, terms_source=source, log=str(log_path),
+                              catalogs=found, missing_terms=missing)
+        print(f"Refreshing professor ratings from {', '.join(found)} (from {source}); log: {log_path}")
+        if missing:
+            print(f"⚠ no catalog yet for {', '.join(missing)}: skipped", file=sys.stderr)
+        rc = runner("load_profs", [sys.executable, "database/load_profs.py", "--json-file", *found.values()],
+                    TIMEOUTS["load_profs"])
+        summary["profs"] = {"status": "ok" if rc == 0 else "failed", "exit_code": rc}
+        if rc:
+            summary["events"].append({"event": "profs_failed", "exit_code": rc})
+        code = EXIT_FAILED if rc else EXIT_OK
+        summary["exit_code"] = code
+        print(f"{'✖ load_profs.py failed' if rc else '✔ professor ratings refreshed'} (exit {code}); "
+              f"summary: {summary_path}")
+        finish(summary, runs_dir, stamp, no_notify=args.no_notify, notifier=notifier)
+        return code
+
+
 def cmd_notify(args, env, now: datetime, transport: dict) -> int:
     """`notify --test` checks the webhook; `notify --summary PATH` (re)sends or previews a run's alert."""
     if args.test:
@@ -533,7 +624,7 @@ def cmd_notify(args, env, now: datetime, transport: dict) -> int:
             return EXIT_CONFIG
         content = notify_discord.build_message(summary, summary_path=path)
         if content is None:
-            print("nothing to send: that run has no events (a success, or a probe with nothing new)")
+            print("nothing to send: that run has nothing to report (e.g. a probe with nothing new)")
             return EXIT_OK
     if args.dry_run:
         print(content)
@@ -556,7 +647,8 @@ def main(argv=None, *, env=None, api=None, runner_factory=StepRunner, now=None, 
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="command", required=True)
     for name, help_ in (("probe", "report which terms USC lists as Active (1 request)"),
-                        ("refresh", "scrape and load the configured terms")):
+                        ("refresh", "scrape and load the configured terms"),
+                        ("profs", "refresh professor ratings from each term's latest catalog (no USC request)")):
         p = sub.add_parser(name, help=help_)
         p.add_argument("--terms", help="comma-separated term codes (default: $ACTIVE_SEMESTERS, else $SEMESTER)")
         p.add_argument("--runs-dir", help="output root (default: $REFRESH_RUNS_DIR, else ingestion/runs)")
@@ -587,6 +679,8 @@ def main(argv=None, *, env=None, api=None, runner_factory=StepRunner, now=None, 
         return notify_discord.notify(summary, env, summary_path=summary_path, **transport)
 
     try:
+        if args.command == "profs":
+            return cmd_profs(args, env, runner_factory, now, notifier)
         api = api or UscApi()
         if args.command == "probe":
             return cmd_probe(args, env, api, now, notifier)
