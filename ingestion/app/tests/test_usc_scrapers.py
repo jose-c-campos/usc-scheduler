@@ -190,6 +190,15 @@ def test_cancelled_and_typeless_sections_are_skipped_and_counted():
     assert stats == {"cancelled_skipped": 1, "sections_skipped_missing_id_or_type": 1}
 
 
+def test_cancelled_section_numbers_are_collected_for_the_removal_guard():
+    raw = course("20271", "CHEM 105A")
+    raw["sections"][0]["isCancelled"] = True
+    number = str(raw["sections"][0]["sisSectionId"])
+    cancelled = set()
+    _, c, _ = map_course(raw, cancelled=cancelled)
+    assert cancelled == {number} and number not in by_number(c)
+
+
 def test_multiple_meeting_times_are_reported():
     _, _, edges = mapped("20271", "CHEM 332")
     assert [(e["code"], e["kind"]) for e in edges] == [("CHEM 332", "multiple_meeting_times")]
@@ -381,6 +390,19 @@ def test_stage_2_writes_catalog_and_summary(tmp_path):
     summary = json.loads((tmp_path / "usc_20271_courses.summary.json").read_text())
     assert summary["programs_failed"] == [] and summary["courses"] == 3
     assert [e["code"] for e in summary["edge_cases"]] == ["CHEM 332"]
+
+
+def test_stage_2_summary_lists_the_sections_usc_cancelled(tmp_path):
+    courses = chem_and_csci()
+    courses["CHEM"][0]["sections"][0]["isCancelled"] = True
+    expected = sorted({str(s["sisSectionId"]) for cs in courses.values() for c in cs
+                       for s in c["sections"] if s.get("isCancelled")})
+    out = tmp_path / "usc_20271_courses.json"
+    assert scrape_sections.main(["--term", "20271", "--programs-json", str(write_programs(tmp_path)),
+                                 "--out", str(out)], api=StubApi(courses)) == 0
+    summary = json.loads((tmp_path / "usc_20271_courses.summary.json").read_text())
+    assert summary["cancelled_sections"] == expected
+    assert str(courses["CHEM"][0]["sections"][0]["sisSectionId"]) in expected
 
 
 def test_stage_2_any_failed_program_means_no_catalog(tmp_path):

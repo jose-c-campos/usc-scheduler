@@ -180,12 +180,15 @@ def assign_parents(sections: list[dict]) -> tuple[dict[str, str | None], bool]:
 
 # ─── course mapping ──────────────────────────────────────────────────────────
 
-def map_course(api_course: dict, stats: dict | None = None) -> tuple[str, dict, list[dict]]:
+def map_course(api_course: dict, stats: dict | None = None,
+               cancelled: set | None = None) -> tuple[str, dict, list[dict]]:
     """One API course → (code, our course dict, edge cases).
 
     Raises UscApiError if the course is missing keys we rely on (a schema
     change, which must fail loudly). Problems with a single section's values
-    are counted in `stats` and the section is skipped.
+    are counted in `stats` and the section is skipped. `cancelled`, if given,
+    collects the section numbers USC marked cancelled: the refresh's removal
+    guard counts a section that left the catalog that way as explained.
     """
     stats = stats if stats is not None else defaultdict(int)
     try:
@@ -201,6 +204,8 @@ def map_course(api_course: dict, stats: dict | None = None) -> tuple[str, dict, 
     for s in raw_sections:
         if s.get("isCancelled"):
             stats["cancelled_skipped"] += 1
+            if cancelled is not None and s.get("sisSectionId"):
+                cancelled.add(str(s["sisSectionId"]))
             continue
         if not s.get("sisSectionId") or not s.get("rnrMode"):
             # load_courses.py would abort the whole load on a section without a type.
@@ -292,6 +297,7 @@ def scrape(api: UscApi, term: str, programs: list[dict], log=print) -> tuple[dic
     stats: dict = defaultdict(int)
     edge_cases: list[dict] = []
     failures: list[dict] = []
+    cancelled: set[str] = set()
     seen: set[tuple[str, str]] = set()
 
     for i, p in enumerate(programs, 1):
@@ -301,7 +307,7 @@ def scrape(api: UscApi, term: str, programs: list[dict], log=print) -> tuple[dic
         seen.add(key)
         try:
             api_courses = api.courses(term, p["school"], p["code"])
-            mapped = [map_course(c, stats) for c in api_courses]
+            mapped = [map_course(c, stats, cancelled) for c in api_courses]
         except UscApiError as e:
             failures.append({"program": p["code"], "school": p["school"], "error": str(e)})
             log(f"[{i:3}/{len(programs)}] {p['code']:<6} {p['school']:<5} ✖ {e}")
@@ -331,6 +337,7 @@ def scrape(api: UscApi, term: str, programs: list[dict], log=print) -> tuple[dic
         "requests": api.requests_made,
         "runtime_seconds": round(time.monotonic() - started, 1),
         **dict(sorted(stats.items())),
+        "cancelled_sections": sorted(cancelled),
         "edge_case_kinds": EDGE_CASE_KINDS,
         "edge_cases": edge_cases,
     }

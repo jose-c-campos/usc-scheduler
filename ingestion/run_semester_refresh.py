@@ -11,7 +11,7 @@
 On the Lightsail box, cron runs these through cron-wrapper.sh, which loads .env.
 
 `refresh` runs, for each term: Stage 1 (scrape_programs) → Stage 2
-(scrape_sections) → a shrink guard → load_courses.py --prune → move the term's
+(scrape_sections) → the shrink and removal guards → load_courses.py --prune → move the term's
 `latest` link. Then load_profs.py once over every loaded catalog. `profs` runs
 only that last step, over each configured term's `latest` catalog, with no
 request to USC. `probe` asks USC which terms are live (one request) and reports
@@ -54,6 +54,7 @@ import shutil
 import subprocess
 import sys
 import traceback
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -68,6 +69,13 @@ DEFAULT_RUNS_DIR = INGESTION_DIR / "runs"
 EXIT_OK, EXIT_FAILED, EXIT_CONFIG, EXIT_LOCKED = 0, 1, 2, 3
 KEEP_RUNS_PER_TERM = 8
 SHRINK_LIMIT = 0.95  # a new catalog with < 95% of the last good snapshot's sections isn't loaded (user, 2026-11-13)
+# The removal guard (user, 2026-11-16). The shrink guard compares totals, so added sections can hide lost
+# ones, and no single department reaches 5% of a term (the largest, LAW in Fall 2026, is 4.5%). So a load is also refused
+# if, section by section against the last good snapshot, the sections it would delete without USC having
+# marked them cancelled are more than 1% of the term (25 are always allowed), or half or more of any
+# subject ("CHEM" in "CHEM 105A") that had at least 5.
+REMOVAL_LIMIT, REMOVAL_FLOOR = 0.01, 25
+SUBJECT_LOSS_LIMIT, SUBJECT_MIN_SECTIONS = 0.5, 5
 TIMEOUTS = {  # seconds; a hung step must not hold the lock forever
     "programs": 5 * 60,
     "sections": 60 * 60,
@@ -272,12 +280,56 @@ def shrink_problem(sections: int, previous: int | None, limit: float = SHRINK_LI
     return None
 
 
+def catalog_sections(path: Path) -> set[tuple[str, str]] | None:
+    """{(course code, section number)} of a catalog file, or None if there's no readable catalog."""
+    try:
+        data = json.loads(path.read_text())
+        return {(code, str(s["sectionNumber"])) for code, course in data.items()
+                for s in course.get("sections") or []}
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return None
+
+
+def subject(code: str) -> str:
+    """'CHEM 105A' → 'CHEM'."""
+    return (code.split() or [code])[0]
+
+
+def removal_check(previous: set | None, new: set, cancelled: set[str]) -> tuple[str | None, dict]:
+    """Would loading `new` delete sections of `previous` (the last good snapshot) that USC didn't cancel?
+
+    Returns (problem or None, counts for the summary). The load prunes whatever left the catalog.
+    Sections USC marked cancelled should go. Anything else that vanished may be USC answering for a
+    department "successfully" but incompletely, which the total-based shrink guard can't see.
+    """
+    if not previous:
+        return None, {}
+    removed = previous - new
+    unexplained = [(code, number) for code, number in removed if number not in cancelled]
+    counts = {"removed": len(removed), "removed_cancelled": len(removed) - len(unexplained)}
+    problems = []
+    limit = max(REMOVAL_FLOOR, int(REMOVAL_LIMIT * len(previous)))
+    if len(unexplained) > limit:
+        problems.append(f"{len(unexplained)} sections would be deleted that USC didn't mark cancelled (limit {limit})")
+    had = Counter(subject(code) for code, _ in previous)
+    lost = Counter(subject(code) for code, _ in unexplained)
+    hit = sorted((s for s, n in lost.items() if had[s] >= SUBJECT_MIN_SECTIONS and n >= SUBJECT_LOSS_LIMIT * had[s]),
+                 key=lambda s: (-lost[s], s))
+    if hit:
+        shown = ", ".join(f"{s} {lost[s]} of {had[s]}" for s in hit[:5]) + (", …" if len(hit) > 5 else "")
+        whose = "a subject's" if len(hit) == 1 else f"{len(hit)} subjects'"
+        problems.append(f"half or more of {whose} sections would go ({shown})")
+    if not problems:
+        return None, counts
+    return "; ".join(problems) + "; not loaded. Check USC, then re-run with --allow-shrink if it's real", counts
+
+
 def refresh_term(term: str, runs_dir: Path, stamp: str, runner, *,
                  no_db: bool, allow_shrink: bool, only: str | None = None) -> dict:
     """Scrape, guard and load one term. Never raises for a step failure; returns its result.
 
     With `only` (a smoke run over a few programs) the catalog is partial by design,
-    so it's loaded without pruning, skips the shrink guard, and never becomes `latest`.
+    so it's loaded without pruning, skips both guards, and never becomes `latest`.
     """
     term_dir = runs_dir / term
     run_dir = term_dir / stamp
@@ -300,6 +352,7 @@ def refresh_term(term: str, runs_dir: Path, stamp: str, runner, *,
                              "--programs-json", str(programs), "--out", str(catalog),
                              *(["--only", only] if only else [])], TIMEOUTS["sections"])
     stage2 = run_dir / f"usc_{term}_courses.summary.json"
+    s = {}
     if stage2.exists():
         s = json.loads(stage2.read_text())
         result.update(courses=s.get("courses"), sections=s.get("sections"),
@@ -316,6 +369,15 @@ def refresh_term(term: str, runs_dir: Path, stamp: str, runner, *,
     problem = None if only else shrink_problem(sections, result["prev_sections"])
     if problem and not allow_shrink:
         return fail("guard", problem)
+    if not only:  # an --only catalog is partial by design: every program it skipped would look removed
+        new = catalog_sections(catalog)
+        if new is None:
+            return fail("guard", f"{catalog.name} can't be read; not loaded")
+        problem, counts = removal_check(catalog_sections(term_dir / "latest" / catalog.name), new,
+                                        {str(n) for n in s.get("cancelled_sections") or []})
+        result.update(counts)
+        if problem and not allow_shrink:
+            return fail("guard", problem)
 
     if not no_db:
         if runner("load_courses", [py, "database/load_courses.py", "--json-file", str(catalog),
@@ -660,7 +722,8 @@ def main(argv=None, *, env=None, api=None, runner_factory=StepRunner, now=None, 
             p.add_argument("--allow-inactive", action="store_true",
                            help="also refresh configured terms USC doesn't list as Active")
             p.add_argument("--allow-shrink", action="store_true",
-                           help=f"load even if a catalog has < {SHRINK_LIMIT:.0%} of the last snapshot's sections")
+                           help=f"load even if a guard trips: a catalog with < {SHRINK_LIMIT:.0%} of the last "
+                                "snapshot's sections, or one that would delete sections USC didn't mark cancelled")
             p.add_argument("--only", help="smoke run: only these program codes (e.g. CHEM,CSCI). Loads "
                                           "without pruning and never moves `latest`")
     n = sub.add_parser("notify", help="check the Discord webhook, or (re)send a run's alert")

@@ -81,7 +81,11 @@ def sections_text(res: dict) -> str:
     if not isinstance(sections, int):
         return ""
     if isinstance(prev, int):
-        return f"{sections} sections ({sections - prev:+d})"
+        change = f"{sections - prev:+d}"
+        removed = res.get("removed")
+        if isinstance(removed, int) and removed:  # the removal guard's counts: what the load deletes
+            change += f"; {removed} removed, {res.get('removed_cancelled') or 0} of them cancelled by USC"
+        return f"{sections} sections ({change})"
     return f"{sections} sections (no previous snapshot)"
 
 

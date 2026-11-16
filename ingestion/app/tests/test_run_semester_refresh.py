@@ -41,12 +41,19 @@ def term_of(argv):
 
 
 class FakeRunner:
-    """Stands in for the pipeline steps. `fail` holds step names or (step, term) pairs."""
+    """Stands in for the pipeline steps. `fail` holds step names or (step, term) pairs.
 
-    def __init__(self, sections=None, fail=(), stage2_writes_catalog=True):
+    Stage 2 writes `catalogs[term]` if given (see catalog()), else a catalog with no sections, and a
+    summary claiming `sections[term]` sections (else the catalog's own count, else 100) and listing
+    `cancelled[term]` as the sections USC marked cancelled.
+    """
+
+    def __init__(self, sections=None, fail=(), stage2_writes_catalog=True, catalogs=None, cancelled=None):
         self.sections = sections or {}
         self.fail = set(fail)
         self.stage2_writes_catalog = stage2_writes_catalog
+        self.catalogs = catalogs or {}
+        self.cancelled = cancelled or {}
         self.calls = []
         self.log_path = None
 
@@ -68,15 +75,30 @@ class FakeRunner:
                                         "href": f"https://classes.usc.edu/term/{term}/program/CSCI/school/ENGV"}]))
         if name == "sections":
             out = Path(argv[argv.index("--out") + 1])
-            n = self.sections.get(term, 100)
+            written = self.catalogs.get(term, {"CSCI 101": {"title": "t", "sections": [], "has_bundled_sections": False}})
+            n = self.sections.get(term)
+            if n is None:
+                n = sum(len(c["sections"]) for c in written.values()) if term in self.catalogs else 100
             out.with_name(out.stem + ".summary.json").write_text(json.dumps({
                 "term": term, "courses": 10, "sections": n, "requests": 1, "runtime_seconds": 1.0,
                 "programs_failed": [{"program": "CSCI"}] if failing else [],
+                "cancelled_sections": self.cancelled.get(term, []),
                 "edge_cases": [{"code": "CHEM 332", "kind": "multiple_meeting_times", "note": "x"}]}))
             if not failing and self.stage2_writes_catalog:
-                out.write_text(json.dumps({"CSCI 101": {"title": "t", "sections": [],
-                                                        "has_bundled_sections": False}}))
+                out.write_text(json.dumps(written))
         return 1 if failing else 0
+
+
+def catalog(**subjects):
+    """A catalog with one course per subject holding n sections: catalog(CHEM=2) has CHEM 101 with CHEM000, CHEM001."""
+    return {f"{s} 101": {"title": "t", "has_bundled_sections": False,
+                         "sections": [{"sectionNumber": f"{s}{i:03d}"} for i in range(n)]}
+            for s, n in subjects.items()}
+
+
+def keys(**subjects):
+    """The (course code, section number) set of catalog(**subjects), as removal_check takes it."""
+    return {(code, s["sectionNumber"]) for code, c in catalog(**subjects).items() for s in c["sections"]}
 
 
 def refresh(tmp_path, *extra, api=None, runner=None, env=None, now=NOW):
@@ -187,6 +209,48 @@ def test_shrink_guard(new, prev, trips):
     assert (rsr.shrink_problem(new, prev) is not None) == trips
 
 
+def test_removal_guard_passes_a_first_load_and_normal_churn():
+    assert rsr.removal_check(None, keys(CSCI=10), set()) == (None, {})
+    previous = keys(CSCI=970, CHEM=30)
+    new = {k for k in previous if k[1] not in {"CSCI000", "CSCI001", "CSCI002", "CSCI003", "CSCI004"}} | keys(MATH=10)
+    assert rsr.removal_check(previous, new, set()) == (None, {"removed": 5, "removed_cancelled": 0})
+
+
+def test_removal_guard_stops_a_vanished_subject_the_shrink_guard_misses():
+    """USC answering for a department "successfully" but empty: no step fails, and the total barely moves."""
+    previous, new = keys(CSCI=980, CHEM=20), keys(CSCI=1000)
+    assert rsr.shrink_problem(1000, 1000) is None  # the total didn't even drop, and 20 is under the total limit
+    problem, counts = rsr.removal_check(previous, new, set())
+    assert problem.startswith("half or more of a subject's sections would go (CHEM 20 of 20)")
+    assert problem.endswith("re-run with --allow-shrink if it's real") and counts["removed"] == 20
+
+
+def test_sections_usc_cancelled_are_explained_removals():
+    cancelled = {f"CHEM{i:03d}" for i in range(30)}
+    assert rsr.removal_check(keys(CSCI=970, CHEM=30), keys(CSCI=970), cancelled) == \
+        (None, {"removed": 30, "removed_cancelled": 30})
+
+
+def test_many_unexplained_removals_trip_even_when_spread_thin():
+    previous = keys(**{f"S{i:02d}": 20 for i in range(50)})          # 1,000 sections in 50 subjects
+    new = {(code, n) for code, n in previous if int(n[-3:]) >= 3}    # 3 gone from each: 150, 15% of each
+    problem, _ = rsr.removal_check(previous, new, set())
+    assert problem.startswith("150 sections would be deleted that USC didn't mark cancelled (limit 25)")
+    assert "subject" not in problem
+
+
+def test_removal_guard_names_the_worst_subjects_first_and_caps_the_list():
+    previous = keys(CSCI=500, **{f"S{i}": 10 for i in range(7)}, BIG=40)
+    problem, _ = rsr.removal_check(previous, keys(CSCI=500), set())
+    assert "half or more of 8 subjects' sections would go (BIG 40 of 40, S0 10 of 10, S1 10 of 10" in problem
+    assert ", …)" in problem and problem.startswith("110 sections would be deleted")
+
+
+def test_subjects_under_the_minimum_are_left_to_the_total_limit():
+    assert rsr.removal_check(keys(CSCI=970, ABC=4), keys(CSCI=970), set()) == \
+        (None, {"removed": 4, "removed_cancelled": 0})
+
+
 def test_point_latest_is_a_relative_link_that_can_be_repointed(tmp_path):
     a, b = tmp_path / "20261113T000000Z", tmp_path / "20261120T000000Z"
     a.mkdir(), b.mkdir()
@@ -260,6 +324,50 @@ def test_shrunken_catalog_is_not_loaded_and_latest_stays(tmp_path):
     code, runner, _ = refresh(tmp_path, "--allow-shrink", runner=FakeRunner(sections={"20271": 800}),
                               now=datetime(2026, 11, 21, tzinfo=timezone.utc))
     assert code == 0 and "load_courses" in runner.steps("20271")
+
+
+def test_a_vanished_subject_is_not_loaded_and_latest_stays(tmp_path):
+    refresh(tmp_path, runner=FakeRunner(catalogs={"20271": catalog(CSCI=970, CHEM=30)}))
+    first = (tmp_path / "20271" / "latest").resolve()
+
+    code, runner, _ = refresh(tmp_path, runner=FakeRunner(catalogs={"20271": catalog(CSCI=990)}), now=LATER)
+    assert code == 1
+    assert runner.steps("20271") == ["programs", "sections"]  # never reached load_courses, so nothing was pruned
+    assert (tmp_path / "20271" / "latest").resolve() == first
+    t = last_summary(tmp_path)["terms"]["20271"]
+    assert t["failed_step"] == "guard" and "CHEM 30 of 30" in t["error"] and t["removed"] == 30
+    assert runner.steps("20263") == ["programs", "sections", "load_courses"]  # the other term still loads
+
+    code, runner, _ = refresh(tmp_path, "--allow-shrink", runner=FakeRunner(catalogs={"20271": catalog(CSCI=990)}),
+                              now=datetime(2026, 11, 21, tzinfo=timezone.utc))
+    assert code == 0 and "load_courses" in runner.steps("20271")
+
+
+def test_cancelled_removals_load_and_show_in_the_history_line(tmp_path):
+    refresh(tmp_path, runner=FakeRunner(catalogs={"20271": catalog(CSCI=970, CHEM=30)}))
+    runner = FakeRunner(catalogs={"20271": catalog(CSCI=980)}, cancelled={"20271": [f"CHEM{i:03d}" for i in range(30)]})
+    code, runner, _ = refresh(tmp_path, runner=runner, now=LATER)
+    assert code == 0 and "load_courses" in runner.steps("20271")
+    t = last_summary(tmp_path)["terms"]["20271"]
+    assert (t["removed"], t["removed_cancelled"]) == (30, 30)
+    line = (tmp_path / "logs" / "history.log").read_text().splitlines()[-1]
+    assert "20271 ok 980 sections (-20; 30 removed, 30 of them cancelled by USC)" in line
+
+
+def test_only_runs_skip_the_removal_guard(tmp_path):
+    refresh(tmp_path, runner=FakeRunner(catalogs={"20271": catalog(CSCI=970, CHEM=30)}))
+    code, runner, _ = refresh(tmp_path, "--only", "CSCI", runner=FakeRunner(catalogs={"20271": catalog(CSCI=970)}),
+                              now=LATER)
+    assert code == 0 and "load_courses" in runner.steps("20271")
+
+
+def test_an_unreadable_catalog_is_not_loaded(tmp_path):
+    refresh(tmp_path, runner=FakeRunner(catalogs={"20271": catalog(CSCI=100)}))
+    code, runner, _ = refresh(tmp_path, runner=FakeRunner(sections={"20271": 100}, catalogs={"20271": [1, 2]}),
+                              now=LATER)
+    assert code == 1 and runner.steps("20271") == ["programs", "sections"]
+    t = last_summary(tmp_path)["terms"]["20271"]
+    assert t["failed_step"] == "guard" and "can't be read" in t["error"]
 
 
 def test_stage2_failure_loads_nothing_and_skips_profs(tmp_path):

@@ -133,6 +133,16 @@ def test_a_successful_refresh_posts_a_check_mark_with_the_counts():
     assert "`/srv/runs/logs/20261116T100000Z.json`" in text
 
 
+def test_the_check_mark_shows_what_the_load_removed():
+    """The removal guard's counts, so the daily ✅ shows deletions (user, 2026-11-16)."""
+    summary = ok_refresh_summary()
+    summary["terms"]["20263"].update(removed=14, removed_cancelled=12)
+    assert "• 20263 (Fall 2026): 9110 sections (+12; 14 removed, 12 of them cancelled by USC)" in \
+        nd.build_message(summary).splitlines()
+    summary["terms"]["20263"].update(removed=0, removed_cancelled=0)
+    assert "• 20263 (Fall 2026): 9110 sections (+12)" in nd.build_message(summary).splitlines()
+
+
 def test_a_success_says_when_nothing_was_loaded_or_the_run_was_partial():
     assert nd.build_message(ok_refresh_summary(no_db=True)).splitlines()[0] == \
         "✅ **USC refresh ok** (scrape and checks only: nothing was loaded)"
