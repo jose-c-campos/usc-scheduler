@@ -1,3 +1,4 @@
+import argparse
 import json
 import psycopg2
 from pathlib import Path
@@ -171,19 +172,49 @@ def update_professor(cur, name, prof_data):
     
     return professor_id
 
-def main():
-    # Load all instructors from your courses JSON
-    json_file = Path(__file__).parent.parent.parent / "usc_20253_courses.json"
-    with open(json_file, "r") as f:
-        data = json.load(f)
+def parse_args(argv=None):
+    ap = argparse.ArgumentParser(
+        description="Look up every instructor in a scraped course catalog on RateMyProfessors "
+                    "and upsert professors, reviews and prof_course_ratings."
+    )
+    ap.add_argument('--json-file', required=True, nargs='+',
+                    help='path(s) to usc_<term>_courses.json. Pass the SAME file(s) given to '
+                         'load_courses.py, or instructors in the loaded catalog get no ratings. '
+                         'With several files, each instructor is looked up once.')
+    return ap.parse_args(argv)
 
-    # Collect all unique instructor names
+def collect_instructors(catalogs):
+    """Unique, stripped instructor names across one or more scraped catalogs."""
     instructors = set()
-    for course in data.values():
-        for section in course.get("sections", []):
-            for instr in section.get("instructors", []):
-                if instr and instr.strip():
-                    instructors.add(instr.strip())
+    for data in catalogs:
+        for course in data.values():
+            for section in course.get("sections", []):
+                for instr in section.get("instructors") or []:
+                    if instr and instr.strip():
+                        instructors.add(instr.strip())
+    return instructors
+
+def exit_code(total, success_count, fatal):
+    """Non-zero when the run is unusable: a fatal error, or not one lookup worked.
+
+    Many instructors aren't on RateMyProfessors, so some 'errors' are normal. But
+    zero successes out of many means the Node CLI is missing or RMP is refusing us.
+    """
+    if fatal:
+        return 1
+    if total and not success_count:
+        return 1
+    return 0
+
+def main(argv=None):
+    args = parse_args(argv)
+    # Professors are not semester-scoped, so no term code is needed here.
+    catalogs = []
+    for json_file in args.json_file:
+        print(f"Reading instructors from {json_file}")
+        with open(Path(json_file), "r") as f:
+            catalogs.append(json.load(f))
+    instructors = collect_instructors(catalogs)
 
     print(f"Found {len(instructors)} unique instructors.")
 
@@ -192,6 +223,7 @@ def main():
     
     error_count = 0
     success_count = 0
+    fatal = False
 
     try:
         for name in sorted(instructors):
@@ -228,6 +260,7 @@ def main():
     except Exception as e:
         print(f"\n❌ Fatal error: {e}")
         conn.rollback()
+        fatal = True
     finally:
         print(f"\nProcessing complete:")
         print(f"✅ Successfully processed: {success_count}")
@@ -235,5 +268,12 @@ def main():
         cur.close()
         conn.close()
 
+    code = exit_code(len(instructors), success_count, fatal)
+    if code:
+        print("✖ Exiting non-zero: " + ("fatal error above" if fatal else
+              "no lookup succeeded (is rate_my_prof/dist/prof_lookup_cli.js built? is RMP reachable?)"))
+    return code
+
 if __name__ == "__main__":
-    main()
+    import sys
+    sys.exit(main())

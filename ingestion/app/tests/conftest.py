@@ -8,6 +8,32 @@ from ..models.base import Base
 from ..core.database import get_session         # the real factory
 from ..models import course, section, professor  # import after Base is ready
 
+# ─── the orchestrator's DB preflight (Phase 5) ───────────────
+class _FakeDbConnection:
+    def close(self):
+        pass
+
+
+class _DbConnects(list):
+    """Records each connection attempt. Set `.error` to make the DB unreachable."""
+    error = None
+
+    def __call__(self, **kwargs):
+        self.append(kwargs)
+        if self.error:
+            raise self.error
+        return _FakeDbConnection()
+
+
+@pytest.fixture(autouse=True)
+def db_connects(monkeypatch):
+    """run_semester_refresh's preflight opens one Postgres connection. No test reaches a real one."""
+    import run_semester_refresh as rsr
+    calls = _DbConnects()
+    monkeypatch.setattr(rsr, "connect_db", calls)
+    return calls
+
+
 # ─── fast in-memory engine ────────────────────────────────────
 _engine = create_engine(
     "sqlite:///:memory:",

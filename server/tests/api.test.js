@@ -6,6 +6,9 @@ process.env.USC_DB_USER     = process.env.USC_DB_USER     || 'ci_user';
 process.env.USC_DB_PASSWORD = process.env.USC_DB_PASSWORD || 'ci_password';
 process.env.JWT_SECRET      = process.env.JWT_SECRET      || 'ci-test-jwt-secret';
 process.env.NODE_ENV        = 'test';
+// Deliberately NOT the server's built-in fallback ('20253'), so the
+// active-semester test proves the env var drives the value.
+process.env.SEMESTER        = '20261';
 
 const request = require('supertest');
 const { app, pool } = require('../server');
@@ -21,6 +24,16 @@ describe('Health check', () => {
     const res = await request(app).get('/api/test');
     expect(res.status).toBe(200);
     expect(res.body.message).toBe('API is working!');
+  });
+});
+
+// ─── Active semester ──────────────────────────────────────────────────────────
+
+describe('Active semester', () => {
+  it('GET /api/active-semester returns the SEMESTER env var', async () => {
+    const res = await request(app).get('/api/active-semester');
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ semester: '20261' });
   });
 });
 

@@ -1,0 +1,1733 @@
+{
+ "_note": "Real responses from https://classes.usc.edu/api/Courses/CoursesByTermSchoolProgram, fetched 2026-11-13. Trimmed to the sections each test needs; long free-text fields removed. Keyed by term code.",
+ "20271": [
+  {
+   "courseId": 10406,
+   "startTermCode": 0,
+   "endTermCode": null,
+   "classNumber": "105",
+   "sequence": "A",
+   "suffix": "Lg",
+   "fullCourseName": "CHEM 105A",
+   "isCrossListed": false,
+   "maxUnits": null,
+   "duplicateCredit": null,
+   "geCode": "22",
+   "scheduledCourseCode": {
+    "prefix": "CHEM",
+    "number": "105",
+    "suffix": "A",
+    "courseHyphen": "CHEM-105A",
+    "courseSpace": "CHEM 105A",
+    "courseSmashed": "CHEM105A"
+   },
+   "publishedCourseCode": {
+    "prefix": "CHEM",
+    "number": "105",
+    "suffix": "A",
+    "courseHyphen": "CHEM-105A",
+    "courseSpace": "CHEM 105A",
+    "courseSmashed": "CHEM105A"
+   },
+   "matchedCourseCode": {
+    "prefix": "CHEM",
+    "number": "105",
+    "suffix": "A",
+    "courseHyphen": "CHEM-105A",
+    "courseSpace": "CHEM 105A",
+    "courseSmashed": "CHEM105A"
+   },
+   "courseUnits": [
+    4
+   ],
+   "sections": [
+    {
+     "sisSectionId": "17218",
+     "linkCode": "A",
+     "linkCodeForSort": "A",
+     "rnrSessionId": 38124,
+     "peSectionId": 761834,
+     "courseId": 10406,
+     "hasDClearance": false,
+     "classType": null,
+     "name": null,
+     "group": null,
+     "schedule": [
+      {
+       "dayCode": "MWF",
+       "days": [
+        "Mon",
+        "Wed",
+        "Fri"
+       ],
+       "startTime": "09:00",
+       "endTime": "09:50",
+       "sectionLocationSqNumber": 1
+      }
+     ],
+     "totalSeats": 200,
+     "registeredSeats": 33,
+     "waitlistedSeats": null,
+     "rnrMode": "Lecture",
+     "session": {
+      "termCode": "20271",
+      "rnrSessionCode": "001",
+      "description": null,
+      "rnrSessionId": 38124
+     },
+     "units": [
+      "4.0"
+     ],
+     "instructors": [
+      {
+       "firstName": "Thomas",
+       "lastName": "Bertolini"
+      }
+     ],
+     "isCancelled": false,
+     "isFull": false,
+     "rnrModeCode": "C",
+     "term": {
+      "value": 20271,
+      "year": 2027,
+      "term": 1,
+      "season": "Spring"
+     },
+     "termCode": 20271,
+     "season": "Spring",
+     "year": 2027
+    },
+    {
+     "sisSectionId": "17220",
+     "linkCode": "A",
+     "linkCodeForSort": "A",
+     "rnrSessionId": 38124,
+     "peSectionId": 761836,
+     "courseId": 10406,
+     "hasDClearance": false,
+     "classType": null,
+     "name": null,
+     "group": null,
+     "schedule": [
+      {
+       "dayCode": "T",
+       "days": [
+        "Tue"
+       ],
+       "startTime": "15:30",
+       "endTime": "16:50",
+       "sectionLocationSqNumber": 1
+      }
+     ],
+     "totalSeats": 200,
+     "registeredSeats": 33,
+     "waitlistedSeats": null,
+     "rnrMode": "Quiz",
+     "session": {
+      "termCode": "20271",
+      "rnrSessionCode": "001",
+      "description": null,
+      "rnrSessionId": 38124
+     },
+     "units": [
+      "0.0"
+     ],
+     "instructors": [],
+     "isCancelled": false,
+     "isFull": false,
+     "rnrModeCode": "Q",
+     "term": {
+      "value": 20271,
+      "year": 2027,
+      "term": 1,
+      "season": "Spring"
+     },
+     "termCode": 20271,
+     "season": "Spring",
+     "year": 2027
+    },
+    {
+     "sisSectionId": "17219",
+     "linkCode": "B",
+     "linkCodeForSort": "B",
+     "rnrSessionId": 38124,
+     "peSectionId": 772511,
+     "courseId": 10406,
+     "hasDClearance": false,
+     "classType": null,
+     "name": null,
+     "group": null,
+     "schedule": [
+      {
+       "dayCode": "MWF",
+       "days": [
+        "Mon",
+        "Wed",
+        "Fri"
+       ],
+       "startTime": "13:00",
+       "endTime": "13:50",
+       "sectionLocationSqNumber": 1
+      }
+     ],
+     "totalSeats": 200,
+     "registeredSeats": 38,
+     "waitlistedSeats": null,
+     "rnrMode": "Lecture",
+     "session": {
+      "termCode": "20271",
+      "rnrSessionCode": "001",
+      "description": null,
+      "rnrSessionId": 38124
+     },
+     "units": [
+      "4.0"
+     ],
+     "instructors": [
+      {
+       "firstName": "Stuart",
+       "lastName": "Moon"
+      }
+     ],
+     "isCancelled": false,
+     "isFull": false,
+     "rnrModeCode": "C",
+     "term": {
+      "value": 20271,
+      "year": 2027,
+      "term": 1,
+      "season": "Spring"
+     },
+     "termCode": 20271,
+     "season": "Spring",
+     "year": 2027
+    },
+    {
+     "sisSectionId": "17221",
+     "linkCode": "B",
+     "linkCodeForSort": "B",
+     "rnrSessionId": 38124,
+     "peSectionId": 772512,
+     "courseId": 10406,
+     "hasDClearance": false,
+     "classType": null,
+     "name": null,
+     "group": null,
+     "schedule": [
+      {
+       "dayCode": "T",
+       "days": [
+        "Tue"
+       ],
+       "startTime": "15:30",
+       "endTime": "16:50",
+       "sectionLocationSqNumber": 1
+      }
+     ],
+     "totalSeats": 200,
+     "registeredSeats": 38,
+     "waitlistedSeats": null,
+     "rnrMode": "Quiz",
+     "session": {
+      "termCode": "20271",
+      "rnrSessionCode": "001",
+      "description": null,
+      "rnrSessionId": 38124
+     },
+     "units": [
+      "0.0"
+     ],
+     "instructors": [],
+     "isCancelled": false,
+     "isFull": false,
+     "rnrModeCode": "Q",
+     "term": {
+      "value": 20271,
+      "year": 2027,
+      "term": 1,
+      "season": "Spring"
+     },
+     "termCode": 20271,
+     "season": "Spring",
+     "year": 2027
+    },
+    {
+     "sisSectionId": "17232",
+     "linkCode": null,
+     "linkCodeForSort": "Z",
+     "rnrSessionId": 38124,
+     "peSectionId": 761829,
+     "courseId": 10406,
+     "hasDClearance": false,
+     "classType": null,
+     "name": null,
+     "group": null,
+     "schedule": [
+      {
+       "dayCode": "W",
+       "days": [
+        "Wed"
+       ],
+       "startTime": "13:00",
+       "endTime": "15:50",
+       "sectionLocationSqNumber": 1
+      }
+     ],
+     "totalSeats": 6,
+     "registeredSeats": 6,
+     "waitlistedSeats": null,
+     "rnrMode": "Lab",
+     "session": {
+      "termCode": "20271",
+      "rnrSessionCode": "001",
+      "description": null,
+      "rnrSessionId": 38124
+     },
+     "units": [
+      "0.0"
+     ],
+     "instructors": [],
+     "isCancelled": false,
+     "isFull": true,
+     "rnrModeCode": "L",
+     "term": {
+      "value": 20271,
+      "year": 2027,
+      "term": 1,
+      "season": "Spring"
+     },
+     "termCode": 20271,
+     "season": "Spring",
+     "year": 2027
+    },
+    {
+     "sisSectionId": "17222",
+     "linkCode": null,
+     "linkCodeForSort": "Z",
+     "rnrSessionId": 38124,
+     "peSectionId": 761838,
+     "courseId": 10406,
+     "hasDClearance": false,
+     "classType": null,
+     "name": null,
+     "group": null,
+     "schedule": [
+      {
+       "dayCode": "H",
+       "days": [
+        "Thu"
+       ],
+       "startTime": "09:30",
+       "endTime": "12:20",
+       "sectionLocationSqNumber": 1
+      }
+     ],
+     "totalSeats": 6,
+     "registeredSeats": 5,
+     "waitlistedSeats": null,
+     "rnrMode": "Lab",
+     "session": {
+      "termCode": "20271",
+      "rnrSessionCode": "001",
+      "description": null,
+      "rnrSessionId": 38124
+     },
+     "units": [
+      "0.0"
+     ],
+     "instructors": [],
+     "isCancelled": false,
+     "isFull": false,
+     "rnrModeCode": "L",
+     "term": {
+      "value": 20271,
+      "year": 2027,
+      "term": 1,
+      "season": "Spring"
+     },
+     "termCode": 20271,
+     "season": "Spring",
+     "year": 2027
+    }
+   ],
+   "remainingSectionSeats": 329,
+   "sectionSeatCount": 400,
+   "termCode": 20271,
+   "prefix": "CHEM",
+   "name": "General Chemistry",
+   "sortOrder": 0
+  },
+  {
+   "courseId": 58931,
+   "startTermCode": 0,
+   "endTermCode": null,
+   "classNumber": "102",
+   "sequence": null,
+   "suffix": "L",
+   "fullCourseName": "CSCI 102",
+   "isCrossListed": false,
+   "maxUnits": null,
+   "duplicateCredit": null,
+   "geCode": null,
+   "scheduledCourseCode": {
+    "prefix": "CSCI",
+    "number": "102",
+    "suffix": "",
+    "courseHyphen": "CSCI-102",
+    "courseSpace": "CSCI 102",
+    "courseSmashed": "CSCI102"
+   },
+   "publishedCourseCode": {
+    "prefix": "CSCI",
+    "number": "102",
+    "suffix": "",
+    "courseHyphen": "CSCI-102",
+    "courseSpace": "CSCI 102",
+    "courseSmashed": "CSCI102"
+   },
+   "matchedCourseCode": {
+    "prefix": "CSCI",
+    "number": "102",
+    "suffix": "",
+    "courseHyphen": "CSCI-102",
+    "courseSpace": "CSCI 102",
+    "courseSmashed": "CSCI102"
+   },
+   "courseUnits": [
+    2
+   ],
+   "sections": [
+    {
+     "sisSectionId": "29908",
+     "linkCode": "A",
+     "linkCodeForSort": "A",
+     "rnrSessionId": 38124,
+     "peSectionId": 764298,
+     "courseId": 58931,
+     "hasDClearance": false,
+     "classType": null,
+     "name": null,
+     "group": null,
+     "schedule": [
+      {
+       "dayCode": "MW",
+       "days": [
+        "Mon",
+        "Wed"
+       ],
+       "startTime": "14:00",
+       "endTime": "14:50",
+       "sectionLocationSqNumber": 1
+      }
+     ],
+     "totalSeats": 70,
+     "registeredSeats": 29,
+     "waitlistedSeats": null,
+     "rnrMode": "Lecture",
+     "session": {
+      "termCode": "20271",
+      "rnrSessionCode": "001",
+      "description": null,
+      "rnrSessionId": 38124
+     },
+     "units": [
+      "2.0"
+     ],
+     "instructors": [
+      {
+       "firstName": "Andrew",
+       "lastName": "Goodney"
+      }
+     ],
+     "isCancelled": false,
+     "isFull": false,
+     "rnrModeCode": "C",
+     "term": {
+      "value": 20271,
+      "year": 2027,
+      "term": 1,
+      "season": "Spring"
+     },
+     "termCode": 20271,
+     "season": "Spring",
+     "year": 2027
+    },
+    {
+     "sisSectionId": "30201",
+     "linkCode": "A",
+     "linkCodeForSort": "A",
+     "rnrSessionId": 38124,
+     "peSectionId": 764593,
+     "courseId": 58931,
+     "hasDClearance": false,
+     "classType": null,
+     "name": null,
+     "group": null,
+     "schedule": [
+      {
+       "dayCode": "MW",
+       "days": [
+        "Mon",
+        "Wed"
+       ],
+       "startTime": "15:00",
+       "endTime": "15:50",
+       "sectionLocationSqNumber": 1
+      }
+     ],
+     "totalSeats": 70,
+     "registeredSeats": 9,
+     "waitlistedSeats": null,
+     "rnrMode": "Lecture",
+     "session": {
+      "termCode": "20271",
+      "rnrSessionCode": "001",
+      "description": null,
+      "rnrSessionId": 38124
+     },
+     "units": [
+      "2.0"
+     ],
+     "instructors": [
+      {
+       "firstName": "Andrew",
+       "lastName": "Goodney"
+      }
+     ],
+     "isCancelled": false,
+     "isFull": false,
+     "rnrModeCode": "C",
+     "term": {
+      "value": 20271,
+      "year": 2027,
+      "term": 1,
+      "season": "Spring"
+     },
+     "termCode": 20271,
+     "season": "Spring",
+     "year": 2027
+    },
+    {
+     "sisSectionId": "30225",
+     "linkCode": "A",
+     "linkCodeForSort": "A",
+     "rnrSessionId": 38124,
+     "peSectionId": 764647,
+     "courseId": 58931,
+     "hasDClearance": false,
+     "classType": null,
+     "name": null,
+     "group": null,
+     "schedule": [
+      {
+       "dayCode": "T",
+       "days": [
+        "Tue"
+       ],
+       "startTime": "15:00",
+       "endTime": "15:50",
+       "sectionLocationSqNumber": 1
+      }
+     ],
+     "totalSeats": 20,
+     "registeredSeats": 12,
+     "waitlistedSeats": null,
+     "rnrMode": "Lab",
+     "session": {
+      "termCode": "20271",
+      "rnrSessionCode": "001",
+      "description": null,
+      "rnrSessionId": 38124
+     },
+     "units": [
+      "0.0"
+     ],
+     "instructors": [],
+     "isCancelled": false,
+     "isFull": false,
+     "rnrModeCode": "L",
+     "term": {
+      "value": 20271,
+      "year": 2027,
+      "term": 1,
+      "season": "Spring"
+     },
+     "termCode": 20271,
+     "season": "Spring",
+     "year": 2027
+    },
+    {
+     "sisSectionId": "30257",
+     "linkCode": "A",
+     "linkCodeForSort": "A",
+     "rnrSessionId": 38124,
+     "peSectionId": 764612,
+     "courseId": 58931,
+     "hasDClearance": false,
+     "classType": null,
+     "name": null,
+     "group": null,
+     "schedule": [
+      {
+       "dayCode": "T",
+       "days": [
+        "Tue"
+       ],
+       "startTime": "16:00",
+       "endTime": "16:50",
+       "sectionLocationSqNumber": 1
+      }
+     ],
+     "totalSeats": 20,
+     "registeredSeats": 7,
+     "waitlistedSeats": null,
+     "rnrMode": "Lab",
+     "session": {
+      "termCode": "20271",
+      "rnrSessionCode": "001",
+      "description": null,
+      "rnrSessionId": 38124
+     },
+     "units": [
+      "0.0"
+     ],
+     "instructors": [],
+     "isCancelled": false,
+     "isFull": false,
+     "rnrModeCode": "L",
+     "term": {
+      "value": 20271,
+      "year": 2027,
+      "term": 1,
+      "season": "Spring"
+     },
+     "termCode": 20271,
+     "season": "Spring",
+     "year": 2027
+    },
+    {
+     "sisSectionId": "30025",
+     "linkCode": "A",
+     "linkCodeForSort": "A",
+     "rnrSessionId": 38124,
+     "peSectionId": 764478,
+     "courseId": 58931,
+     "hasDClearance": false,
+     "classType": null,
+     "name": null,
+     "group": null,
+     "schedule": [
+      {
+       "dayCode": "H",
+       "days": [
+        "Thu"
+       ],
+       "startTime": "19:00",
+       "endTime": "20:50",
+       "sectionLocationSqNumber": 1
+      }
+     ],
+     "totalSeats": 140,
+     "registeredSeats": 38,
+     "waitlistedSeats": null,
+     "rnrMode": "Quiz",
+     "session": {
+      "termCode": "20271",
+      "rnrSessionCode": "001",
+      "description": null,
+      "rnrSessionId": 38124
+     },
+     "units": [
+      "0.0"
+     ],
+     "instructors": [],
+     "isCancelled": false,
+     "isFull": false,
+     "rnrModeCode": "Q",
+     "term": {
+      "value": 20271,
+      "year": 2027,
+      "term": 1,
+      "season": "Spring"
+     },
+     "termCode": 20271,
+     "season": "Spring",
+     "year": 2027
+    }
+   ],
+   "remainingSectionSeats": 102,
+   "sectionSeatCount": 140,
+   "termCode": 20271,
+   "prefix": "CSCI",
+   "name": "Introduction to Programming",
+   "sortOrder": 0
+  },
+  {
+   "courseId": 48383,
+   "startTermCode": 0,
+   "endTermCode": null,
+   "classNumber": "332",
+   "sequence": null,
+   "suffix": "L",
+   "fullCourseName": "CHEM 332",
+   "isCrossListed": false,
+   "maxUnits": null,
+   "duplicateCredit": null,
+   "geCode": null,
+   "scheduledCourseCode": {
+    "prefix": "CHEM",
+    "number": "332",
+    "suffix": "",
+    "courseHyphen": "CHEM-332",
+    "courseSpace": "CHEM 332",
+    "courseSmashed": "CHEM332"
+   },
+   "publishedCourseCode": {
+    "prefix": "CHEM",
+    "number": "332",
+    "suffix": "",
+    "courseHyphen": "CHEM-332",
+    "courseSpace": "CHEM 332",
+    "courseSmashed": "CHEM332"
+   },
+   "matchedCourseCode": {
+    "prefix": "CHEM",
+    "number": "332",
+    "suffix": "",
+    "courseHyphen": "CHEM-332",
+    "courseSpace": "CHEM 332",
+    "courseSmashed": "CHEM332"
+   },
+   "courseUnits": [
+    4
+   ],
+   "sections": [
+    {
+     "sisSectionId": "17508",
+     "linkCode": null,
+     "linkCodeForSort": "Z",
+     "rnrSessionId": 38124,
+     "peSectionId": 761904,
+     "courseId": 48383,
+     "hasDClearance": false,
+     "classType": null,
+     "name": null,
+     "group": null,
+     "schedule": [
+      {
+       "dayCode": "T",
+       "days": [
+        "Tue"
+       ],
+       "startTime": "10:00",
+       "endTime": "11:50",
+       "sectionLocationSqNumber": 1
+      },
+      {
+       "dayCode": "T",
+       "days": [
+        "Tue"
+       ],
+       "startTime": "14:00",
+       "endTime": "16:50",
+       "sectionLocationSqNumber": 2
+      },
+      {
+       "dayCode": "T",
+       "days": [
+        "Tue"
+       ],
+       "startTime": "18:00",
+       "endTime": "20:50",
+       "sectionLocationSqNumber": 3
+      }
+     ],
+     "totalSeats": 16,
+     "registeredSeats": 11,
+     "waitlistedSeats": null,
+     "rnrMode": "Lab",
+     "session": {
+      "termCode": "20271",
+      "rnrSessionCode": "001",
+      "description": null,
+      "rnrSessionId": 38124
+     },
+     "units": [
+      "0.0"
+     ],
+     "instructors": [],
+     "isCancelled": false,
+     "isFull": false,
+     "rnrModeCode": "L",
+     "term": {
+      "value": 20271,
+      "year": 2027,
+      "term": 1,
+      "season": "Spring"
+     },
+     "termCode": 20271,
+     "season": "Spring",
+     "year": 2027
+    }
+   ],
+   "remainingSectionSeats": 5,
+   "sectionSeatCount": 16,
+   "termCode": 20271,
+   "prefix": "CHEM",
+   "name": "Physical Chemical Measurements",
+   "sortOrder": 0
+  },
+  {
+   "courseId": 44417,
+   "startTermCode": 0,
+   "endTermCode": null,
+   "classNumber": "290",
+   "sequence": "A",
+   "suffix": "L",
+   "fullCourseName": "CHEM 290A",
+   "isCrossListed": false,
+   "maxUnits": null,
+   "duplicateCredit": null,
+   "geCode": null,
+   "scheduledCourseCode": {
+    "prefix": "CHEM",
+    "number": "290",
+    "suffix": "A",
+    "courseHyphen": "CHEM-290A",
+    "courseSpace": "CHEM 290A",
+    "courseSmashed": "CHEM290A"
+   },
+   "publishedCourseCode": {
+    "prefix": "CHEM",
+    "number": "290",
+    "suffix": "A",
+    "courseHyphen": "CHEM-290A",
+    "courseSpace": "CHEM 290A",
+    "courseSmashed": "CHEM290A"
+   },
+   "matchedCourseCode": {
+    "prefix": "CHEM",
+    "number": "290",
+    "suffix": "A",
+    "courseHyphen": "CHEM-290A",
+    "courseSpace": "CHEM 290A",
+    "courseSmashed": "CHEM290A"
+   },
+   "courseUnits": [
+    1
+   ],
+   "sections": [
+    {
+     "sisSectionId": "17368",
+     "linkCode": null,
+     "linkCodeForSort": null,
+     "rnrSessionId": 38124,
+     "peSectionId": 762156,
+     "courseId": 44417,
+     "hasDClearance": true,
+     "classType": null,
+     "name": null,
+     "group": null,
+     "schedule": [
+      {
+       "dayCode": null,
+       "days": [],
+       "startTime": null,
+       "endTime": null,
+       "sectionLocationSqNumber": null
+      }
+     ],
+     "totalSeats": 10,
+     "registeredSeats": 1,
+     "waitlistedSeats": null,
+     "rnrMode": "Lecture/Lab",
+     "session": {
+      "termCode": "20271",
+      "rnrSessionCode": "001",
+      "description": null,
+      "rnrSessionId": 38124
+     },
+     "units": [
+      "1.0"
+     ],
+     "instructors": [],
+     "isCancelled": false,
+     "isFull": false,
+     "rnrModeCode": "CL",
+     "term": {
+      "value": 20271,
+      "year": 2027,
+      "term": 1,
+      "season": "Spring"
+     },
+     "termCode": 20271,
+     "season": "Spring",
+     "year": 2027
+    }
+   ],
+   "remainingSectionSeats": 9,
+   "sectionSeatCount": 10,
+   "termCode": 20271,
+   "prefix": "CHEM",
+   "name": "Special Laboratory",
+   "sortOrder": 0
+  },
+  {
+   "courseId": 60299,
+   "startTermCode": 0,
+   "endTermCode": null,
+   "classNumber": "201",
+   "sequence": null,
+   "suffix": null,
+   "fullCourseName": "CSCI 201",
+   "isCrossListed": false,
+   "maxUnits": null,
+   "duplicateCredit": null,
+   "geCode": null,
+   "scheduledCourseCode": {
+    "prefix": "CSCI",
+    "number": "201",
+    "suffix": "",
+    "courseHyphen": "CSCI-201",
+    "courseSpace": "CSCI 201",
+    "courseSmashed": "CSCI201"
+   },
+   "publishedCourseCode": {
+    "prefix": "CSCI",
+    "number": "201",
+    "suffix": "",
+    "courseHyphen": "CSCI-201",
+    "courseSpace": "CSCI 201",
+    "courseSmashed": "CSCI201"
+   },
+   "matchedCourseCode": {
+    "prefix": "CSCI",
+    "number": "201",
+    "suffix": "",
+    "courseHyphen": "CSCI-201",
+    "courseSpace": "CSCI 201",
+    "courseSmashed": "CSCI201"
+   },
+   "courseUnits": [
+    4
+   ],
+   "sections": [
+    {
+     "sisSectionId": "29981",
+     "linkCode": "A",
+     "linkCodeForSort": "A",
+     "rnrSessionId": 38124,
+     "peSectionId": 764380,
+     "courseId": 60299,
+     "hasDClearance": false,
+     "classType": null,
+     "name": null,
+     "group": null,
+     "schedule": [
+      {
+       "dayCode": null,
+       "days": [],
+       "startTime": "TBA",
+       "endTime": "TBA",
+       "sectionLocationSqNumber": 1
+      }
+     ],
+     "totalSeats": 180,
+     "registeredSeats": 97,
+     "waitlistedSeats": null,
+     "rnrMode": "Quiz",
+     "session": {
+      "termCode": "20271",
+      "rnrSessionCode": "001",
+      "description": null,
+      "rnrSessionId": 38124
+     },
+     "units": [
+      "0.0"
+     ],
+     "instructors": [],
+     "isCancelled": false,
+     "isFull": false,
+     "rnrModeCode": "Q",
+     "term": {
+      "value": 20271,
+      "year": 2027,
+      "term": 1,
+      "season": "Spring"
+     },
+     "termCode": 20271,
+     "season": "Spring",
+     "year": 2027
+    }
+   ],
+   "remainingSectionSeats": 83,
+   "sectionSeatCount": 180,
+   "termCode": 20271,
+   "prefix": "CSCI",
+   "name": "Principles of Software Development",
+   "sortOrder": 0
+  },
+  {
+   "courseId": 40084,
+   "startTermCode": 0,
+   "endTermCode": null,
+   "classNumber": "590",
+   "sequence": null,
+   "suffix": null,
+   "fullCourseName": "CSCI 590",
+   "isCrossListed": false,
+   "maxUnits": null,
+   "duplicateCredit": null,
+   "geCode": null,
+   "scheduledCourseCode": {
+    "prefix": "CSCI",
+    "number": "590",
+    "suffix": "",
+    "courseHyphen": "CSCI-590",
+    "courseSpace": "CSCI 590",
+    "courseSmashed": "CSCI590"
+   },
+   "publishedCourseCode": {
+    "prefix": "CSCI",
+    "number": "590",
+    "suffix": "",
+    "courseHyphen": "CSCI-590",
+    "courseSpace": "CSCI 590",
+    "courseSmashed": "CSCI590"
+   },
+   "matchedCourseCode": {
+    "prefix": "CSCI",
+    "number": "590",
+    "suffix": "",
+    "courseHyphen": "CSCI-590",
+    "courseSpace": "CSCI 590",
+    "courseSmashed": "CSCI590"
+   },
+   "courseUnits": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "sections": [
+    {
+     "sisSectionId": "30162",
+     "linkCode": "A",
+     "linkCodeForSort": "A",
+     "rnrSessionId": 38145,
+     "peSectionId": 764601,
+     "courseId": 40084,
+     "hasDClearance": true,
+     "classType": null,
+     "name": null,
+     "group": null,
+     "schedule": [
+      {
+       "dayCode": null,
+       "days": [],
+       "startTime": "TBA",
+       "endTime": "TBA",
+       "sectionLocationSqNumber": 1
+      }
+     ],
+     "totalSeats": 50,
+     "registeredSeats": 1,
+     "waitlistedSeats": null,
+     "rnrMode": "Lecture",
+     "session": {
+      "termCode": "20271",
+      "rnrSessionCode": "048",
+      "description": null,
+      "rnrSessionId": 38145
+     },
+     "units": [
+      "1.0",
+      "2.0",
+      "3.0",
+      "4.0",
+      "5.0",
+      "6.0",
+      "7.0",
+      "8.0",
+      "9.0",
+      "10.0",
+      "11.0",
+      "12.0"
+     ],
+     "instructors": [
+      {
+       "firstName": "Jyotirmoy",
+       "lastName": "Deshmukh"
+      }
+     ],
+     "isCancelled": false,
+     "isFull": false,
+     "rnrModeCode": "C",
+     "term": {
+      "value": 20271,
+      "year": 2027,
+      "term": 1,
+      "season": "Spring"
+     },
+     "termCode": 20271,
+     "season": "Spring",
+     "year": 2027
+    }
+   ],
+   "remainingSectionSeats": 49,
+   "sectionSeatCount": 50,
+   "termCode": 20271,
+   "prefix": "CSCI",
+   "name": "Directed Research",
+   "sortOrder": 0
+  }
+ ],
+ "20253": [
+  {
+   "courseId": 50905,
+   "startTermCode": 0,
+   "endTermCode": null,
+   "classNumber": "450",
+   "sequence": null,
+   "suffix": null,
+   "fullCourseName": "CSCI 450",
+   "isCrossListed": true,
+   "maxUnits": null,
+   "duplicateCredit": "CSCI 353",
+   "geCode": null,
+   "scheduledCourseCode": {
+    "prefix": "EE",
+    "number": "450",
+    "suffix": "",
+    "courseHyphen": "EE-450",
+    "courseSpace": "EE 450",
+    "courseSmashed": "EE450"
+   },
+   "publishedCourseCode": {
+    "prefix": "CSCI",
+    "number": "450",
+    "suffix": "",
+    "courseHyphen": "CSCI-450",
+    "courseSpace": "CSCI 450",
+    "courseSmashed": "CSCI450"
+   },
+   "matchedCourseCode": {
+    "prefix": "CSCI",
+    "number": "450",
+    "suffix": "",
+    "courseHyphen": "CSCI-450",
+    "courseSpace": "CSCI 450",
+    "courseSmashed": "CSCI450"
+   },
+   "courseUnits": [
+    4
+   ],
+   "sections": [
+    {
+     "sisSectionId": "30454",
+     "linkCode": "R",
+     "linkCodeForSort": "R",
+     "rnrSessionId": 34580,
+     "peSectionId": 713723,
+     "courseId": 50905,
+     "hasDClearance": true,
+     "classType": null,
+     "name": null,
+     "group": null,
+     "schedule": [
+      {
+       "dayCode": "TH",
+       "days": [
+        "Tue",
+        "Thu"
+       ],
+       "startTime": "14:00",
+       "endTime": "15:50",
+       "sectionLocationSqNumber": 1
+      }
+     ],
+     "totalSeats": 48,
+     "registeredSeats": 47,
+     "waitlistedSeats": null,
+     "rnrMode": "Lecture",
+     "session": {
+      "termCode": "20253",
+      "rnrSessionCode": "001",
+      "description": null,
+      "rnrSessionId": 34580
+     },
+     "units": [
+      "4.0"
+     ],
+     "instructors": [
+      {
+       "firstName": "Cauligi",
+       "lastName": "Raghavendra"
+      }
+     ],
+     "isCancelled": false,
+     "isFull": false,
+     "rnrModeCode": "C",
+     "term": {
+      "value": 20253,
+      "year": 2025,
+      "term": 3,
+      "season": "Fall"
+     },
+     "termCode": 20253,
+     "season": "Fall",
+     "year": 2025
+    },
+    {
+     "sisSectionId": "30503",
+     "linkCode": "R",
+     "linkCodeForSort": "R",
+     "rnrSessionId": 34580,
+     "peSectionId": 713656,
+     "courseId": 50905,
+     "hasDClearance": false,
+     "classType": null,
+     "name": null,
+     "group": null,
+     "schedule": [
+      {
+       "dayCode": "W",
+       "days": [
+        "Wed"
+       ],
+       "startTime": "17:00",
+       "endTime": "17:50",
+       "sectionLocationSqNumber": 1
+      }
+     ],
+     "totalSeats": 48,
+     "registeredSeats": 47,
+     "waitlistedSeats": null,
+     "rnrMode": "Discussion",
+     "session": {
+      "termCode": "20253",
+      "rnrSessionCode": "001",
+      "description": null,
+      "rnrSessionId": 34580
+     },
+     "units": [
+      "0.0"
+     ],
+     "instructors": [
+      {
+       "firstName": "Cauligi",
+       "lastName": "Raghavendra"
+      }
+     ],
+     "isCancelled": false,
+     "isFull": false,
+     "rnrModeCode": "D",
+     "term": {
+      "value": 20253,
+      "year": 2025,
+      "term": 3,
+      "season": "Fall"
+     },
+     "termCode": 20253,
+     "season": "Fall",
+     "year": 2025
+    },
+    {
+     "sisSectionId": "30785",
+     "linkCode": "R",
+     "linkCodeForSort": "R",
+     "rnrSessionId": 34580,
+     "peSectionId": 713672,
+     "courseId": 50905,
+     "hasDClearance": false,
+     "classType": null,
+     "name": null,
+     "group": null,
+     "schedule": [
+      {
+       "dayCode": null,
+       "days": [],
+       "startTime": "TBA",
+       "endTime": "TBA",
+       "sectionLocationSqNumber": 1
+      }
+     ],
+     "totalSeats": 48,
+     "registeredSeats": 47,
+     "waitlistedSeats": null,
+     "rnrMode": "Quiz",
+     "session": {
+      "termCode": "20253",
+      "rnrSessionCode": "001",
+      "description": null,
+      "rnrSessionId": 34580
+     },
+     "units": [
+      "0.0"
+     ],
+     "instructors": [
+      {
+       "firstName": "Cauligi",
+       "lastName": "Raghavendra"
+      }
+     ],
+     "isCancelled": false,
+     "isFull": false,
+     "rnrModeCode": "Q",
+     "term": {
+      "value": 20253,
+      "year": 2025,
+      "term": 3,
+      "season": "Fall"
+     },
+     "termCode": 20253,
+     "season": "Fall",
+     "year": 2025
+    },
+    {
+     "sisSectionId": "30500",
+     "linkCode": "Z",
+     "linkCodeForSort": "Z",
+     "rnrSessionId": 34580,
+     "peSectionId": 713645,
+     "courseId": 50905,
+     "hasDClearance": false,
+     "classType": null,
+     "name": null,
+     "group": null,
+     "schedule": [
+      {
+       "dayCode": "TH",
+       "days": [
+        "Tue",
+        "Thu"
+       ],
+       "startTime": "10:00",
+       "endTime": "11:50",
+       "sectionLocationSqNumber": 1
+      }
+     ],
+     "totalSeats": 70,
+     "registeredSeats": 44,
+     "waitlistedSeats": null,
+     "rnrMode": "Lecture",
+     "session": {
+      "termCode": "20253",
+      "rnrSessionCode": "001",
+      "description": null,
+      "rnrSessionId": 34580
+     },
+     "units": [
+      "4.0"
+     ],
+     "instructors": [
+      {
+       "firstName": "Ali",
+       "lastName": "Zahid"
+      }
+     ],
+     "isCancelled": false,
+     "isFull": false,
+     "rnrModeCode": "C",
+     "term": {
+      "value": 20253,
+      "year": 2025,
+      "term": 3,
+      "season": "Fall"
+     },
+     "termCode": 20253,
+     "season": "Fall",
+     "year": 2025
+    },
+    {
+     "sisSectionId": "30504",
+     "linkCode": "Z",
+     "linkCodeForSort": "Z",
+     "rnrSessionId": 34580,
+     "peSectionId": 713660,
+     "courseId": 50905,
+     "hasDClearance": false,
+     "classType": null,
+     "name": null,
+     "group": null,
+     "schedule": [
+      {
+       "dayCode": "F",
+       "days": [
+        "Fri"
+       ],
+       "startTime": "13:00",
+       "endTime": "13:50",
+       "sectionLocationSqNumber": 1
+      }
+     ],
+     "totalSeats": 70,
+     "registeredSeats": 44,
+     "waitlistedSeats": null,
+     "rnrMode": "Discussion",
+     "session": {
+      "termCode": "20253",
+      "rnrSessionCode": "001",
+      "description": null,
+      "rnrSessionId": 34580
+     },
+     "units": [
+      "0.0"
+     ],
+     "instructors": [
+      {
+       "firstName": "Ali",
+       "lastName": "Zahid"
+      }
+     ],
+     "isCancelled": false,
+     "isFull": false,
+     "rnrModeCode": "D",
+     "term": {
+      "value": 20253,
+      "year": 2025,
+      "term": 3,
+      "season": "Fall"
+     },
+     "termCode": 20253,
+     "season": "Fall",
+     "year": 2025
+    },
+    {
+     "sisSectionId": "30684",
+     "linkCode": "Z",
+     "linkCodeForSort": "Z",
+     "rnrSessionId": 34580,
+     "peSectionId": 713697,
+     "courseId": 50905,
+     "hasDClearance": false,
+     "classType": null,
+     "name": null,
+     "group": null,
+     "schedule": [
+      {
+       "dayCode": "F",
+       "days": [
+        "Fri"
+       ],
+       "startTime": "19:00",
+       "endTime": "21:15",
+       "sectionLocationSqNumber": 1
+      }
+     ],
+     "totalSeats": 70,
+     "registeredSeats": 44,
+     "waitlistedSeats": null,
+     "rnrMode": "Quiz",
+     "session": {
+      "termCode": "20253",
+      "rnrSessionCode": "001",
+      "description": null,
+      "rnrSessionId": 34580
+     },
+     "units": [
+      "0.0"
+     ],
+     "instructors": [
+      {
+       "firstName": "Ali",
+       "lastName": "Zahid"
+      }
+     ],
+     "isCancelled": false,
+     "isFull": false,
+     "rnrModeCode": "Q",
+     "term": {
+      "value": 20253,
+      "year": 2025,
+      "term": 3,
+      "season": "Fall"
+     },
+     "termCode": 20253,
+     "season": "Fall",
+     "year": 2025
+    },
+    {
+     "sisSectionId": "30545",
+     "linkCode": "Z",
+     "linkCodeForSort": "Z",
+     "rnrSessionId": 34637,
+     "peSectionId": 722108,
+     "courseId": 50905,
+     "hasDClearance": true,
+     "classType": null,
+     "name": null,
+     "group": null,
+     "schedule": [
+      {
+       "dayCode": "TH",
+       "days": [
+        "Tue",
+        "Thu"
+       ],
+       "startTime": "10:00",
+       "endTime": "11:50",
+       "sectionLocationSqNumber": 1
+      }
+     ],
+     "totalSeats": 30,
+     "registeredSeats": 14,
+     "waitlistedSeats": null,
+     "rnrMode": "Lecture",
+     "session": {
+      "termCode": "20253",
+      "rnrSessionCode": "014",
+      "description": null,
+      "rnrSessionId": 34637
+     },
+     "units": [
+      "4.0"
+     ],
+     "instructors": [
+      {
+       "firstName": "Ali",
+       "lastName": "Zahid"
+      }
+     ],
+     "isCancelled": false,
+     "isFull": false,
+     "rnrModeCode": "C",
+     "term": {
+      "value": 20253,
+      "year": 2025,
+      "term": 3,
+      "season": "Fall"
+     },
+     "termCode": 20253,
+     "season": "Fall",
+     "year": 2025
+    },
+    {
+     "sisSectionId": "30546",
+     "linkCode": "Z",
+     "linkCodeForSort": "Z",
+     "rnrSessionId": 34637,
+     "peSectionId": 722107,
+     "courseId": 50905,
+     "hasDClearance": true,
+     "classType": null,
+     "name": null,
+     "group": null,
+     "schedule": [
+      {
+       "dayCode": "F",
+       "days": [
+        "Fri"
+       ],
+       "startTime": "13:00",
+       "endTime": "13:50",
+       "sectionLocationSqNumber": 1
+      }
+     ],
+     "totalSeats": 30,
+     "registeredSeats": 14,
+     "waitlistedSeats": null,
+     "rnrMode": "Discussion",
+     "session": {
+      "termCode": "20253",
+      "rnrSessionCode": "014",
+      "description": null,
+      "rnrSessionId": 34637
+     },
+     "units": [
+      "0.0"
+     ],
+     "instructors": [
+      {
+       "firstName": "Ali",
+       "lastName": "Zahid"
+      }
+     ],
+     "isCancelled": false,
+     "isFull": false,
+     "rnrModeCode": "D",
+     "term": {
+      "value": 20253,
+      "year": 2025,
+      "term": 3,
+      "season": "Fall"
+     },
+     "termCode": 20253,
+     "season": "Fall",
+     "year": 2025
+    },
+    {
+     "sisSectionId": "31186",
+     "linkCode": "Z",
+     "linkCodeForSort": "Z",
+     "rnrSessionId": 34637,
+     "peSectionId": 722106,
+     "courseId": 50905,
+     "hasDClearance": true,
+     "classType": null,
+     "name": null,
+     "group": null,
+     "schedule": [
+      {
+       "dayCode": "F",
+       "days": [
+        "Fri"
+       ],
+       "startTime": "16:00",
+       "endTime": "17:50",
+       "sectionLocationSqNumber": 1
+      }
+     ],
+     "totalSeats": 30,
+     "registeredSeats": 14,
+     "waitlistedSeats": null,
+     "rnrMode": "Quiz",
+     "session": {
+      "termCode": "20253",
+      "rnrSessionCode": "014",
+      "description": null,
+      "rnrSessionId": 34637
+     },
+     "units": [
+      "0.0"
+     ],
+     "instructors": [
+      {
+       "firstName": "Ali",
+       "lastName": "Zahid"
+      }
+     ],
+     "isCancelled": false,
+     "isFull": false,
+     "rnrModeCode": "Q",
+     "term": {
+      "value": 20253,
+      "year": 2025,
+      "term": 3,
+      "season": "Fall"
+     },
+     "termCode": 20253,
+     "season": "Fall",
+     "year": 2025
+    }
+   ],
+   "remainingSectionSeats": 43,
+   "sectionSeatCount": 148,
+   "termCode": 20253,
+   "prefix": "EE",
+   "name": "Introduction to Computer Networks",
+   "sortOrder": 0
+  },
+  {
+   "courseId": 46397,
+   "startTermCode": 0,
+   "endTermCode": null,
+   "classNumber": "401",
+   "sequence": null,
+   "suffix": null,
+   "fullCourseName": "CSCI 401",
+   "isCrossListed": false,
+   "maxUnits": "8.0",
+   "duplicateCredit": null,
+   "geCode": null,
+   "scheduledCourseCode": {
+    "prefix": "CSCI",
+    "number": "401",
+    "suffix": "",
+    "courseHyphen": "CSCI-401",
+    "courseSpace": "CSCI 401",
+    "courseSmashed": "CSCI401"
+   },
+   "publishedCourseCode": {
+    "prefix": "CSCI",
+    "number": "401",
+    "suffix": "",
+    "courseHyphen": "CSCI-401",
+    "courseSpace": "CSCI 401",
+    "courseSmashed": "CSCI401"
+   },
+   "matchedCourseCode": {
+    "prefix": "CSCI",
+    "number": "401",
+    "suffix": "",
+    "courseHyphen": "CSCI-401",
+    "courseSpace": "CSCI 401",
+    "courseSmashed": "CSCI401"
+   },
+   "courseUnits": [
+    4
+   ],
+   "sections": [
+    {
+     "sisSectionId": "30227",
+     "linkCode": null,
+     "linkCodeForSort": null,
+     "rnrSessionId": 34580,
+     "peSectionId": 713519,
+     "courseId": 46397,
+     "hasDClearance": false,
+     "classType": null,
+     "name": null,
+     "group": null,
+     "schedule": [
+      {
+       "dayCode": "MW",
+       "days": [
+        "Mon",
+        "Wed"
+       ],
+       "startTime": "08:00",
+       "endTime": "09:50",
+       "sectionLocationSqNumber": 1
+      }
+     ],
+     "totalSeats": 210,
+     "registeredSeats": 83,
+     "waitlistedSeats": null,
+     "rnrMode": "Lecture",
+     "session": {
+      "termCode": "20253",
+      "rnrSessionCode": "001",
+      "description": null,
+      "rnrSessionId": 34580
+     },
+     "units": [
+      "4.0"
+     ],
+     "instructors": [
+      {
+       "firstName": "Victor",
+       "lastName": "Adamchik"
+      }
+     ],
+     "isCancelled": false,
+     "isFull": false,
+     "rnrModeCode": "C",
+     "term": {
+      "value": 20253,
+      "year": 2025,
+      "term": 3,
+      "season": "Fall"
+     },
+     "termCode": 20253,
+     "season": "Fall",
+     "year": 2025
+    }
+   ],
+   "remainingSectionSeats": 128,
+   "sectionSeatCount": 280,
+   "termCode": 20253,
+   "prefix": "CSCI",
+   "name": "Capstone: Design and Construction of Large       Software Systems                                ",
+   "sortOrder": 0
+  }
+ ]
+}

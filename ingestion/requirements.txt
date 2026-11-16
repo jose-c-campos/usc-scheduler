@@ -16,10 +16,7 @@ aiosqlite==0.21.0
 psycopg2-binary==2.9.10
 
 # ── Scrapers (app/scrapers/) ────────────────────────────────────────────────
-selenium==4.33.0
-webdriver-manager==4.1.2
-beautifulsoup4==4.13.4
-requests==2.32.4
+requests==2.32.4         # scrape_programs.py / scrape_sections.py (USC's JSON API)
 
 # ── Tests ───────────────────────────────────────────────────────────────────
 pytest==8.4.1

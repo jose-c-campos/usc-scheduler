@@ -62,6 +62,14 @@ app.get('/api/test', (req, res) => {
   res.json({ message: 'API is working!' });
 });
 
+// The single source of truth for "which semester is live". The frontend
+// stamps this on saved schedules. It is deliberately the same SEMESTER
+// constant used for class lookups and passed to the C++ engine, so a saved
+// schedule's semester always matches the data it was generated from.
+app.get('/api/active-semester', (req, res) => {
+  res.json({ semester: SEMESTER });
+});
+
 // Direct debug endpoint to test schedules route
 app.get('/api/schedules-test', (req, res) => {
   res.json({ message: 'Schedules test endpoint in server.js' });
@@ -474,6 +482,7 @@ if (require.main === module) {
     console.log(`=================================================================`);
     console.log('Available routes:');
     console.log(`- GET /api/test                     (test server connection)`);
+    console.log(`- GET /api/active-semester          (active semester code: ${SEMESTER})`);
     console.log(`- GET /api/available-classes        (get list of classes)`);
     console.log(`- GET /api/class-sections/:code     (get sections for a class)`);
     console.log(`- GET /api/professor-ratings        (get professor ratings)`);
