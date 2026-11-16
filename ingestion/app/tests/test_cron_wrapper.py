@@ -16,7 +16,9 @@ import pytest
 WRAPPER = Path(__file__).resolve().parents[2] / "cron-wrapper.sh"
 BASH = shutil.which("bash")
 HOOK = "https://discord.com/api/webhooks/123/SECRET-wrapper-token-abcdefghijk"
-GOOD_ENV = (f"USC_DB_HOST=db\nUSC_DB_USER=u\nUSC_DB_PASSWORD=pw-secret-1234\n"
+# "pw-secret-1234" is a fake that run() checks never reaches the output. The
+# gitleaks:allow markers tell the repo's secret scan (generic-api-key) so.
+GOOD_ENV = (f"USC_DB_HOST=db\nUSC_DB_USER=u\nUSC_DB_PASSWORD=pw-secret-1234\n"  # gitleaks:allow
             f"ACTIVE_SEMESTERS=20263,20271\nDISCORD_WEBHOOK_URL={HOOK}\n")
 
 FAKE_PYTHON = """#!/bin/sh
@@ -102,7 +104,7 @@ def test_it_refuses_without_a_readable_env_file(box):
 
 
 @pytest.mark.parametrize("env_file", [
-    "USC_DB_USER=u\nUSC_DB_PASSWORD=pw-secret-1234\n",           # no webhook line at all
+    "USC_DB_USER=u\nUSC_DB_PASSWORD=pw-secret-1234\n",           # no webhook line at all  gitleaks:allow
     "DISCORD_WEBHOOK_URL=\nUSC_DB_USER=u\n",                      # an empty one
     "DISCORD_WEBHOOK_URL=   \n",                                  # whitespace only
     "",                                                          # an empty file (like ENV_FILE=/dev/null)
