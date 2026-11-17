@@ -295,11 +295,10 @@ const ScheduleFrame: React.FC<ScheduleFrameProps> = ({ classes }) => {
                   </span>
                 )}
               </div>
-              {sec.instructor && (
-                <div className={`truncate ${conflict ? 'text-[0.45rem]' : 'text-[0.5rem]'}`}>
-                  {sec.instructor}
-                </div>
-              )}
+              {/* The engine sends "" for a section with no instructor yet: show 'TBA' */}
+              <div className={`truncate ${conflict ? 'text-[0.45rem]' : 'text-[0.5rem]'}`}>
+                {sec.instructor?.trim() || 'TBA'}
+              </div>
             </div>
           );
         })}

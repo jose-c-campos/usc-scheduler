@@ -266,7 +266,8 @@ const ClassSpot = ({ index, classes, onUpdate, onRemove, onSectionsLoaded }: Cla
               
               // Helper to format professor name with abbreviated first name
               const formatProfName = (name: string) => {
-                if (!name || name === 'TBA') return name;
+                // No instructor assigned yet: 'TBA', never a blank label
+                if (!name || !name.trim() || name === 'TBA') return 'TBA';
                 const parts = name.split(' ');
                 if (parts.length === 1) return name;
                 return `${parts[0][0]}. ${parts.slice(1).join(' ')}`;
