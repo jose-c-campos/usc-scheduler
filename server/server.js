@@ -105,11 +105,18 @@ if (customSchema) {
 }
 
 /* ───────── helpers ───────── */
-const formatProfessor = raw =>
-  !raw ? 'TBA'
-       : Array.isArray(raw)
-         ? raw.join(', ')
-         : String(raw).replace(/[{}"]/g, '').split(',')[0].trim();
+// A section USC hasn't assigned an instructor to shows 'TBA': never a blank,
+// and never a guessed name. pg returns sections.instructors (TEXT[]) as an
+// array, so an unassigned section arrives as [] (blank entries are dropped);
+// '{}' is the same empty array as unparsed text. Before 2026-11-17 an empty
+// array came back as '' and the dropdown read ", MW, 5:00 pm…".
+const formatProfessor = raw => {
+  const names = !raw ? ''
+    : Array.isArray(raw)
+      ? raw.map(n => String(n ?? '').trim()).filter(Boolean).join(', ')
+      : String(raw).replace(/[{}"]/g, '').split(',')[0].trim();
+  return names || 'TBA';
+};
 
 const timeRange = (start, end) => (start && end ? `${start} - ${end}` : 'TBA');
 
@@ -501,7 +508,7 @@ if (require.main === module) {
   });
 }
 
-module.exports = { app, pool };
+module.exports = { app, pool, formatProfessor };
 /* ────────────────────────────────────────────────────────────────────── */
 
 /* ---------- helpers for the SSE route ---------- */
